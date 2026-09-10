@@ -4,17 +4,12 @@ const child_process = require('child_process');
 
 const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文套件';
-const ENGINE_VERSION = '1.0.5';
+const ENGINE_VERSION = '1.0.6';
 const SIGNATURE = 'ZH-HANT-TW';
 
 const SIGNATURE_START = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION START --- */';
 const SIGNATURE_END = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION END --- */';
 
-/**
- * 解析本地 @electron/asar CLI 路徑。
- * 優先使用 node_modules/@electron/asar/bin/asar.js，若不存在則提示使用者先執行 npm install。
- * @returns {string|null} asar CLI 的絕對路徑，若找不到則回傳 null。
- */
 function resolveAsarCli() {
     const localAsarPath = path.join(__dirname, 'node_modules', '@electron', 'asar', 'bin', 'asar.js');
     if (fs.existsSync(localAsarPath)) {
@@ -23,12 +18,6 @@ function resolveAsarCli() {
     return null;
 }
 
-/**
- * 使用本地 asar CLI 執行指令。
- * @param {string} action - asar 動作，例如 'extract' 或 'pack'
- * @param {string[]} args - 傳入 asar 的參數陣列
- * @returns {{success: boolean, stdout: string, stderr: string}}
- */
 function runAsarCommand(action, args) {
     const asarCli = resolveAsarCli();
     if (!asarCli) {
@@ -42,12 +31,7 @@ function runAsarCommand(action, args) {
     return runCommandSync(cmd);
 }
 
-/**
- * 環境檢查：確認必要工具是否存在。
- * @returns {boolean} 環境檢查是否通過
- */
 function checkEnvironment() {
-    // 檢查本地 @electron/asar CLI
     const asarCli = resolveAsarCli();
     if (!asarCli) {
         console.error('');
@@ -251,6 +235,50 @@ function generateJs() {
         }
     }
 
+    const splitTextTranslationKeys = new Set([
+        'No Projects found'
+    ]);
+
+    const splitTextTranslationKeysLower = new Set(
+        [...splitTextTranslationKeys].map(key => key.toLowerCase())
+    );
+
+    function translateSplitTextElement(el) {
+        if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
+        if (isInBlockedZone(el)) return false;
+        if (el.matches && el.matches('button, input, textarea, select, option, [role="button"], [contenteditable="true"]')) return false;
+        if (el.querySelector('button, input, textarea, select, option, svg, canvas, [contenteditable="true"]')) return false;
+
+        const normalized = norm(el.textContent || '');
+        if (!splitTextTranslationKeysLower.has(normalized.toLowerCase())) return false;
+
+        const translated = map.get(normalized) || lowerMap.get(normalized.toLowerCase());
+        if (!translated || translated === normalized) return false;
+
+        const textNodes = [];
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        while (walker.nextNode()) {
+            const current = walker.currentNode;
+            if (!current.nodeValue || !current.nodeValue.trim()) continue;
+            if (isInBlockedZone(current)) return false;
+            textNodes.push(current);
+        }
+
+        if (textNodes.length < 2 || textNodes.length > 4) return false;
+
+        textNodes[0].nodeValue = translated;
+        done.add(textNodes[0]);
+        setTimeout(() => done.delete(textNodes[0]), 1000);
+
+        for (let i = 1; i < textNodes.length; i++) {
+            textNodes[i].nodeValue = '';
+            done.add(textNodes[i]);
+            setTimeout(() => done.delete(textNodes[i]), 1000);
+        }
+
+        return true;
+    }
+
     function hasTranslatableEnglishText(node) {
         if (!node) return false;
         const text = node.textContent || '';
@@ -358,6 +386,7 @@ function generateJs() {
 
             if (node.nodeType === Node.ELEMENT_NODE) {
                 translateAttributes(node);
+                if (translateSplitTextElement(node)) return;
                 if (node.shadowRoot) translateNode(node.shadowRoot);
                 for (const child of node.childNodes) translateNode(child);
                 return;
@@ -367,6 +396,7 @@ function generateJs() {
                 const originalVal = node.nodeValue;
                 if (!originalVal || originalVal.trim().length < 1) return;
                 if (isInBlockedZone(node)) return;
+                if (translateSplitTextElement(node.parentElement)) return;
 
                 let newVal = translateString(originalVal);
 
@@ -710,7 +740,6 @@ function install20(resourcesDir) {
         return false;
     }
 
-    // 環境檢查：在執行任何破壞性操作前，先確認 asar CLI 可用
     if (!checkEnvironment()) {
         return false;
     }
