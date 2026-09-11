@@ -15,6 +15,22 @@ v2.0.0 Beta 主要改善安裝流程，讓一般使用者可以透過 Windows / 
 > ⚠️ v2.0.0 Beta 的一鍵安裝是「免手動 `npm install`」，不是「免安裝 Node.js」。
 > 安裝器不會內建 Node.js，也不會自動替使用者安裝 Node.js。
 
+## v2.0.0 Beta 工具畫面
+
+v2.0.0 Beta 新增 Windows / macOS 圖形化安裝與還原工具。使用者只要先安裝 Node.js LTS，即可透過安裝檔完成套用，不需要手動執行 `npm install`。
+
+### Windows
+
+| 安裝工具 | 還原工具 |
+|----------|----------|
+| ![Windows 安裝工具畫面](images/win-install.jpg) | ![Windows 還原工具畫面](images/win-restore.jpg) |
+
+### macOS
+
+| 安裝工具 | 還原工具 |
+|----------|----------|
+| ![macOS 安裝工具畫面](images/mac-install.jpg) | ![macOS 還原工具畫面](images/mac-restore.jpg) |
+
 ## 快速開始
 
 ### 1. 安裝前確認
