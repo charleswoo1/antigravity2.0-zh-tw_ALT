@@ -1,6 +1,9 @@
 # Antigravity 2.0 繁體中文套件
 
-將 Antigravity 2.0 的介面翻譯為繁體中文（台灣）。請安裝最新版本 v1.0.6，以符合 Antigravity 2.0 官方最新 v2.12.2 介面。支援 Windows 與 macOS，完成 Node.js 與 `npm install` 後可雙擊腳本安裝與還原。
+> **v2.0.0 Beta：** [查看新版快速安裝說明](README-v2.0.0-beta.md)
+> 新版加入 Installer 快速安裝流程；若電腦已具備 Node.js／npm，安裝器可自動準備必要套件並完成繁中套用，免手動執行 `npm install`。
+
+將 Antigravity 2.0 的介面翻譯為繁體中文（台灣）。建議可先安裝穩定版 v1.0.6，以符合 Antigravity 2.0 官方最新 v2.12.2 介面。支援 Windows 與 macOS，完成 Node.js 與 `npm install` 後可按兩下腳本安裝與還原。
 
 Antigravity 2.0 Traditional Chinese Localization Toolkit is an open-source project that translates the Antigravity 2.0 interface into Traditional Chinese. It works by unpacking and repacking the local Electron ASAR file, without modifying official core binaries or redistributing any official Antigravity files. The toolkit supports both Windows and macOS, provides quick script-based installation and full restoration after dependencies are installed, automatically creates backups, runs entirely on the user’s local machine, and carefully avoids translating code editors, terminals, input fields, debug consoles, and other areas where localization could interfere with development workflows.
 
@@ -10,12 +13,12 @@ Antigravity 2.0 Traditional Chinese Localization Toolkit is an open-source proje
 
 **Antigravity 2.0 繁體中文套件**是一套開源的介面本地化工具，透過 ASAR 解包與重新打包機制，將 Antigravity 2.0 的英文介面翻譯為繁體中文。
 
-為確保翻譯內容與 Antigravity 2.0 官方最新 v2.12.2 介面一致，建議安裝本套件最新版本 v1.0.6。
+為確保翻譯內容與 Antigravity 2.0 官方最新 v2.12.2 介面一致，建議可先安裝穩定版 v1.0.6。
 
 - 不修改官方核心二進位檔案
 - 不散布官方 `app.asar` 或任何官方檔案
-- 完成 Node.js 與 `npm install` 後，可雙擊腳本安裝與完整還原
-- 所有操作在使用者本機端執行
+- 完成 Node.js 與 `npm install` 後，可按兩下腳本安裝與完整還原
+- 所有操作在使用者的電腦執行
 
 ---
 
@@ -35,15 +38,35 @@ Antigravity 2.0 Traditional Chinese Localization Toolkit is an open-source proje
 
 ### 方式一：GitHub Releases（推薦）
 
-前往本專案的 [GitHub Releases](../../releases) 頁面，下載最新版本的 `.zip` 壓縮檔。
+前往本專案的 [GitHub Releases](../../releases) 頁面，在 Assets 區下載 `antigravity2-zh-hant-v1.0.6.zip`。
 
-1. 下載 `antigravity2-zh-hant-v*.zip`
+1. 下載 `antigravity2-zh-hant-v1.0.6.zip`
 2. 解壓縮到任意目錄
-3. 在解壓縮後的目錄中執行：
+3. 開啟 Windows 的 **命令提示字元（cmd）**，或 macOS 的 **終端機（Terminal）**
+4. 使用 `cd` 切換到剛才解壓縮的套件資料夾
+5. 再執行：
 
 ```bash
 npm install
 ```
+
+Windows 範例：
+
+```bash
+cd "C:\Users\你的使用者名稱\Downloads\antigravity2-zh-hant-v1.0.6"
+npm install
+```
+
+macOS 範例：
+
+```bash
+cd ~/Downloads/antigravity2-zh-hant-v1.0.6
+npm install
+```
+
+> 補充：Windows 可在資料夾上方路徑列輸入 `cmd` 後按 Enter；macOS 可在終端機輸入 `cd ` 後，把資料夾拖進終端機視窗。
+
+> 如果資料夾路徑包含空格，請使用雙引號 `"` 包住完整路徑。
 
 > ⚠️ **注意**：請下載完整的 `.zip` 檔案，不要只下載單一的 `.bat` 或 `.command` 檔案。安裝腳本需要搭配 `localization_engine.js`、`dicts/` 字典目錄與 `package.json` 等檔案才能正常運作。
 
@@ -51,9 +74,11 @@ npm install
 
 ### 方式二：Git Clone
 
+Windows 請先開啟「命令提示字元（cmd）」或其他可使用 Git 的終端機，macOS 請開啟「終端機（Terminal）」。以下指令需在終端機／命令提示字元中執行：
+
 ```bash
 git clone https://github.com/workkkkkkez00m/antigravity2.0-zh-tw.git
-cd antigravity2-zh-hant-tw
+cd antigravity2.0-zh-tw
 npm install
 ```
 ---
@@ -62,11 +87,11 @@ npm install
 
 - 🌐 **繁體中文介面**：涵蓋主介面、設定頁、Agent 管理、MCP／知識庫頁面等多個區域
 - 🖥️ **跨平台支援**：同時支援 Windows 與 macOS
-- 🔧 **快速安裝**：完成 Node.js 與 `npm install` 後，雙擊腳本即可執行安裝
+- 🔧 **快速安裝**：完成 Node.js 與 `npm install` 後，按兩下安裝腳本即可執行安裝
 - 🔄 **完整還原**：隨時可還原為官方英文原版
 - 🛡️ **安全備份**：首次安裝時自動備份官方 `app.asar`
 - 📦 **離線運作**：使用本地 `@electron/asar`，不依賴 `npx` 動態下載
-- 🎯 **精準翻譯**：自動避開程式碼區、Terminal、編輯器等不應翻譯的區域
+- 🎯 **精準翻譯**：自動避開程式碼區、終端機（Terminal）、編輯器等不應翻譯的區域
 
 ---
 
@@ -80,8 +105,8 @@ Antigravity 官方更新時，會重新覆蓋 `app.asar` 檔案，導致先前�
 
 只要在更新後重新執行安裝腳本，即可恢復繁體中文介面：
 
-- **Windows**：雙擊執行 `install-win.bat`
-- **macOS**：雙擊執行 `install-macos.command`
+- **Windows**：按兩下 `install-win.bat` 執行
+- **macOS**：按兩下 `install-macos.command` 執行
 
 > 💡 建議在每次 Antigravity 更新完成後，養成重新執行安裝腳本的習慣。
 
@@ -110,7 +135,16 @@ Antigravity 官方更新時，會重新覆蓋 `app.asar` 檔案，導致先前�
 
 ### 首次使用前
 
-在專案根目錄執行一次：
+第一次使用前，請先切換到本套件的資料夾，也就是可以看到 `package.json` 的那一層目錄。
+
+1. Windows：開啟「命令提示字元（cmd）」
+2. macOS：開啟「終端機（Terminal）」
+3. 使用 `cd` 切換到解壓縮後的套件資料夾
+4. 確認目前位於包含以下檔案的資料夾：
+   - `package.json`
+   - `localization_engine.js`
+   - `dicts/`
+5. 再執行：
 
 ```bash
 npm install
@@ -122,20 +156,37 @@ npm install
 
 ## 快速開始
 
+1. 開啟終端機：
+   - Windows：**命令提示字元（cmd）**
+   - macOS：**終端機（Terminal）**
+2. 使用 `cd` 切換到解壓縮後的套件資料夾，例如：
+
 ```bash
-# 1. 確認已安裝 Node.js 與 npm
+# Windows 範例
+cd "C:\Users\你的使用者名稱\Downloads\antigravity2-zh-hant-v1.0.6"
+
+# macOS 範例
+cd ~/Downloads/antigravity2-zh-hant-v1.0.6
+```
+
+3. 確認 Node.js 與 npm：
+
+```bash
 node -v
 npm -v
-
-# 2. 安裝依賴（僅首次需要）
-npm install
-
-# 3. 完全退出 Antigravity，然後執行安裝腳本
-#    Windows：雙擊 install-win.bat
-#    macOS：雙擊 install-macos.command
-
-# 4. 重新啟動 Antigravity，即可看到繁體中文介面
 ```
+
+4. 第一次使用執行：
+
+```bash
+npm install
+```
+
+5. 完全退出 Antigravity。
+6. 執行安裝腳本：
+   - Windows：按兩下 `install-win.bat`
+   - macOS：按兩下 `install-macos.command`
+7. 重新啟動 Antigravity，即可看到繁體中文介面。
 
 ---
 
@@ -143,16 +194,17 @@ npm install
 
 ### 前置確認
 
-建議開啟**命令提示字元 cmd**，確認 Node.js 與 npm 已可使用：
+建議開啟 **命令提示字元（cmd）**，確認 Node.js 與 npm 已可使用：
 
 ```cmd
 node -v
 npm -v
 ```
 
-若上述指令能正確輸出版本號，接著在專案目錄執行：
+若上述指令能正確輸出版本號，請先使用 `cd` 切換到解壓縮後的本套件資料夾，再執行：
 
 ```cmd
+cd "C:\Users\你的使用者名稱\Downloads\antigravity2-zh-hant-v1.0.6"
 npm install
 ```
 
@@ -165,7 +217,7 @@ npm.cmd install
 ### 安裝繁體中文
 
 1. **完全退出** Antigravity 軟體。
-2. 在本套件資料夾中，**雙擊執行 `install-win.bat`**。
+2. 在本套件資料夾中，**按兩下 `install-win.bat` 執行**。
 3. 執行完成後，重新啟動 Antigravity，即可看到繁體中文介面。
 
 ### 手動指定安裝路徑
@@ -189,7 +241,7 @@ node localization_engine.js --install-dir "C:\Users\<你的使用者名稱>\AppD
 </details>
 
 <details>
-<summary><strong>npm 不存在</strong></summary>
+<summary><strong>找不到 npm</strong></summary>
 
 npm 隨 Node.js 一併安裝。若 `npm -v` 無法使用，請重新安裝 Node.js LTS 版本。安裝時確認勾選 npm 相關選項。
 </details>
@@ -206,29 +258,30 @@ npm 隨 Node.js 一併安裝。若 `npm -v` 無法使用，請重新安裝 Node.
 
 ### 前置確認
 
-開啟 **Terminal**，確認 Node.js 與 npm 已可使用：
+開啟 **終端機（Terminal）**，確認 Node.js 與 npm 已可使用：
 
 ```bash
 node -v
 npm -v
 ```
 
-若上述指令能正確輸出版本號，接著在專案目錄執行：
+若上述指令能正確輸出版本號，請先使用 `cd` 切換到解壓縮後的本套件資料夾，再執行：
 
 ```bash
+cd ~/Downloads/antigravity2-zh-hant-v1.0.6
 npm install
 ```
 
 ### 安裝繁體中文
 
 1. **完全退出** Antigravity 軟體（選單列 → Antigravity → Quit，或 `Cmd+Q`）。
-2. 在 Finder 中找到本套件資料夾，**雙擊執行 `install-macos.command`**。
+2. 在 Finder 中找到本套件資料夾，**按兩下 `install-macos.command` 執行**。
    - 若系統提示「無法驗證開發者」，請在 Finder 中對檔案按右鍵 → **開啟**。
 3. 執行完成後，重新啟動 Antigravity，即可看到繁體中文介面。
 
 ### .command 無法執行
 
-若 `.command` 檔案雙擊無反應，請先在 Terminal 中授予執行權限：
+若按兩下 `.command` 檔案後沒有反應，請先在終端機中授予執行權限：
 
 ```bash
 chmod +x install-macos.command restore-macos.command
@@ -247,10 +300,10 @@ node localization_engine.js --install-dir "/Applications/Antigravity.app"
 首次安裝時，引擎會建立 `app.asar.bak` 備份檔。在某些 macOS 環境下可能遇到權限問題：
 
 1. 引擎會先嘗試 `fs.copyFileSync` 建立備份
-2. 若遇到 **EPERM** 或 **EACCES** 錯誤，會自動 fallback 到 `/bin/cp -p` 作為備援
+2. 若遇到 **EPERM** 或 **EACCES** 錯誤，會自動改用 `/bin/cp -p` 作為備援方式
 3. 本套件**不會自動執行 `sudo`**
 
-若 fallback 仍失敗，可手動建立備份後再執行安裝：
+若備援方式仍失敗，可手動建立備份後再執行安裝：
 
 ```bash
 cp "/Applications/Antigravity.app/Contents/Resources/app.asar" \
@@ -263,7 +316,7 @@ cp "/Applications/Antigravity.app/Contents/Resources/app.asar" \
 
 ### Windows
 
-雙擊執行 `restore-win.bat`，或在命令列執行：
+按兩下 `restore-win.bat` 執行，或在命令列執行：
 
 ```cmd
 node localization_engine.js --restore
@@ -271,7 +324,7 @@ node localization_engine.js --restore
 
 ### macOS
 
-雙擊執行 `restore-macos.command`，或在 Terminal 執行：
+按兩下 `restore-macos.command` 執行，或在終端機執行：
 
 ```bash
 node localization_engine.js --restore
@@ -304,14 +357,14 @@ node localization_engine.js --restore
 | 啟動畫面文字 | 載入動畫文字 |
 | 鍵盤快捷鍵頁 | 快捷鍵描述與分類 |
 
-> 目前共 **617 個翻譯詞彙**。
+> 目前共 **788 筆翻譯詞彙**。
 
 ### 不翻譯區域
 
 以下區域會自動避開翻譯，以確保使用體驗不受影響：
 
 - 程式碼區（Monaco Editor）
-- Terminal / 終端機
+- 終端機（Terminal）
 - 輸入框（`<input>`、`<textarea>`、`contenteditable`）
 - `<code>`、`<pre>` 區塊
 - SVG / Canvas 圖形元素
@@ -337,7 +390,7 @@ node localization_engine.js --restore
 <details>
 <summary><strong>npx is not recognized 怎麼辦？</strong></summary>
 
-本套件已改用本地 `@electron/asar`，不再依賴 `npx`。請確認已在專案根目錄執行 `npm install`，即可正常運作。
+本套件已改用本地 `@electron/asar`，不再依賴 `npx`。請確認已先切換到本套件的資料夾，也就是可以看到 `package.json` 的那一層目錄，並執行 `npm install`，即可正常運作。
 </details>
 
 <details>
@@ -373,7 +426,7 @@ Windows 執行 `restore-win.bat`、macOS 執行 `restore-macos.command`，或使
 <details>
 <summary><strong>是否會散布官方 app.asar？</strong></summary>
 
-不會。本專案不包含、不散布 Antigravity 官方 `app.asar` 或任何官方二進位檔案。所有操作均在使用者本機端執行。
+不會。本專案不包含、不散布 Antigravity 官方 `app.asar` 或任何官方二進位檔案。所有操作均在使用者的電腦執行。
 </details>
 
 <details>
@@ -389,8 +442,8 @@ Windows 執行 `restore-win.bat`、macOS 執行 `restore-macos.command`，或使
 1. **請先退出 Antigravity 再操作**：執行安裝或還原腳本前，請確認已完全退出 Antigravity，避免檔案被占用。
 2. **Antigravity 更新後需重新套用**：官方更新會覆蓋 `app.asar`，更新後請重新執行安裝腳本。
 3. **macOS Gatekeeper**：首次執行 `.command` 檔案時，若系統提示「無法驗證開發者」，請在 Finder 中對檔案按右鍵 → 開啟。
-4. **Windows 權限**：若出現「存取被拒」，請對 `.bat` 檔案按右鍵 → **以系統管理員身份執行**。
-5. **不要以 sudo 執行**：本套件不會自動使用 `sudo`，也不建議以 root 身份執行腳本。
+4. **Windows 權限**：若出現「存取被拒」，請對 `.bat` 檔案按右鍵 → **以系統管理員身分執行**。
+5. **不要以 sudo 執行**：本套件不會自動使用 `sudo`，也不建議以 root 身分執行腳本。
 
 ---
 
@@ -405,5 +458,5 @@ Windows 執行 `restore-win.bat`、macOS 執行 `restore-macos.command`，或使
 - 本專案為非官方社群工具，與 Antigravity 官方無關。
 - 本專案**不包含、不散布** Antigravity 官方 `app.asar` 或任何官方二進位檔案。
 - 使用者應自行承擔修改本機應用程式資源的風險。
-- 所有注入操作均在使用者本機端執行，並提供完整還原機制。
+- 所有注入操作均在使用者的電腦執行，並提供完整還原機制。
 - 本專案依據 Apache License 2.0 以「現狀」（AS IS）提供，不附帶任何明示或暗示的保證。
