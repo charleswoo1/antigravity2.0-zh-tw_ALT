@@ -1,6 +1,6 @@
 # Third-Party Licenses
 
-This project is licensed under the Apache License 2.0. This file lists third-party npm packages used by this project and preserves their license notices.
+Starting with v2.0.0-beta, this project is licensed under Apache License 2.0 with Commons Clause. v1.0.x releases remain licensed under Apache License 2.0 as published. This file lists third-party npm packages used by this project and preserves their license notices.
 
 The dependency information below is based on `package-lock.json`.
 
