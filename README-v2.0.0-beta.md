@@ -1,30 +1,64 @@
 # Antigravity 2.0 繁體中文套件 — v2.0.0 Beta
 
-> 此版本目前為 Beta。  
+> 此版本目前為 Beta。
 > [返回 v1.0.6 穩定版說明](README.md)
 
 ## v2.0.0 Beta
 
-v2.0.0 Beta 主要改善安裝與還原流程，讓使用者不需要手動安裝 npm dependency 或執行 `.bat` / `.command` 腳本。
+v2.0.0 Beta 主要改善安裝流程，讓一般使用者可以透過 Windows / macOS 安裝檔快速套用繁體中文介面。
 
-翻譯核心、備份與還原機制維持原有設計；新版主要目標是降低安裝門檻，同時維持既有安全性。
+請先留意兩件事：
 
-> ⚠️ 重要：v2.0.0 Beta 的一鍵安裝是「免手動 `npm install`」，不是「免 Node.js」。  
-> 使用者電腦仍需先安裝 Node.js LTS；Install 需要同一 Node.js 環境中的 npm 可正常使用。  
-> Installer 不會內建 Node.js，也不會自動替使用者安裝 Node.js。
+- 電腦仍需先安裝 Node.js LTS。
+- 若電腦已具備 Node.js / npm，即可使用安裝檔進行一鍵安裝，不需要手動執行 `npm install`。
+
+> ⚠️ v2.0.0 Beta 的一鍵安裝是「免手動 `npm install`」，不是「免安裝 Node.js」。
+> 安裝器不會內建 Node.js，也不會自動替使用者安裝 Node.js。
+
+## v2.0.0 Beta 工具畫面
+
+v2.0.0 Beta 新增 Windows / macOS 圖形化安裝與還原工具。使用者只要先安裝 Node.js LTS，即可透過安裝檔完成套用，不需要手動執行 `npm install`。
+
+### Windows
+
+| 安裝工具 | 還原工具 |
+|----------|----------|
+| ![Windows 安裝工具畫面](images/win-install.jpg) | ![Windows 還原工具畫面](images/win-restore.jpg) |
+
+### macOS
+
+| 安裝工具 | 還原工具 |
+|----------|----------|
+| ![macOS 安裝工具畫面](images/mac-install.jpg) | ![macOS 還原工具畫面](images/mac-restore.jpg) |
 
 ## 快速開始
 
-請先確認：
+### 1. 安裝前確認
+
+請先確認電腦已有：
 
 - 已安裝 Antigravity 2.0
-- 已安裝 Node.js LTS
-- Node.js 安裝時包含的 npm 可正常使用
-- 執行安裝前已完全退出 Antigravity
+- 已安裝 [Node.js LTS](https://nodejs.org/)
+- Node.js 內建的 npm 可正常使用
 
-使用者不需要手動執行 `npm install`；Install 工具會在需要時自動透過 npm 下載必要 dependency。
+如果不確定是否已安裝 Node.js，可開啟終端機或命令提示字元，輸入：
 
-### Windows
+```bash
+node -v
+npm -v
+```
+
+兩個指令都有出現版本號，即可繼續安裝。
+
+### 2. 完全退出 Antigravity
+
+安裝前請先完全關閉 Antigravity，避免檔案正在使用中。
+
+### 3. 執行安裝檔
+
+依照你的系統執行對應安裝檔：
+
+#### Windows
 
 安裝：
 
@@ -32,13 +66,7 @@ v2.0.0 Beta 主要改善安裝與還原流程，讓使用者不需要手動安�
 Antigravity-ZH-Hant-TW-v2.0.0-beta-Windows-Install.exe
 ```
 
-還原：
-
-```
-Antigravity-ZH-Hant-TW-v2.0.0-beta-Windows-Restore.exe
-```
-
-### macOS
+#### macOS
 
 安裝：
 
@@ -46,82 +74,44 @@ Antigravity-ZH-Hant-TW-v2.0.0-beta-Windows-Restore.exe
 Antigravity-ZH-Hant-TW-v2.0.0-beta-macOS-Install.pkg
 ```
 
-還原：
+安裝完成後，重新開啟 Antigravity，即可看到繁體中文介面。
 
-```
-Antigravity-ZH-Hant-TW-v2.0.0-beta-macOS-Restore.pkg
-```
+> 若安裝器提示找不到 Node.js 或 npm，請先安裝 Node.js LTS 後再重新執行安裝檔。
 
-## 安裝流程
+## 還原官方原版
 
-v2.0.0 Beta 的 installer 會處理原本需要使用者自行完成的安裝步驟。
+如需恢復官方英文原版，請完全退出 Antigravity，然後執行對應的還原檔：
 
-Install 流程會：
+### Windows
 
-1. 檢查必要環境。
-2. 檢查 Node.js 與 npm。
-3. 需要時透過使用者本機的 npm 從 npm registry 下載 `@electron/asar`。
-4. 確認前置條件完成後才進入繁體中文安裝流程。
-5. 完成後清除 installer 使用的暫存檔案。
-
-若找不到 Node.js、npm 無法使用、網路或 dependency 安裝失敗，流程會中止，不應繼續修改 Antigravity。
-
-## Restore
-
-Restore 使用安裝時保留的備份還原 Antigravity。
-
-Restore：
-
-- 仍需要可用的 Node.js
-- 不需要重新下載 `@electron/asar`
-- 不需要 `node_modules`
-- 不會重新執行繁體中文安裝流程
-
-Windows 使用：
-
-```
+```text
 Antigravity-ZH-Hant-TW-v2.0.0-beta-Windows-Restore.exe
 ```
 
-macOS 使用：
+### macOS
 
 ```
 Antigravity-ZH-Hant-TW-v2.0.0-beta-macOS-Restore.pkg
 ```
 
-## Release 安全原則
+還原會使用安裝時建立的備份，將 Antigravity 回復為官方原版。
 
-v2.0.0 Beta 的 Release 不包含：
+## 安全性特色
 
-```
-Node.js
-node_modules/
-app.asar
-app.asar.bak
-```
+v2.0.0 Beta 保留原有安全性設計：
 
-其中：
+- 不內建 Node.js，使用者需自行從官方網站安裝。
+- 安裝檔只是將安裝流程自動化，所需套件仍會從官方來源下載，因此安裝時需要網路連線。
+- 不散布 Antigravity 官方 `app.asar` 或任何官方檔案。
+- 安裝與還原都在使用者電腦本機執行。
+- 安裝時會保留備份，方便日後還原官方原版。
+- 延續既有翻譯核心與安全檢查，只改善安裝體驗。
 
-- Node.js 不會綁定在 installer 內
-- `@electron/asar` 不會預先包入 Release
-- Install 需要時才透過使用者本機的 npm 取得 `@electron/asar`
-- 不重新散布 Antigravity 官方 `app.asar`
-- Restore 使用既有備份機制
-- installer 不取代既有翻譯核心與安全檢查
-
-v2.0.0 的主要改變是改善使用者安裝體驗，不是放寬原有安全限制。
+v2.0.0 的主要改變是讓安裝更簡單，不是放寬安全限制。
 
 ## Beta 狀態
 
-目前：
-
-```
-macOS installer build verified
-Windows installer build verified
-Beta runtime validation ongoing
-```
-
-v2.0.0 Beta 仍處於實機驗證階段。
+v2.0.0 Beta 仍處於實機驗證階段，目前已完成 Windows / macOS 安裝檔建置驗證。
 
 若希望使用目前穩定版，請使用：
 
