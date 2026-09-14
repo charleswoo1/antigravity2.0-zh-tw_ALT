@@ -109,6 +109,12 @@ v2.0.0 Beta 保留原有安全性設計：
 
 v2.0.0 的主要改變是讓安裝更簡單，不是放寬安全限制。
 
+## 授權
+
+自 v2.0.0-beta 起，本專案採用 [Apache License 2.0 with Commons Clause](LICENSE) 授權，屬於 source-available／原始碼公開授權，並非 OSI 定義的 open source 授權。
+
+你可以一般使用、研究、修改與分享本專案原始碼；但不得販售本軟體本身，或將本軟體主要功能包裝成付費商品或服務。
+
 ## Beta 狀態
 
 v2.0.0 Beta 仍處於實機驗證階段，目前已完成 Windows / macOS 安裝檔建置驗證。
