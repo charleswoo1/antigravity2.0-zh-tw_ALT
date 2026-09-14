@@ -1,0 +1,15 @@
+{
+  "name": "antigravity2-zh-hant-tw",
+  "version": "2.0.0-beta",
+  "private": true,
+  "description": "Antigravity 2.0 繁體中文套件",
+  "scripts": {
+    "check": "node --check localization_engine.js",
+    "version": "node localization_engine.js --version",
+    "install:localization": "node localization_engine.js",
+    "restore": "node localization_engine.js --restore"
+  },
+  "dependencies": {
+    "@electron/asar": "^3.3.1"
+  }
+}
