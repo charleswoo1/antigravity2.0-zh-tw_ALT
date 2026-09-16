@@ -76,9 +76,10 @@ async function main() {
     }
 
     const agentRules = fs.readFileSync(path.join(__dirname, '..', 'AGENTS.md'), 'utf-8');
-    assert.ok(agentRules.includes('不使用 GitHub Actions'));
-    assert.ok(agentRules.includes('不得建立 `.github/workflows/`'));
-    assert.ok(!fs.existsSync(path.join(__dirname, '..', '.github', 'workflows')), '專案不得包含 GitHub Actions workflows');
+    assert.ok(agentRules.includes('GitHub Actions 受控 CI 政策'));
+    assert.ok(agentRules.includes('permissions: contents: read'));
+    assert.ok(agentRules.includes('不得自動 merge Pull Request'));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', '.github', 'workflows', 'ci.yml')), '專案應包含受控 GitHub Actions CI workflow');
 
     console.log('Smoke tests passed.');
 }
