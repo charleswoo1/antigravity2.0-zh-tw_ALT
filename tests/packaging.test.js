@@ -9,10 +9,10 @@ const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'build', 'runtim
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 const engine = require('../localization_engine');
 
-assert.strictEqual(packageJson.version, '1.0.0');
+assert.strictEqual(packageJson.version, '1.1.0');
 assert.strictEqual(engine.EDITION, 'ALT');
-assert.strictEqual(engine.ENGINE_VERSION, '1.0.0');
-assert.strictEqual(engine.SUPPORTED_ANTIGRAVITY_VERSION, '2.13.0');
+assert.strictEqual(engine.ENGINE_VERSION, '1.1.0');
+assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0']);
 assert.strictEqual(manifest.runtime.version, '24.21.0');
 
 for (const key of ['windows-x64', 'windows-arm64', 'macos-x64', 'macos-arm64']) {
@@ -50,6 +50,11 @@ assert.ok(ciWorkflow.includes('./build/macos/build.sh'), 'CI 必須建置 macOS 
 
 const windowsBuild = fs.readFileSync(path.join(repoRoot, 'build', 'windows', 'build.ps1'), 'utf-8');
 assert.ok(!/GitHub Actions.*(?:forbidden|禁止)|禁止 GitHub Actions/i.test(windowsBuild), 'Windows build script 不得拒絕 GitHub Actions');
+const windowsInstaller = fs.readFileSync(path.join(repoRoot, 'build', 'windows', 'installer.iss'), 'utf-8');
+assert.ok(windowsInstaller.includes('LoadStringsFromFile'), 'installer 必須使用支援 UTF-8 的 summary loader');
+assert.ok(!windowsInstaller.includes('LoadStringFromFile('), 'installer 不得以 AnsiString API 讀取 UTF-8 中文 summary');
+assert.ok(windowsInstaller.includes('TestModeActive and'), 'process-safety bypass 必須綁定已驗證的 test mode');
+assert.ok(windowsInstaller.includes('SaveStringsToUTF8File'), 'Windows E2E 必須能驗證 installer 解碼後的繁中 summary');
 
 const macBuild = fs.readFileSync(path.join(repoRoot, 'build', 'macos', 'build.sh'), 'utf-8');
 assert.ok(!/GitHub Actions.*(?:forbidden|禁止)|禁止 GitHub Actions/i.test(macBuild), 'macOS build script 不得拒絕 GitHub Actions');

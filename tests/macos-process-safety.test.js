@@ -31,7 +31,7 @@ async function createAsarFixture(root, name, localized) {
     fs.mkdirSync(wizardDir, { recursive: true });
     fs.writeFileSync(path.join(sourceDir, 'package.json'), JSON.stringify({
         name: 'antigravity',
-        version: engine.SUPPORTED_ANTIGRAVITY_VERSION
+        version: '2.13.0'
     }), 'utf-8');
 
     let preload = 'console.log("fixture");\n';

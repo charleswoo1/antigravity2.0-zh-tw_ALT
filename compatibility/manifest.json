@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "defaultCandidateProfile": "v2-mainline",
+  "profiles": {
+    "v2-mainline": "profiles/v2-mainline.json"
+  },
+  "versions": {
+    "2.13.0": {
+      "status": "verified",
+      "profile": "v2-mainline"
+    },
+    "2.14.0": {
+      "status": "verified",
+      "profile": "v2-mainline",
+      "fingerprint": "fingerprints/2.14.0.json"
+    }
+  }
+}

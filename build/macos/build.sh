@@ -11,7 +11,7 @@ esac
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 PAYLOAD_DIR="$REPO_ROOT/.build/macos-$ARCH/payload"
-APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.0.0-macOS-$ARCH.app"
+APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.1.0-macOS-$ARCH.app"
 APP_DIR="$REPO_ROOT/.build/macos-$ARCH/$APP_NAME"
 DIST_DIR="$REPO_ROOT/dist"
 

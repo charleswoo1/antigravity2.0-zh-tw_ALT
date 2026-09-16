@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — Antigravity Version Compatibility Audit Framework + Installer Diagnostics
 
-**Status:** `READY_FOR_CODEX`  
+**Status:** `READY_FOR_REVIEW`  
 **Issue:** #10 — Add version compatibility audit framework and fix Windows installer diagnostics  
 **Target:** `main`  
 **Functional baseline commit:** `fffaccc59e8c8a3674e440033356e4c450fc2127`  
@@ -487,21 +487,24 @@ Document that an upstream update normally overwrites localization and that users
 
 ## 13. Execution Result
 
-- Status: `PENDING_CODEX`
-- Implementation branch:
-- Detected local Antigravity version:
-- Pre-audit state:
-- Compatibility audit result:
-- Changed/missing anchors:
-- UI-string/dictionary changes:
-- Real apply verification:
-- Real restore verification:
-- Final real-install state:
-- Windows installer diagnostic result:
-- Synthetic log isolation result:
-- ALT version prepared:
-- Tests:
-- CI:
-- PR:
-- Remaining blockers:
-- Notes:
+- Status: `READY_FOR_REVIEW`
+- Implementation branch: `feature/version-compatibility-audit`
+- Detected local Antigravity version: `2.14.0`, read directly from the real local `resources/app.asar` `package.json`; no conversational version assumption was used.
+- Pre-audit state: official/unlocalized archive, 4,560,152 bytes, SHA-256 `adda0c05f6b297f81c03e29bc029d9c897a408f9a8a925a79385b3949b0fec4e`; `app.asar.bak` and all transactional temporary/shadow paths absent. Antigravity was initially running and was not mutated until all five processes had exited.
+- Compatibility audit result: `PASS`, `noMutation: true`, profile `v2-mainline`. The read-only audit created no backup and did not replace the archive. Safe metadata is recorded at `compatibility/fingerprints/2.14.0.json`.
+- Changed/missing anchors: none. Main preload, wizard preload, application menu, tray agent-count, loading overlay and official `chrome-devtools-mcp` unpacked path were present and passed. A Windows deep-member path normalization defect discovered during evidence review was fixed so the wizard member is included correctly.
+- UI-string/dictionary changes: none required. The relevant menu, tray, loading and preload assumptions remained compatible and the real localized archive passed signature/repack inspection.
+- Real apply verification: `PASS`; controlled candidate apply produced Antigravity `2.14.0` with the main and IDE wizard localization signatures present. Official unpacked structure remained unchanged (293 files; aggregate evidence SHA-256 `489a950428406ef0fce5b06219aa35ba2918fffdfbf1ec0b8f28eefea23dcadd`).
+- Real restore verification: `PASS`; restore returned the exact pre-test archive hash, official/unlocalized status and upstream version, then removed `app.asar.bak`.
+- Final real-install state: Antigravity `2.14.0`, official/unlocalized, SHA-256 `adda0c05f6b297f81c03e29bc029d9c897a408f9a8a925a79385b3949b0fec4e`; no backup or transactional artifact; Antigravity left stopped after verification.
+- Windows installer diagnostic result: `PASS`; `PrepareToInstall` runs the authoritative read-only auditor before mutation, reports distinct `MISSING_INSTALLATION` / `UNSUPPORTED_VERSION` summaries, and silent failures return non-zero. Mutation uses validated temporary archives, atomic replacement, post-replacement validation and exact-hash rollback. Fault injection covers failure after original move, after replacement and after post-replacement verification.
+- Synthetic log isolation result: `PASS`; E2E log override is restricted to a system-temp path containing `antigravity-alt-installer-`; missing and unsupported fixtures wrote only there, and persistent `%LOCALAPPDATA%\Antigravity-ZH-Hant-TW-ALT` logs were byte-for-byte unchanged.
+- ALT version prepared: `1.1.0`; package, engine, Windows/macOS artifacts, payload, docs and CI expectations updated. No GitHub Release was created.
+- Tests: `npm ci --ignore-scripts --no-fund`, `npm run check`, `npm run check:packaging`, Windows x64 build, and `npm run check:windows-installer` passed locally.
+- CI: GitHub Actions run `35103132529` completed with overall `success`; Core/Ubuntu, Windows x64 installer E2E, macOS x64 and every macOS arm64 build/validation/upload step succeeded. (GitHub's arm64 check-run UI remained briefly pending after the overall run had finalized successfully.)
+- PR #11 review follow-up: all three latest ChatGPT review findings were resolved. Missing known optional patch-target members now deterministically produce `REVIEW_REQUIRED`; installer summaries are loaded as Unicode with `LoadStringsFromFile` and verified by a Traditional Chinese UTF-8 round-trip E2E assertion; `/SkipProcessClose=1` is rejected unless `TestLogDir` first activates the validated isolated test mode.
+- Review regression coverage: added missing-patch-target status/exit assertions, localized repeat-install preflight coverage using a readable same-version official backup, installer-source Unicode/gate assertions, a production-mode bypass rejection with an unchanged installation-tree assertion, and installer-decoded Traditional Chinese summary checks. During E2E, repeat-install preflight exposed that localized strings no longer match official anchors; the auditor now detects the localization signature and validates structure/anchors against the same-version official backup, blocking missing, invalid, or version-mismatched backups.
+- Review follow-up validation: `npm run check`, `npm run check:packaging`, Windows x64 build, and `npm run check:windows-installer` passed locally. GitHub Actions run `35106865903` completed successfully for Core/Ubuntu, Windows x64 installer E2E, macOS x64 and macOS arm64.
+- PR: #11 — `https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/11`, open to `main`; not merged.
+- Remaining blockers: none for implementation; human review/merge and any future Release remain manual.
+- Notes: root-cause investigation found that the displayed failure log was the synthetic E2E missing-path fixture (`...\antigravity-alt-installer-...\missing`), not a real install attempt. The real installation contained only the expected official archive/unpacked directory, no ALT backup/shadow/temp artifact, and subsequently launched Antigravity 2.14.0 with its language server successfully. Windows Application events contained no corresponding Antigravity crash. Therefore the actionable root cause of the misleading dialog was persistent-log contamination by the synthetic negative test; available evidence does not establish a separate archive-corruption cause for the transient launch symptom. Preflight isolation and transactional rollback now prevent both failure modes from being conflated or leaving an invalid archive.
