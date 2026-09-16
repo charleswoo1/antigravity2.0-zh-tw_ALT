@@ -1,7 +1,7 @@
-# Antigravity 2.0 繁體中文套件 — v2.0.0 Beta
+# Legacy：Antigravity 2.0 繁體中文套件 — v2.0.0 Beta
 
-> 此版本目前為 Beta。
-> [返回 v1.0.6 穩定版說明](README.md)
+> 本文件只保留作為歷史參考，不是目前 ALT 1.0.0 的安裝說明。
+> [返回 ALT 1.0.0 主文件](README.md)
 
 ## v2.0.0 Beta
 
