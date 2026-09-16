@@ -37,7 +37,7 @@ cp -R "$PAYLOAD_DIR" "$APP_DIR/Contents/Resources/payload"
 
 # Sign nested Mach-O runtime before signing the outer app bundle.
 codesign --force --sign - --timestamp=none "$APP_DIR/Contents/Resources/payload/runtime/node"
-codesign --force --deep --sign - --timestamp=none "$APP_DIR"
+codesign --force --sign - --timestamp=none "$APP_DIR"
 codesign --verify --deep --strict "$APP_DIR"
 
 mkdir -p "$DIST_DIR"

@@ -684,16 +684,43 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function getMacProcessClosePlan() {
+    return {
+        graceful: {
+            command: 'osascript',
+            args: [
+                '-e', 'tell application "System Events" to set antigravityRunning to exists process "Antigravity"',
+                '-e', 'if antigravityRunning then tell application "Antigravity" to quit'
+            ]
+        },
+        force: {
+            command: 'pkill',
+            args: ['-x', 'Antigravity']
+        }
+    };
+}
+
 function closeAntigravityProcesses() {
     console.log('[1] 正在關閉 Antigravity，以避免檔案被占用...');
 
-    try {
-        if (process.platform === 'win32') {
+    if (process.platform === 'win32') {
+        try {
             child_process.execSync('taskkill /f /im Antigravity.exe /t >nul 2>nul');
-        } else {
-            child_process.execSync('pkill -f Antigravity > /dev/null 2>&1');
-        }
-    } catch (e) {}
+        } catch (e) {}
+    } else if (process.platform === 'darwin') {
+        const plan = getMacProcessClosePlan();
+        child_process.spawnSync(plan.graceful.command, plan.graceful.args, {
+            stdio: 'ignore',
+            timeout: 5000
+        });
+
+        const gracefulWaitStart = Date.now();
+        while (Date.now() - gracefulWaitStart < 1500) {}
+
+        child_process.spawnSync(plan.force.command, plan.force.args, { stdio: 'ignore' });
+    } else {
+        child_process.spawnSync('pkill', ['-x', 'Antigravity'], { stdio: 'ignore' });
+    }
 
     const start = Date.now();
     while (Date.now() - start < 1500) {}
@@ -1135,6 +1162,7 @@ module.exports = {
     EDITION,
     ENGINE_VERSION,
     SUPPORTED_ANTIGRAVITY_VERSION,
+    getMacProcessClosePlan,
     cleanJsContent,
     generateJs,
     injectTranslationFile,

@@ -37,4 +37,9 @@ for (const requiredFile of [
 
 assert.ok(!fs.existsSync(path.join(repoRoot, '.github', 'workflows')), '禁止 GitHub Actions workflows');
 
+const macBuild = fs.readFileSync(path.join(repoRoot, 'build', 'macos', 'build.sh'), 'utf-8');
+assert.ok(macBuild.includes('codesign --force --sign - --timestamp=none "$APP_DIR"'));
+assert.ok(!macBuild.includes('codesign --force --deep --sign'), 'macOS 簽署不得使用 --deep');
+assert.ok(macBuild.includes('codesign --verify --deep --strict'), '驗證階段應保留 --deep');
+
 console.log('Packaging source tests passed.');

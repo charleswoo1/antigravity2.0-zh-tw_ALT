@@ -4,7 +4,8 @@
 
 - ALT 產品版本：**1.0.0**
 - 支援的 Antigravity 版本：**2.13.0**
-- 支援平台：Windows x64；macOS x64／Apple Silicon
+- 已驗證平台：Windows x64
+- 實驗性／待實機驗證平台：macOS x64／Apple Silicon
 - 使用者不需要安裝 Node.js、npm、套件管理器或建置工具
 - 下載完成後可離線安裝與還原
 
@@ -25,6 +26,8 @@
 安裝器使用內建、已固定版本的 Node.js runtime，不會呼叫系統 Node，也不會在使用者電腦上執行 `npm install`。最後一次執行記錄位於 `%LOCALAPPDATA%\Antigravity-ZH-Hant-TW-ALT\`。
 
 ### macOS
+
+> **目前狀態：實驗性，`PENDING_MANUAL_PLATFORM_VALIDATION`。** macOS 的 payload 與 checksum 已完成跨平台檢查，但尚未在相符架構的 macOS 主機完成實際 `.app` 建置、下載後 quarantine、Gatekeeper「仍要打開」、Antigravity 2.13.0 安裝及還原驗證。完成這些測試前，不應視為正式支援。
 
 依電腦架構下載其中一個檔案：
 

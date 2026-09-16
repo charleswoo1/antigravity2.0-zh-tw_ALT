@@ -12,6 +12,14 @@ async function main() {
     assert.strictEqual(engine.ENGINE_VERSION, '1.0.0');
     assert.strictEqual(engine.SUPPORTED_ANTIGRAVITY_VERSION, '2.13.0');
 
+    const macClosePlan = engine.getMacProcessClosePlan();
+    assert.strictEqual(macClosePlan.graceful.command, 'osascript');
+    assert.ok(macClosePlan.graceful.args.some(arg => arg.includes('process "Antigravity"')));
+    assert.deepStrictEqual(macClosePlan.force, { command: 'pkill', args: ['-x', 'Antigravity'] });
+    assert.ok(!JSON.stringify(macClosePlan).includes('pkill -f'), 'macOS 不得使用廣泛的 pkill -f');
+    const engineSource = fs.readFileSync(path.join(__dirname, '..', 'localization_engine.js'), 'utf-8');
+    assert.ok(!/pkill\s+-f/.test(engineSource), '引擎原始碼不得包含廣泛的 pkill -f');
+
     const dictDir = path.join(__dirname, '..', 'dicts');
     const dictionary = {};
     for (const file of fs.readdirSync(dictDir).filter(name => name.endsWith('.json'))) {
