@@ -2,8 +2,8 @@
 
 **Antigravity 2.0 Traditional Chinese ALT**（ALT = Alternative）是一套在使用者本機將 Antigravity 2.0 介面套用為繁體中文（台灣）的工具。
 
-- ALT 產品版本：**1.0.0**
-- 支援的 Antigravity 版本：**2.13.0**
+- ALT 產品版本：**1.1.0**
+- 支援的 Antigravity 版本：**2.13.0、2.14.0**
 - 已驗證平台：Windows x64
 - 實驗性／待實機驗證平台：macOS x64／Apple Silicon
 - 使用者不需要安裝 Node.js、npm、套件管理器或建置工具
@@ -17,36 +17,36 @@
 
 ### Windows
 
-1. 先安裝並更新官方 Antigravity 至 **2.13.0**。
-2. 從 Releases 下載 `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows.exe`。
+1. 先安裝並更新官方 Antigravity 至明確支援的 **2.13.0 或 2.14.0**。
+2. 從 Releases 下載 `Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows.exe`。
 3. 完全關閉 Antigravity。
 4. 執行下載的安裝程式。
 5. 完成後重新開啟 Antigravity。
 
-需要恢復官方英文原版時，執行 `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows-Restore.exe`。
+需要恢復官方英文原版時，執行 `Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows-Restore.exe`。
 
 安裝器使用內建、已固定版本的 Node.js runtime，不會呼叫系統 Node，也不會在使用者電腦上執行 `npm install`。最後一次執行記錄位於 `%LOCALAPPDATA%\Antigravity-ZH-Hant-TW-ALT\`。
 
 ### macOS
 
-> **目前狀態：實驗性，`PENDING_MANUAL_PLATFORM_VALIDATION`。** macOS 的 payload 與 checksum 已完成跨平台檢查，但尚未在相符架構的 macOS 主機完成實際 `.app` 建置、下載後 quarantine、Gatekeeper「仍要打開」、Antigravity 2.13.0 安裝及還原驗證。完成這些測試前，不應視為正式支援。
+> **目前狀態：實驗性，`PENDING_MANUAL_PLATFORM_VALIDATION`。** macOS 的 payload 與 checksum 已完成跨平台檢查，但尚未在相符架構的 macOS 主機完成實際 `.app` 建置、下載後 quarantine、Gatekeeper「仍要打開」及 Antigravity 安裝／還原驗證。完成這些測試前，不應視為正式支援。
 
 ALT 不會自動關閉 Antigravity；若偵測到 Antigravity 仍在執行，會安全中止。請先完全關閉 Antigravity 後再重新執行。
 
 依電腦架構下載其中一個檔案：
 
-- Apple Silicon：`Antigravity-ZH-Hant-TW-ALT-1.0.0-macOS-arm64.app.zip`
-- Intel：`Antigravity-ZH-Hant-TW-ALT-1.0.0-macOS-x64.app.zip`
+- Apple Silicon：`Antigravity-ZH-Hant-TW-ALT-1.1.0-macOS-arm64.app.zip`
+- Intel：`Antigravity-ZH-Hant-TW-ALT-1.1.0-macOS-x64.app.zip`
 
 使用方式：
 
-1. 先安裝並更新官方 Antigravity 至 **2.13.0**。
+1. 先安裝並更新官方 Antigravity 至明確支援的 **2.13.0 或 2.14.0**。
 2. 解壓縮下載的 ZIP。
 3. 完全關閉 Antigravity。
 4. 開啟 ALT app，選擇「套用繁體中文」或「還原官方英文」。
 5. 完成後重新開啟 Antigravity。
 
-ALT 1.0.0 的私人 macOS build 使用 ad-hoc signing，未使用付費 Developer ID 或 Apple notarization。第一次開啟若被 Gatekeeper 阻擋：
+ALT 1.1.0 的私人 macOS build 使用 ad-hoc signing，未使用付費 Developer ID 或 Apple notarization。第一次開啟若被 Gatekeeper 阻擋：
 
 1. 先嘗試開啟 app。
 2. 前往「系統設定」→「隱私權與安全性」。
@@ -59,11 +59,11 @@ ALT 1.0.0 的私人 macOS build 使用 ad-hoc signing，未使用付費 Develope
 - 首次套用時會建立同版本的官方 `app.asar.bak`。
 - 備份版本與目前 Antigravity 不一致時，工具會拒絕不安全的還原。
 - 官方更新通常會覆蓋中文化內容；確認新版本已受支援後，再重新執行 ALT。
-- ALT 1.0.0 僅驗證 Antigravity 2.13.0，其他版本會明確停止。
+- ALT 1.1.0 明確驗證 Antigravity 2.13.0 與 2.14.0；其他版本會在唯讀 preflight 階段停止，不會寫入 Antigravity 安裝目錄。
 
 ## 翻譯與保護範圍
 
-ALT 會處理主介面、設定、選單、Tray、啟動畫面、Documents、Scratch Files、側邊提問、Git amend，以及 IDE 安裝精靈等 2.13.0 介面。
+ALT 會處理主介面、設定、選單、Tray、啟動畫面、Documents、Scratch Files、側邊提問、Git amend，以及 IDE 安裝精靈等 2.13.0／2.14.0 介面。
 
 為避免影響工作內容，翻譯引擎會略過程式碼、Monaco 編輯器、終端機、輸入欄位、文字區域、Canvas、SVG 與可編輯內容。
 

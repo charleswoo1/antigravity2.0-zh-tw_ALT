@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "upstreamVersion": "2.14.0",
+  "profile": "v2-mainline",
+  "auditStatus": "PASS",
+  "archive": {
+    "size": 4560152,
+    "sha256": "adda0c05f6b297f81c03e29bc029d9c897a408f9a8a925a79385b3949b0fec4e"
+  },
+  "localized": false,
+  "members": {
+    "package.json": {
+      "exists": true,
+      "required": true,
+      "size": 569,
+      "sha256": "e3f106775c6bc11763eba0f7de57f34d0e9f5eafe170a65860d27fc7f27159db",
+      "anchors": []
+    },
+    "dist/preload.js": {
+      "exists": true,
+      "required": true,
+      "size": 4925,
+      "sha256": "f42381a56cc73aee978a1ea966e8b597959af80c98aba32d296740616810cce9",
+      "anchors": []
+    },
+    "dist/menu.js": {
+      "exists": true,
+      "required": false,
+      "size": 2517,
+      "sha256": "6df72cd3b74cb9f60cb50ef1defe1b403c8d2e2375b38228a012c5ac53feebc8",
+      "anchors": [
+        { "id": "menu-set-application-menu", "count": 1, "expectedCount": 1, "matched": true },
+        { "id": "menu-new-window-label", "count": 1, "expectedCount": 1, "matched": true },
+        { "id": "menu-docs-label", "count": 1, "expectedCount": 1, "matched": true }
+      ]
+    },
+    "dist/tray.js": {
+      "exists": true,
+      "required": false,
+      "size": 3166,
+      "sha256": "8e816e2c2f4d1ffa07fbd5b5622efefb6ff211b9e6ac84be7d4f3d8c1b6df974",
+      "anchors": [
+        { "id": "tray-create-function", "count": 1, "expectedCount": 1, "matched": true },
+        { "id": "tray-agent-count", "count": 1, "expectedCount": 1, "matched": true }
+      ]
+    },
+    "dist/loadingOverlay.js": {
+      "exists": true,
+      "required": false,
+      "size": 2904,
+      "sha256": "b37ee86fd132a2a5f311aa360e1e3008b6207d90bd7d7df4ef12c2aed16da62f",
+      "anchors": [
+        { "id": "loading-overlay-text", "count": 1, "expectedCount": 1, "matched": true }
+      ]
+    },
+    "dist/ideInstall/wizardPreload.js": {
+      "exists": true,
+      "required": false,
+      "size": 879,
+      "sha256": "4d222bac7a93aafd5cb8cd59dfb1de35bafc35e267ba7b8ef24f74db151068d5",
+      "anchors": []
+    }
+  },
+  "unpacked": [
+    { "path": "node_modules/chrome-devtools-mcp", "required": true, "exists": true }
+  ]
+}

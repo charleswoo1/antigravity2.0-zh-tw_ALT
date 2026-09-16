@@ -56,7 +56,7 @@ function main() {
     const lines = [
         '# Third-Party Licenses',
         '',
-        'This file is generated from the production dependency tree for Antigravity 2.0 Traditional Chinese ALT 1.0.0.',
+        'This file is generated from the production dependency tree for Antigravity 2.0 Traditional Chinese ALT 1.1.0.',
         'Every release payload also contains `runtime/NODE-LICENSE.txt`, copied verbatim from the pinned official Node.js runtime archive.',
         '',
         '## Dependency Summary',

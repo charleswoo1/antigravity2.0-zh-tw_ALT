@@ -33,8 +33,8 @@ async function main() {
         return;
     }
 
-    const installExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows.exe');
-    const restoreExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows-Restore.exe');
+    const installExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows.exe');
+    const restoreExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows-Restore.exe');
     assert.ok(fs.existsSync(installExe), `缺少安裝檔：${installExe}`);
     assert.ok(fs.existsSync(restoreExe), `缺少還原檔：${restoreExe}`);
 

@@ -30,9 +30,9 @@ async function createFixture(root, options = {}) {
 }
 
 async function main() {
-    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0']);
+    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0', '2.14.0']);
     assert.strictEqual(isVerifiedVersion('2.13.0'), true);
-    assert.strictEqual(isVerifiedVersion('2.14.0'), false, '未知版本不得因 semver 範圍自動通過');
+    assert.strictEqual(isVerifiedVersion('2.14.0'), true);
     assert.strictEqual(isVerifiedVersion('2.15.0'), false, '未列入 allowlist 的版本不得宣稱已支援');
 
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'antigravity-compat-test-'));
@@ -43,16 +43,15 @@ async function main() {
         assert.strictEqual(pass.status, 'PASS');
         assert.strictEqual(pass.exitCode, 0);
         assert.strictEqual(pass.upstreamVersion, '2.14.0');
-        assert.strictEqual(pass.verifiedSupported, false);
+        assert.strictEqual(pass.verifiedSupported, true);
         assert.strictEqual(pass.candidateStructurallyCompatible, true);
         assert.strictEqual(pass.noMutation, true);
         assert.strictEqual(pass.preAuditBackupExists, false);
         assert.deepStrictEqual(fs.readFileSync(passFixture.asarPath), before, '唯讀稽核不得改寫 app.asar');
         assert.ok(!fs.existsSync(`${passFixture.asarPath}.bak`), '唯讀稽核不得建立備份');
-        assert.match(formatHumanReport(pass), /結構相容候選/);
+        assert.match(formatHumanReport(pass), /已驗證支援：是/);
         const gated = auditInstallation({ installDir: passFixture.installDir, requireVerified: true });
-        assert.strictEqual(gated.status, 'BLOCKED');
-        assert.ok(gated.issues.some(issue => issue.id === 'unsupported-version'));
+        assert.strictEqual(gated.status, 'PASS');
         const ambiguousArtifact = path.join(path.dirname(passFixture.asarPath), 'app.asar.pre-localization');
         fs.writeFileSync(ambiguousArtifact, 'stale transaction');
         const ambiguous = auditInstallation({ installDir: passFixture.installDir });

@@ -1,4 +1,4 @@
-#define AppVersion "1.0.0"
+#define AppVersion "1.1.0"
 #ifndef SourceRoot
   #define SourceRoot "..\..\.build\windows-x64\payload"
 #endif
@@ -13,11 +13,11 @@
 #endif
 
 #if Mode == "Restore"
-  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows-Restore"
+  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows-Restore"
   #define DisplayName "Antigravity 2.0 繁體中文 ALT 版 — 還原"
   #define EngineArguments "--restore"
 #else
-  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows"
+  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows"
   #define DisplayName "Antigravity 2.0 繁體中文 ALT 版"
   #define EngineArguments ""
 #endif

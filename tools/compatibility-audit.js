@@ -127,6 +127,10 @@ function auditInstallation(options = {}) {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'antigravity-compat-audit-'));
     let report;
     try {
+        // @electron/asar caches archive headers globally. Explicitly invalidate the
+        // target so an updater or a controlled apply/restore at the same path can
+        // never produce stale member-existence results.
+        asar.uncache(location.asarPath);
         let packageBuffer;
         try {
             packageBuffer = asar.extractFile(location.asarPath, 'package.json');
@@ -180,7 +184,7 @@ function auditInstallation(options = {}) {
         for (const [memberPath, definition] of Object.entries(profile.members)) {
             let buffer;
             try {
-                buffer = asar.extractFile(location.asarPath, memberPath);
+                buffer = asar.extractFile(location.asarPath, path.join(...memberPath.split('/')));
             } catch (error) {
                 members[memberPath] = { exists: false, required: definition.required };
                 if (definition.required) issues.push({ severity: 'blocked', id: `missing:${memberPath}`, message: `缺少必要成員 ${memberPath}` });

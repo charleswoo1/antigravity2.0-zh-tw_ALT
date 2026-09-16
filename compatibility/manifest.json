@@ -8,6 +8,11 @@
     "2.13.0": {
       "status": "verified",
       "profile": "v2-mainline"
+    },
+    "2.14.0": {
+      "status": "verified",
+      "profile": "v2-mainline",
+      "fingerprint": "fingerprints/2.14.0.json"
     }
   }
 }

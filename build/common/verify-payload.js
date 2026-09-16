@@ -23,8 +23,8 @@ function main() {
 
     const manifest = JSON.parse(fs.readFileSync(path.join(payloadDir, 'payload-manifest.json'), 'utf-8'));
     assert.strictEqual(manifest.edition, 'ALT');
-    assert.strictEqual(manifest.productVersion, '1.0.0');
-    assert.deepStrictEqual(manifest.verifiedSupportedAntigravityVersions, ['2.13.0']);
+    assert.strictEqual(manifest.productVersion, '1.1.0');
+    assert.deepStrictEqual(manifest.verifiedSupportedAntigravityVersions, ['2.13.0', '2.14.0']);
     assert.ok(/^[a-f0-9]{64}$/.test(manifest.runtime.sha256));
 
     assert.ok(fs.existsSync(path.join(payloadDir, 'dicts', 'v2_13.json')), 'payload 缺少 v2_13.json');
@@ -53,8 +53,8 @@ function main() {
     const versionResult = spawnSync(runtime, [engine, '--version'], { encoding: 'utf-8' });
     assert.strictEqual(versionResult.status, 0, versionResult.stderr);
     assert.match(versionResult.stdout, /Edition: ALT/);
-    assert.match(versionResult.stdout, /Engine version: 1\.0\.0/);
-    assert.match(versionResult.stdout, /Verified supported Antigravity versions: 2\.13\.0/);
+    assert.match(versionResult.stdout, /Engine version: 1\.1\.0/);
+    assert.match(versionResult.stdout, /Verified supported Antigravity versions: 2\.13\.0, 2\.14\.0/);
 
     const missingInstallDir = path.join(payloadDir, '__missing_antigravity_install__');
     const failureResult = spawnSync(runtime, [engine, '--install-dir', missingInstallDir], { encoding: 'utf-8' });

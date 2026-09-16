@@ -9,10 +9,10 @@ const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'build', 'runtim
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 const engine = require('../localization_engine');
 
-assert.strictEqual(packageJson.version, '1.0.0');
+assert.strictEqual(packageJson.version, '1.1.0');
 assert.strictEqual(engine.EDITION, 'ALT');
-assert.strictEqual(engine.ENGINE_VERSION, '1.0.0');
-assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0']);
+assert.strictEqual(engine.ENGINE_VERSION, '1.1.0');
+assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0']);
 assert.strictEqual(manifest.runtime.version, '24.21.0');
 
 for (const key of ['windows-x64', 'windows-arm64', 'macos-x64', 'macos-arm64']) {
