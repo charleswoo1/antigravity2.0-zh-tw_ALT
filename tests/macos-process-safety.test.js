@@ -107,6 +107,45 @@ async function verifyGuardBeforeLocalizedArchiveCreation(root) {
     assert.ok(!fs.existsSync(path.join(resourcesDir, 'app.asar.localized.tmp')), '二次安全閘門失敗後不得建立暫存 ASAR');
 }
 
+async function verifyGuardAfterLocalizedArchiveCreation(root) {
+    const resourcesDir = path.join(root, 'install-process-started-after-pack');
+    fs.mkdirSync(resourcesDir, { recursive: true });
+    const asarPath = path.join(resourcesDir, 'app.asar');
+    const backupPath = path.join(resourcesDir, 'app.asar.bak');
+    fs.copyFileSync(path.join(root, 'official.asar'), asarPath);
+    const original = fs.readFileSync(asarPath);
+
+    const installed = engine.install20(resourcesDir, {
+        platform: 'darwin',
+        processRunner: runnerSequence([{ status: 1 }, { status: 1 }, { status: 0 }])
+    });
+    assert.strictEqual(installed, false, '打包後偵測到程序啟動時應安全中止');
+    assertUnchanged(asarPath, original);
+    assertUnchanged(backupPath, original);
+    assert.ok(!fs.existsSync(path.join(resourcesDir, 'app.asar.localized.tmp')), '後段安全閘門失敗後必須清除暫存 ASAR');
+    assert.ok(!fs.existsSync(path.join(resourcesDir, 'app.asar.localized.tmp.unpacked')), '後段安全閘門失敗後必須清除 unpacked 暫存目錄');
+}
+
+async function verifyGuardAfterRestoreCopy(root) {
+    const resourcesDir = path.join(root, 'restore-process-started-after-copy');
+    fs.mkdirSync(resourcesDir, { recursive: true });
+    const asarPath = path.join(resourcesDir, 'app.asar');
+    const backupPath = path.join(resourcesDir, 'app.asar.bak');
+    fs.copyFileSync(path.join(root, 'localized.asar'), asarPath);
+    fs.copyFileSync(path.join(root, 'official.asar'), backupPath);
+    const current = fs.readFileSync(asarPath);
+    const backup = fs.readFileSync(backupPath);
+
+    const restored = engine.restore20(resourcesDir, {
+        platform: 'darwin',
+        processRunner: runnerSequence([{ status: 1 }, { status: 0 }])
+    });
+    assert.strictEqual(restored, false, '還原暫存檔建立後偵測到程序時應安全中止');
+    assertUnchanged(asarPath, current);
+    assertUnchanged(backupPath, backup);
+    assert.ok(!fs.existsSync(path.join(resourcesDir, 'app.asar.restore.tmp')), '後段安全閘門失敗後必須清除還原暫存檔');
+}
+
 async function main() {
     assert.strictEqual(engine.interpretMacAntigravityProcessResult({ status: 0 }), 'running');
     assert.strictEqual(engine.interpretMacAntigravityProcessResult({ status: 1 }), 'not-running');
@@ -138,6 +177,7 @@ async function main() {
     assert.ok(!/\bkillall\b/.test(engineSource), '引擎不得使用 killall');
     assert.ok(!/osascript|tell application\s+["']Antigravity["']\s+to quit/i.test(engineSource), '引擎不得自動要求 macOS 關閉 Antigravity');
     assert.ok(engineSource.includes('taskkill /f /im Antigravity.exe'), 'Windows taskkill 行為必須保留');
+    assert.ok(!/npm\s+install/i.test(engineSource), '使用者可見的引擎訊息不得要求安裝 npm 套件');
 
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'antigravity-alt-macos-safety-'));
     try {
@@ -149,6 +189,8 @@ async function main() {
         await verifyRestoreGuard(tempRoot, 'running', { status: 0 });
         await verifyRestoreGuard(tempRoot, 'unknown', { error: new Error('spawn failed'), status: null });
         await verifyGuardBeforeLocalizedArchiveCreation(tempRoot);
+        await verifyGuardAfterLocalizedArchiveCreation(tempRoot);
+        await verifyGuardAfterRestoreCopy(tempRoot);
     } finally {
         fs.rmSync(tempRoot, { recursive: true, force: true });
     }

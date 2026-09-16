@@ -916,7 +916,7 @@ function install20(resourcesDir, options = {}) {
     console.log('[解包] 正在解包 app.asar...');
     const extractRes = runAsarCommand('extract', [asarPath, tempDir]);
     if (!extractRes.success || !fs.existsSync(tempDir)) {
-        console.error('[錯誤] 解包失敗，請確認已執行 npm install 並確認 Node.js 可正常使用。');
+        console.error('[錯誤] 內建解包工具執行失敗。請重新下載 ALT 安裝程式；若問題持續，請查看執行記錄。');
         console.error(`詳情：${extractRes.stderr}\n${extractRes.stdout}`);
         return false;
     }
@@ -1013,6 +1013,8 @@ function install20(resourcesDir, options = {}) {
     const newUnpackedPath = `${newAsarPath}.unpacked`;
     if (!ensureMacAntigravitySafeForMutation(options)) {
         fs.rmSync(tempDir, { recursive: true, force: true });
+        if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
+        if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
         return false;
     }
     console.log('[打包] 正在以官方 unpacked 結構重新打包 app.asar...');
@@ -1038,6 +1040,8 @@ function install20(resourcesDir, options = {}) {
 
     if (!ensureMacAntigravitySafeForMutation(options)) {
         fs.rmSync(tempDir, { recursive: true, force: true });
+        if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
+        if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
         return false;
     }
 
@@ -1091,7 +1095,10 @@ function restore20(resourcesDir, options = {}) {
             throw new Error('還原暫存檔驗證失敗');
         }
 
-        if (!ensureMacAntigravitySafeForMutation(options)) return false;
+        if (!ensureMacAntigravitySafeForMutation(options)) {
+            if (fs.existsSync(restoreTempPath)) fs.unlinkSync(restoreTempPath);
+            return false;
+        }
 
         if (fs.existsSync(asarPath)) {
             replaceArchiveSafely(restoreTempPath, asarPath);
