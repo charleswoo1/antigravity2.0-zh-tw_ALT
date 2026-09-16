@@ -5,7 +5,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "description": "Antigravity 2.0 繁體中文 ALT 版",
   "scripts": {
-    "check": "node --check localization_engine.js && node tests/smoke.test.js",
+    "check": "node --check localization_engine.js && node tests/smoke.test.js && node tests/macos-process-safety.test.js",
     "check:packaging": "node tests/packaging.test.js",
     "check:windows-installer": "node tests/windows-installer.test.js",
     "prepare:windows:x64": "node build/common/prepare-payload.js --platform windows --arch x64",

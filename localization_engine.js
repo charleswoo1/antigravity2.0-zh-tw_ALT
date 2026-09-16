@@ -684,46 +684,66 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function getMacProcessClosePlan() {
-    return {
-        graceful: {
-            command: 'osascript',
-            args: [
-                '-e', 'tell application "System Events" to set antigravityRunning to exists process "Antigravity"',
-                '-e', 'if antigravityRunning then tell application "Antigravity" to quit'
-            ]
-        },
-        force: {
-            command: 'pkill',
-            args: ['-x', 'Antigravity']
-        }
-    };
-}
-
-function closeAntigravityProcesses() {
+function closeWindowsAntigravityProcesses() {
     console.log('[1] 正在關閉 Antigravity，以避免檔案被占用...');
 
-    if (process.platform === 'win32') {
-        try {
-            child_process.execSync('taskkill /f /im Antigravity.exe /t >nul 2>nul');
-        } catch (e) {}
-    } else if (process.platform === 'darwin') {
-        const plan = getMacProcessClosePlan();
-        child_process.spawnSync(plan.graceful.command, plan.graceful.args, {
-            stdio: 'ignore',
-            timeout: 5000
-        });
-
-        const gracefulWaitStart = Date.now();
-        while (Date.now() - gracefulWaitStart < 1500) {}
-
-        child_process.spawnSync(plan.force.command, plan.force.args, { stdio: 'ignore' });
-    } else {
-        child_process.spawnSync('pkill', ['-x', 'Antigravity'], { stdio: 'ignore' });
-    }
+    try {
+        child_process.execSync('taskkill /f /im Antigravity.exe /t >nul 2>nul');
+    } catch (e) {}
 
     const start = Date.now();
     while (Date.now() - start < 1500) {}
+}
+
+function interpretMacAntigravityProcessResult(result) {
+    if (!result || result.error || result.signal) return 'unknown';
+    if (result.status === 0) return 'running';
+    if (result.status === 1) return 'not-running';
+    return 'unknown';
+}
+
+function getMacAntigravityProcessState(processRunner = child_process.spawnSync) {
+    try {
+        const result = processRunner('pgrep', ['-x', 'Antigravity'], {
+            encoding: 'utf-8',
+            stdio: 'pipe',
+            timeout: 5000
+        });
+        return interpretMacAntigravityProcessResult(result);
+    } catch (e) {
+        return 'unknown';
+    }
+}
+
+function ensureMacAntigravitySafeForMutation(options = {}) {
+    const platform = options.platform || process.platform;
+    if (platform !== 'darwin') return true;
+    const state = getMacAntigravityProcessState(options.processRunner);
+    if (state === 'running') {
+        console.error('[錯誤] 偵測到 Antigravity 仍在執行。請先完全關閉 Antigravity，再重新執行 ALT。');
+        return false;
+    }
+    if (state === 'unknown') {
+        console.error('[錯誤] 無法確認 Antigravity 是否仍在執行。為保護官方檔案，ALT 已安全中止；請確認 Antigravity 已完全關閉後再試。');
+        return false;
+    }
+
+    return true;
+}
+
+function ensureAntigravitySafeForMutation(options = {}) {
+    const platform = options.platform || process.platform;
+
+    // Compatibility bypass for internal Windows fixture tests only. The normal
+    // macOS path always performs the detection guard, even when this flag is set.
+    if (options.skipProcessClose && platform !== 'darwin') return true;
+
+    if (platform === 'win32') {
+        closeWindowsAntigravityProcesses();
+        return true;
+    }
+
+    return ensureMacAntigravitySafeForMutation(options);
 }
 
 function detectInstallationDir(manualDir) {
@@ -884,7 +904,7 @@ function install20(resourcesDir, options = {}) {
     }
     console.log(`[版本檢查] Antigravity ${installed.version} 已通過相容性檢查。`);
 
-    if (!options.skipProcessClose) closeAntigravityProcesses();
+    if (!ensureAntigravitySafeForMutation(options)) return false;
 
     if (!createOrRefreshBackup(asarPath, bakPath)) return false;
 
@@ -989,9 +1009,13 @@ function install20(resourcesDir, options = {}) {
         console.log('[修改] 啟動畫面文字調整完成。');
     }
 
-    console.log('[打包] 正在以官方 unpacked 結構重新打包 app.asar...');
     const newAsarPath = path.join(resourcesDir, 'app.asar.localized.tmp');
     const newUnpackedPath = `${newAsarPath}.unpacked`;
+    if (!ensureMacAntigravitySafeForMutation(options)) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        return false;
+    }
+    console.log('[打包] 正在以官方 unpacked 結構重新打包 app.asar...');
     if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
     if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
     const packRes = runAsarCommand('pack', ['--unpack-dir', OFFICIAL_UNPACK_DIR, tempDir, newAsarPath]);
@@ -1009,6 +1033,11 @@ function install20(resourcesDir, options = {}) {
         fs.rmSync(tempDir, { recursive: true, force: true });
         if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
         if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
+        return false;
+    }
+
+    if (!ensureMacAntigravitySafeForMutation(options)) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
         return false;
     }
 
@@ -1050,7 +1079,7 @@ function restore20(resourcesDir, options = {}) {
         }
     }
 
-    if (!options.skipProcessClose) closeAntigravityProcesses();
+    if (!ensureAntigravitySafeForMutation(options)) return false;
 
     console.log('[還原] 正在還原官方 app.asar...');
     const restoreTempPath = path.join(resourcesDir, 'app.asar.restore.tmp');
@@ -1062,11 +1091,14 @@ function restore20(resourcesDir, options = {}) {
             throw new Error('還原暫存檔驗證失敗');
         }
 
+        if (!ensureMacAntigravitySafeForMutation(options)) return false;
+
         if (fs.existsSync(asarPath)) {
             replaceArchiveSafely(restoreTempPath, asarPath);
         } else {
             fs.renameSync(restoreTempPath, asarPath);
         }
+        if (!ensureMacAntigravitySafeForMutation(options)) return false;
         fs.unlinkSync(bakPath);
     } catch (e) {
         if (fs.existsSync(restoreTempPath)) fs.unlinkSync(restoreTempPath);
@@ -1162,7 +1194,10 @@ module.exports = {
     EDITION,
     ENGINE_VERSION,
     SUPPORTED_ANTIGRAVITY_VERSION,
-    getMacProcessClosePlan,
+    interpretMacAntigravityProcessResult,
+    getMacAntigravityProcessState,
+    ensureMacAntigravitySafeForMutation,
+    ensureAntigravitySafeForMutation,
     cleanJsContent,
     generateJs,
     injectTranslationFile,

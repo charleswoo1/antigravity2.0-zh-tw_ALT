@@ -29,6 +29,8 @@
 
 > **目前狀態：實驗性，`PENDING_MANUAL_PLATFORM_VALIDATION`。** macOS 的 payload 與 checksum 已完成跨平台檢查，但尚未在相符架構的 macOS 主機完成實際 `.app` 建置、下載後 quarantine、Gatekeeper「仍要打開」、Antigravity 2.13.0 安裝及還原驗證。完成這些測試前，不應視為正式支援。
 
+ALT 不會自動關閉 Antigravity；若偵測到 Antigravity 仍在執行，會安全中止。請先完全關閉 Antigravity 後再重新執行。
+
 依電腦架構下載其中一個檔案：
 
 - Apple Silicon：`Antigravity-ZH-Hant-TW-ALT-1.0.0-macOS-arm64.app.zip`
