@@ -34,7 +34,7 @@ if (-not $IsccPath) {
     $IsccPath = $candidates | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
 }
 if (-not $IsccPath -or -not (Test-Path -LiteralPath $IsccPath)) {
-    throw '找不到 Inno Setup 6 ISCC.exe。請在建置電腦安裝 Inno Setup，或使用 -IsccPath 指定。'
+    throw 'Inno Setup 6 ISCC.exe was not found. Install Inno Setup 6 on the build machine or pass -IsccPath.'
 }
 
 New-Item -ItemType Directory -Force -Path $distDir | Out-Null
