@@ -4,8 +4,10 @@ const child_process = require('child_process');
 const asar = require('@electron/asar');
 
 const PROJECT_ID = 'antigravity2-zh-hant-tw';
-const PROJECT_NAME = 'Antigravity 2.0 繁體中文套件';
-const ENGINE_VERSION = '1.0.7';
+const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
+const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
+const EDITION = 'ALT';
+const ENGINE_VERSION = '1.0.0';
 const SUPPORTED_ANTIGRAVITY_VERSION = '2.13.0';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
@@ -14,9 +16,12 @@ const SIGNATURE_START = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION START --- */
 const SIGNATURE_END = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION END --- */';
 
 function resolveAsarCli() {
-    const localAsarPath = path.join(__dirname, 'node_modules', '@electron', 'asar', 'bin', 'asar.js');
-    if (fs.existsSync(localAsarPath)) {
-        return localAsarPath;
+    const candidates = [
+        path.join(__dirname, 'node_modules', '@electron', 'asar', 'bin', 'asar.mjs'),
+        path.join(__dirname, 'node_modules', '@electron', 'asar', 'bin', 'asar.js')
+    ];
+    for (const localAsarPath of candidates) {
+        if (fs.existsSync(localAsarPath)) return localAsarPath;
     }
     return null;
 }
@@ -25,8 +30,8 @@ function runAsarCommand(action, args) {
     const asarCli = resolveAsarCli();
     if (!asarCli) {
         console.error('[錯誤] 找不到本地 @electron/asar CLI。');
-        console.error('  請先在專案目錄執行 npm install，再重新執行安裝。');
-        return { success: false, stdout: '', stderr: '本地 @electron/asar 未安裝' };
+        console.error('  發行套件可能不完整，請重新下載 ALT 安裝程式。');
+        return { success: false, stdout: '', stderr: '內建 @electron/asar 不存在' };
     }
 
     const nodeExe = process.execPath;
@@ -139,12 +144,9 @@ function checkEnvironment() {
     if (!asarCli) {
         console.error('');
         console.error('╔══════════════════════════════════════════════════════════╗');
-        console.error('║  [環境檢查] 找不到本地 @electron/asar CLI                ║');
+        console.error('║  [環境檢查] 找不到內建 @electron/asar CLI                ║');
         console.error('║                                                          ║');
-        console.error('║  請先在專案根目錄執行：                                  ║');
-        console.error('║    npm install                                            ║');
-        console.error('║                                                          ║');
-        console.error('║  完成後再重新執行安裝腳本。                              ║');
+        console.error('║  發行套件可能不完整，請重新下載 ALT 安裝程式。            ║');
         console.error('╚══════════════════════════════════════════════════════════╝');
         console.error('');
         return false;
@@ -1071,6 +1073,8 @@ function locateResourcesDir(installDir) {
 
 function printVersion() {
     console.log(`${PROJECT_NAME}`);
+    console.log(`Product: ${PRODUCT_NAME_EN}`);
+    console.log(`Edition: ${EDITION}`);
     console.log(`Project ID: ${PROJECT_ID}`);
     console.log(`Engine version: ${ENGINE_VERSION}`);
     console.log(`Supported Antigravity version: ${SUPPORTED_ANTIGRAVITY_VERSION}`);
@@ -1080,6 +1084,7 @@ function printVersion() {
 function main() {
     let restore = false;
     let manualDir = '';
+    let skipProcessClose = false;
 
     const args = process.argv.slice(2);
 
@@ -1089,6 +1094,8 @@ function main() {
         } else if (args[i] === '--install-dir') {
             manualDir = args[i + 1] || '';
             i++;
+        } else if (args[i] === '--skip-process-close') {
+            skipProcessClose = true;
         } else if (args[i] === '--version' || args[i] === '-v') {
             printVersion();
             return;
@@ -1113,10 +1120,10 @@ function main() {
 
     if (restore) {
         console.log(`====== 正在還原 ${PROJECT_NAME} ======`);
-        restore20(resourcesDir);
+        process.exitCode = restore20(resourcesDir, { skipProcessClose }) ? 0 : 1;
     } else {
         console.log(`====== 正在套用 ${PROJECT_NAME} ======`);
-        install20(resourcesDir);
+        process.exitCode = install20(resourcesDir, { skipProcessClose }) ? 0 : 1;
     }
 }
 
@@ -1125,6 +1132,8 @@ if (require.main === module) main();
 module.exports = {
     SIGNATURE_START,
     SIGNATURE_END,
+    EDITION,
+    ENGINE_VERSION,
     SUPPORTED_ANTIGRAVITY_VERSION,
     cleanJsContent,
     generateJs,
