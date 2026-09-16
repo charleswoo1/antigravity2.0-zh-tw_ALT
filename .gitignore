@@ -55,8 +55,7 @@ coverage
 .codegraphignore
 
 # Agent / Runtime 檔案
-**/AGENTS.md
-AGENTS.md
+# 根目錄 AGENTS.md 是本專案必須版控的協作規範，不得排除。
 RUNTIME.md
 .agents/
 docs/

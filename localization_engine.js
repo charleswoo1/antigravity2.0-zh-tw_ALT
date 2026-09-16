@@ -1,10 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
+const asar = require('@electron/asar');
 
 const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文套件';
-const ENGINE_VERSION = '1.0.6';
+const ENGINE_VERSION = '1.0.7';
+const SUPPORTED_ANTIGRAVITY_VERSION = '2.13.0';
+const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
 
 const SIGNATURE_START = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION START --- */';
@@ -29,6 +32,106 @@ function runAsarCommand(action, args) {
     const nodeExe = process.execPath;
     const cmd = `"${nodeExe}" "${asarCli}" ${action} ${args.map(a => `"${a}"`).join(' ')}`;
     return runCommandSync(cmd);
+}
+
+function inspectAsar(asarPath) {
+    try {
+        asar.uncache(asarPath);
+        const packageJson = JSON.parse(asar.extractFile(asarPath, 'package.json').toString('utf-8'));
+        const preload = asar.extractFile(asarPath, path.join('dist', 'preload.js')).toString('utf-8');
+        let wizardPresent = false;
+        let wizardLocalized = false;
+        try {
+            const wizardPreload = asar.extractFile(
+                asarPath,
+                path.join('dist', 'ideInstall', 'wizardPreload.js')
+            ).toString('utf-8');
+            wizardPresent = true;
+            wizardLocalized = wizardPreload.includes(SIGNATURE_START) && wizardPreload.includes(SIGNATURE_END);
+        } catch (e) {}
+        return {
+            version: packageJson.version || '',
+            localized: preload.includes(SIGNATURE_START) && preload.includes(SIGNATURE_END),
+            wizardPresent,
+            wizardLocalized
+        };
+    } catch (e) {
+        return { version: '', localized: false, error: e.message };
+    }
+}
+
+function createOrRefreshBackup(asarPath, bakPath) {
+    const current = inspectAsar(asarPath);
+    if (!current.version) {
+        console.error(`[錯誤] 無法讀取目前 app.asar 的版本：${current.error || '未知錯誤'}`);
+        return false;
+    }
+
+    if (current.localized && !fs.existsSync(bakPath)) {
+        console.error('[錯誤] 目前 app.asar 已含中文化內容，但找不到官方備份。');
+        console.error('  請先重新安裝或更新 Antigravity，以取得官方 app.asar 後再執行。');
+        return false;
+    }
+
+    if (fs.existsSync(bakPath)) {
+        const backup = inspectAsar(bakPath);
+        if (backup.version === current.version && !backup.localized) {
+            console.log(`[備份] 已有相同版本的官方備份（Antigravity ${backup.version}），本次沿用。`);
+            return true;
+        }
+
+        if (current.localized) {
+            console.error(`[錯誤] 目前 app.asar 已中文化，但既有備份版本不符（目前 ${current.version}，備份 ${backup.version || '無法辨識'}）。`);
+            console.error('  為避免以中文化檔案覆蓋官方備份，請先更新或重新安裝 Antigravity。');
+            return false;
+        }
+
+        console.log(`[備份] 偵測到版本變更（${backup.version || '未知'} → ${current.version}），正在更新官方備份...`);
+    } else {
+        console.log(`[備份] 正在建立 Antigravity ${current.version} 官方 app.asar 備份...`);
+    }
+
+    try {
+        fs.copyFileSync(asarPath, bakPath);
+        const verified = inspectAsar(bakPath);
+        if (verified.version !== current.version || verified.localized) {
+            console.error('[錯誤] 備份驗證失敗。');
+            return false;
+        }
+        console.log('[備份] 備份完成並已驗證版本。');
+        return true;
+    } catch (e) {
+        console.error(`[錯誤] 備份失敗：${e.message}`);
+        return false;
+    }
+}
+
+function injectTranslationFile(filePath, label, translationJs) {
+    if (!fs.existsSync(filePath)) return false;
+    const original = fs.readFileSync(filePath, 'utf-8');
+    const cleaned = cleanJsContent(original);
+    fs.writeFileSync(filePath, cleaned + '\n' + translationJs, 'utf-8');
+    const verified = fs.readFileSync(filePath, 'utf-8');
+    if (!verified.includes(SIGNATURE_START) || !verified.includes(SIGNATURE_END)) {
+        throw new Error(`${label} 中文化注入驗證失敗`);
+    }
+    console.log(`[修改] ${label} 注入完成。`);
+    return true;
+}
+
+function replaceArchiveSafely(newAsarPath, asarPath) {
+    const previousPath = `${asarPath}.pre-localization`;
+    if (fs.existsSync(previousPath)) fs.unlinkSync(previousPath);
+
+    fs.renameSync(asarPath, previousPath);
+    try {
+        fs.renameSync(newAsarPath, asarPath);
+        fs.unlinkSync(previousPath);
+    } catch (e) {
+        if (fs.existsSync(asarPath)) fs.unlinkSync(asarPath);
+        fs.renameSync(previousPath, asarPath);
+        throw e;
+    }
 }
 
 function checkEnvironment() {
@@ -731,7 +834,7 @@ function createTrayCreatePatch() {
     /* --- TRAY TRANSLATION END --- */`;
 }
 
-function install20(resourcesDir) {
+function install20(resourcesDir, options = {}) {
     const asarPath = path.join(resourcesDir, 'app.asar');
     const bakPath = path.join(resourcesDir, 'app.asar.bak');
 
@@ -744,41 +847,17 @@ function install20(resourcesDir) {
         return false;
     }
 
-    closeAntigravityProcesses();
-
-    if (!fs.existsSync(bakPath)) {
-        console.log('[備份] 正在建立官方 app.asar 備份...');
-        let backupOk = false;
-        try {
-            fs.copyFileSync(asarPath, bakPath);
-            backupOk = true;
-        } catch (copyErr) {
-            if ((copyErr.code === 'EPERM' || copyErr.code === 'EACCES') && process.platform !== 'win32') {
-                console.warn(`[備份] fs.copyFileSync 失敗 (${copyErr.code})，嘗試以 /bin/cp -p 建立備份...`);
-                const cpResult = runCommandSync(`/bin/cp -p "${asarPath}" "${bakPath}"`);
-                if (cpResult.success && fs.existsSync(bakPath)) {
-                    backupOk = true;
-                    console.log('[備份] 以 /bin/cp -p 建立備份成功。');
-                } else {
-                    console.error('[錯誤] 備份失敗：無法建立 app.asar.bak。');
-                    console.error('  可能原因：macOS 權限限制或 .app 目錄權限不足。');
-                    console.error('  建議：');
-                    console.error('    1. 嘗試以具備權限的終端機執行本腳本');
-                    console.error('    2. 或手動建立備份：');
-                    console.error(`       cp "${asarPath}" "${bakPath}"`);
-                    return false;
-                }
-            } else {
-                console.error(`[錯誤] 備份失敗：${copyErr.message}`);
-                return false;
-            }
-        }
-        if (backupOk) {
-            console.log('[備份] 備份完成。');
-        }
-    } else {
-        console.log('[備份] 已存在 app.asar.bak，本次沿用既有備份。');
+    const installed = inspectAsar(asarPath);
+    if (installed.version !== SUPPORTED_ANTIGRAVITY_VERSION) {
+        console.error(`[錯誤] 此版本僅驗證支援 Antigravity ${SUPPORTED_ANTIGRAVITY_VERSION}。`);
+        console.error(`  偵測到的版本：${installed.version || '無法辨識'}`);
+        return false;
     }
+    console.log(`[版本檢查] Antigravity ${installed.version} 已通過相容性檢查。`);
+
+    if (!options.skipProcessClose) closeAntigravityProcesses();
+
+    if (!createOrRefreshBackup(asarPath, bakPath)) return false;
 
     const tempDir = path.join(__dirname, '_temp_asar');
     if (fs.existsSync(tempDir)) {
@@ -801,11 +880,13 @@ function install20(resourcesDir) {
     }
 
     console.log('[修改] 正在注入繁體中文台灣用語字典...');
-    const preloadContent = fs.readFileSync(preloadPath, 'utf-8');
-    const cleanedPreload = cleanJsContent(preloadContent);
     const translationJs = generateJs();
-    fs.writeFileSync(preloadPath, cleanedPreload + '\n' + translationJs, 'utf-8');
-    console.log('[修改] preload.js 注入完成。');
+    injectTranslationFile(preloadPath, '主介面 preload.js', translationJs);
+
+    const wizardPreloadPath = path.join(tempDir, 'dist', 'ideInstall', 'wizardPreload.js');
+    if (fs.existsSync(wizardPreloadPath)) {
+        injectTranslationFile(wizardPreloadPath, 'IDE 安裝精靈 wizardPreload.js', translationJs);
+    }
 
     const menuPath = path.join(tempDir, 'dist', 'menu.js');
     if (fs.existsSync(menuPath)) {
@@ -822,7 +903,9 @@ function install20(resourcesDir) {
             fs.writeFileSync(menuPath, patchedMenuContent, 'utf-8');
             console.log('[修改] 系統選單文字注入完成。');
         } else {
-            console.warn('[警告] 找不到 menu.js 插入點，略過系統選單文字注入。');
+            console.error('[錯誤] 找不到 menu.js 插入點，官方結構可能已變更。');
+            fs.rmSync(tempDir, { recursive: true, force: true });
+            return false;
         }
     }
 
@@ -835,11 +918,24 @@ function install20(resourcesDir) {
         const targetCreate = 'function createTray(actions) {';
         const replacementCreate = createTrayCreatePatch();
 
+        if (!trayCleaned.includes(targetCreate)) {
+            console.error('[錯誤] 找不到 tray.js createTray 插入點，官方結構可能已變更。');
+            fs.rmSync(tempDir, { recursive: true, force: true });
+            return false;
+        }
+
         let trayPatched = trayCleaned.replace(targetCreate, replacementCreate);
 
         const countRegex = /countItem\.label\s*=\s*\([\s\S]*?' running';/g;
         const replacementCount = "countItem.label = count > 0 ? `${count} 個 Agent 執行中` : '目前沒有執行中的 Agent';";
-        trayPatched = trayPatched.replace(countRegex, replacementCount);
+        const countMatches = trayPatched.match(countRegex);
+        if (countMatches) {
+            trayPatched = trayPatched.replace(countRegex, replacementCount);
+        } else if (!trayPatched.includes(replacementCount)) {
+            console.error('[錯誤] 找不到 tray.js Agent 數量文字插入點，官方結構可能已變更。');
+            fs.rmSync(tempDir, { recursive: true, force: true });
+            return false;
+        }
 
         fs.writeFileSync(trayPath, trayPatched, 'utf-8');
         console.log('[修改] 工作列選單文字注入完成。');
@@ -852,27 +948,57 @@ function install20(resourcesDir) {
 
         const targetText = '<div class="text">Loading Antigravity</div>';
         const replacementText = '<div class="text">正在啟動 Antigravity...</div>';
-        loadingContent = loadingContent.replace(targetText, replacementText);
+        if (loadingContent.includes(targetText)) {
+            loadingContent = loadingContent.replace(targetText, replacementText);
+        } else if (!loadingContent.includes(replacementText)) {
+            console.error('[錯誤] 找不到 loadingOverlay.js 文字插入點，官方結構可能已變更。');
+            fs.rmSync(tempDir, { recursive: true, force: true });
+            return false;
+        }
 
         fs.writeFileSync(loadingPath, loadingContent, 'utf-8');
         console.log('[修改] 啟動畫面文字調整完成。');
     }
 
-    console.log('[打包] 正在重新打包 app.asar...');
-    const packRes = runAsarCommand('pack', [tempDir, asarPath]);
-    fs.rmSync(tempDir, { recursive: true, force: true });
+    console.log('[打包] 正在以官方 unpacked 結構重新打包 app.asar...');
+    const newAsarPath = path.join(resourcesDir, 'app.asar.localized.tmp');
+    const newUnpackedPath = `${newAsarPath}.unpacked`;
+    if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
+    if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
+    const packRes = runAsarCommand('pack', ['--unpack-dir', OFFICIAL_UNPACK_DIR, tempDir, newAsarPath]);
 
     if (!packRes.success) {
         console.error('[錯誤] 打包失敗。');
         console.error(`詳情：${packRes.stderr}\n${packRes.stdout}`);
+        fs.rmSync(tempDir, { recursive: true, force: true });
         return false;
     }
 
-    console.log(`[完成] ${PROJECT_NAME} 已套用完成。`);
+    const packed = inspectAsar(newAsarPath);
+    if (packed.version !== SUPPORTED_ANTIGRAVITY_VERSION || !packed.localized || !packed.wizardLocalized) {
+        console.error(`[錯誤] 打包驗證失敗（版本：${packed.version || '未知'}，主介面簽章：${packed.localized ? '有' : '無'}，安裝精靈簽章：${packed.wizardLocalized ? '有' : '無'}）。`);
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
+        if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
+        return false;
+    }
+
+    try {
+        replaceArchiveSafely(newAsarPath, asarPath);
+    } catch (e) {
+        console.error(`[錯誤] 無法安全替換 app.asar：${e.message}`);
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        return false;
+    }
+
+    fs.rmSync(tempDir, { recursive: true, force: true });
+    if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
+
+    console.log(`[完成] ${PROJECT_NAME} 已套用至 Antigravity ${packed.version}。`);
     return true;
 }
 
-function restore20(resourcesDir) {
+function restore20(resourcesDir, options = {}) {
     const asarPath = path.join(resourcesDir, 'app.asar');
     const bakPath = path.join(resourcesDir, 'app.asar.bak');
 
@@ -881,12 +1007,44 @@ function restore20(resourcesDir) {
         return false;
     }
 
-    closeAntigravityProcesses();
+    const backup = inspectAsar(bakPath);
+    if (!backup.version || backup.localized) {
+        console.error('[錯誤] app.asar.bak 不是可驗證的官方備份，已取消還原。');
+        return false;
+    }
+
+    if (fs.existsSync(asarPath)) {
+        const current = inspectAsar(asarPath);
+        if (current.version && current.version !== backup.version) {
+            console.error(`[錯誤] 目前版本（${current.version}）與備份版本（${backup.version}）不同，已取消還原。`);
+            return false;
+        }
+    }
+
+    if (!options.skipProcessClose) closeAntigravityProcesses();
 
     console.log('[還原] 正在還原官方 app.asar...');
-    fs.copyFileSync(bakPath, asarPath);
-    fs.unlinkSync(bakPath);
-    console.log('[完成] 官方 app.asar 已還原。');
+    const restoreTempPath = path.join(resourcesDir, 'app.asar.restore.tmp');
+    try {
+        if (fs.existsSync(restoreTempPath)) fs.unlinkSync(restoreTempPath);
+        fs.copyFileSync(bakPath, restoreTempPath);
+        const verified = inspectAsar(restoreTempPath);
+        if (verified.version !== backup.version || verified.localized) {
+            throw new Error('還原暫存檔驗證失敗');
+        }
+
+        if (fs.existsSync(asarPath)) {
+            replaceArchiveSafely(restoreTempPath, asarPath);
+        } else {
+            fs.renameSync(restoreTempPath, asarPath);
+        }
+        fs.unlinkSync(bakPath);
+    } catch (e) {
+        if (fs.existsSync(restoreTempPath)) fs.unlinkSync(restoreTempPath);
+        console.error(`[錯誤] 還原失敗：${e.message}`);
+        return false;
+    }
+    console.log(`[完成] 已還原 Antigravity ${backup.version} 官方 app.asar。`);
     return true;
 }
 
@@ -915,6 +1073,7 @@ function printVersion() {
     console.log(`${PROJECT_NAME}`);
     console.log(`Project ID: ${PROJECT_ID}`);
     console.log(`Engine version: ${ENGINE_VERSION}`);
+    console.log(`Supported Antigravity version: ${SUPPORTED_ANTIGRAVITY_VERSION}`);
     console.log(`Signature: ${SIGNATURE}`);
 }
 
@@ -961,4 +1120,16 @@ function main() {
     }
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+    SIGNATURE_START,
+    SIGNATURE_END,
+    SUPPORTED_ANTIGRAVITY_VERSION,
+    cleanJsContent,
+    generateJs,
+    injectTranslationFile,
+    inspectAsar,
+    install20,
+    restore20
+};
