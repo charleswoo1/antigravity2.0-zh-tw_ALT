@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — Controlled Cross-Platform CI
 
-**Status:** `IN_PROGRESS`  
+**Status:** `COMPLETE`  
 **Issue:** #8 — Add controlled cross-platform CI for ALT  
 **Target:** `main`  
 **Implementation branch:** `feature/controlled-ci-validation`  
@@ -34,11 +34,11 @@ Use standard GitHub-hosted runner labels:
 - No branch/tag/release deletion.
 - No history rewrite.
 - No destructive fallback.
-- Workflow artifacts are CI validation artifacts only and should use short retention.
+- Workflow artifacts are CI validation artifacts only and use short retention.
 
 ## Build compatibility
 
-Existing local build commands must keep working. Remove the legacy build-script/test guards that reject the existence of `.github/workflows`.
+Existing local build commands remain supported. Legacy build-script/test guards that rejected `.github/workflows` were removed.
 
 ## Validation
 
@@ -62,26 +62,30 @@ macOS:
 
 ## Acceptance criteria
 
-- [ ] CI workflow exists under `.github/workflows/`.
-- [ ] Workflow uses only read repository permission.
-- [ ] No secret-dependent steps.
-- [ ] No release/merge/destructive action.
-- [ ] Windows x64 build/E2E job passes.
-- [ ] macOS Intel x64 build/sign/ZIP job passes.
-- [ ] macOS Apple Silicon arm64 build/sign/ZIP job passes.
-- [ ] Core Ubuntu checks pass.
-- [ ] Local build scripts no longer reject GitHub Actions.
-- [ ] Packaging tests enforce the controlled-CI safety constraints.
-- [ ] README documents CI coverage and that CI artifacts are not releases.
+- [x] CI workflow exists under `.github/workflows/`.
+- [x] Workflow uses only read repository permission.
+- [x] No secret-dependent steps.
+- [x] No release/merge/destructive action.
+- [x] Windows x64 build/E2E job passes.
+- [x] macOS Intel x64 build/sign/ZIP job passes.
+- [x] macOS Apple Silicon arm64 build/sign/ZIP job passes.
+- [x] Core Ubuntu checks pass.
+- [x] Local build scripts no longer reject GitHub Actions.
+- [x] Packaging tests enforce the controlled-CI safety constraints.
+- [x] README documents CI coverage and that CI artifacts are not releases.
 
 ## Execution Result
 
-- Status:
-- PR:
-- Workflow run:
-- Core:
-- Windows x64:
-- macOS Intel x64:
-- macOS Apple Silicon arm64:
-- Remaining blockers:
+- Status: `COMPLETE`
+- PR: #9 — `ci: add controlled cross-platform validation`
+- Merge commit: `00a0ff1939340b7400a588940bf4e270cf1a9303`
+- Successful validation run: `35086514369`
+- Core: `PASS`
+- Windows x64: `PASS` — Inno Setup build, synthetic install/reinstall/restore/failure E2E, artifact upload
+- macOS Intel x64: `PASS` — native build, ad-hoc signing, ZIP creation/extraction, post-extraction codesign verification, bundled Node 24.21.0 verification, artifact upload
+- macOS Apple Silicon arm64: `PASS` — native build, ad-hoc signing, ZIP creation/extraction, post-extraction codesign verification, bundled Node 24.21.0 verification, artifact upload
+- Remaining blockers: real end-user Gatekeeper/quarantine interaction and installation against a real Antigravity 2.13.0 installation still require manual Mac validation before macOS is described as production-supported.
 - Notes:
+  - CI discovered and fixed a Windows PowerShell 5 UTF-8/no-BOM parsing issue in the build script.
+  - CI discovered and fixed macOS codesign rejection caused by unnecessary npm `node_modules/.bin` symlinks; the runtime does not require those shims.
+  - Workflow uses `permissions: contents: read`, no secrets, no `pull_request_target`, and no automatic merge/release/destructive operations.
