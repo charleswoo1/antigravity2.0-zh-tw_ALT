@@ -12,7 +12,7 @@ const engine = require('../localization_engine');
 assert.strictEqual(packageJson.version, '1.0.0');
 assert.strictEqual(engine.EDITION, 'ALT');
 assert.strictEqual(engine.ENGINE_VERSION, '1.0.0');
-assert.strictEqual(engine.SUPPORTED_ANTIGRAVITY_VERSION, '2.13.0');
+assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0']);
 assert.strictEqual(manifest.runtime.version, '24.21.0');
 
 for (const key of ['windows-x64', 'windows-arm64', 'macos-x64', 'macos-arm64']) {

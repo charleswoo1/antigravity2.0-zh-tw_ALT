@@ -11,6 +11,8 @@
 
 本專案不包含、不散布 Antigravity 官方 `app.asar` 或其他官方二進位檔案；所有修改都在使用者自己的電腦上完成。
 
+上游版本採明確 allowlist 與本機實機驗證，不會因版本號較新而自動放行。完整更新與稽核流程請參閱 [`COMPATIBILITY.md`](COMPATIBILITY.md)。
+
 ## 一般使用者快速開始
 
 ### Windows
@@ -124,6 +126,8 @@ payload/
 ├─ runtime/node(.exe)
 ├─ runtime/NODE-LICENSE.txt
 ├─ localization_engine.js
+├─ compatibility/
+├─ tools/compatibility-audit.js
 ├─ dicts/
 ├─ node_modules/@electron/asar + 鎖定的 production dependencies
 ├─ package.json

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "v2-mainline",
+  "description": "Antigravity 2.x Electron mainline localization anchors",
+  "members": {
+    "package.json": {
+      "required": true,
+      "anchors": []
+    },
+    "dist/preload.js": {
+      "required": true,
+      "anchors": []
+    },
+    "dist/menu.js": {
+      "required": false,
+      "anchors": [
+        {
+          "id": "menu-set-application-menu",
+          "type": "literal",
+          "value": "electron_1.Menu.setApplicationMenu(menu);",
+          "expectedCount": 1
+        },
+        {
+          "id": "menu-new-window-label",
+          "type": "regex",
+          "value": "label:\\s*'New Window'",
+          "flags": "g",
+          "expectedCount": 1
+        },
+        {
+          "id": "menu-docs-label",
+          "type": "regex",
+          "value": "label:\\s*'Docs'",
+          "flags": "g",
+          "expectedCount": 1
+        }
+      ]
+    },
+    "dist/tray.js": {
+      "required": false,
+      "anchors": [
+        {
+          "id": "tray-create-function",
+          "type": "literal",
+          "value": "function createTray(actions) {",
+          "expectedCount": 1
+        },
+        {
+          "id": "tray-agent-count",
+          "type": "regex",
+          "value": "countItem\\.label\\s*=\\s*\\([\\s\\S]*?' running';",
+          "flags": "g",
+          "expectedCount": 1
+        }
+      ]
+    },
+    "dist/loadingOverlay.js": {
+      "required": false,
+      "anchors": [
+        {
+          "id": "loading-overlay-text",
+          "type": "literal",
+          "value": "<div class=\"text\">Loading Antigravity</div>",
+          "expectedCount": 1
+        }
+      ]
+    },
+    "dist/ideInstall/wizardPreload.js": {
+      "required": false,
+      "anchors": []
+    }
+  },
+  "unpackedPaths": [
+    {
+      "path": "node_modules/chrome-devtools-mcp",
+      "required": true
+    }
+  ]
+}

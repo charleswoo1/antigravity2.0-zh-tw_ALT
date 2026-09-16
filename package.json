@@ -5,7 +5,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "description": "Antigravity 2.0 繁體中文 ALT 版",
   "scripts": {
-    "check": "node --check localization_engine.js && node tests/smoke.test.js && node tests/macos-process-safety.test.js",
+    "check": "node --check localization_engine.js && node --check tools/compatibility-audit.js && node tests/smoke.test.js && node tests/compatibility-audit.test.js && node tests/transactional-replacement.test.js && node tests/macos-process-safety.test.js",
     "check:packaging": "node tests/packaging.test.js",
     "check:windows-installer": "node tests/windows-installer.test.js",
     "prepare:windows:x64": "node build/common/prepare-payload.js --platform windows --arch x64",
@@ -13,7 +13,9 @@
     "prepare:macos:arm64": "node build/common/prepare-payload.js --platform macos --arch arm64",
     "version": "node localization_engine.js --version",
     "install:localization": "node localization_engine.js",
-    "restore": "node localization_engine.js --restore"
+    "restore": "node localization_engine.js --restore",
+    "audit:antigravity": "node tools/compatibility-audit.js",
+    "verify:real-install": "node tools/verify-real-install.js"
   },
   "dependencies": {
     "@electron/asar": "4.3.0"

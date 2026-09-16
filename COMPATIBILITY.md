@@ -1,0 +1,41 @@
+# Antigravity 上游版本相容性流程
+
+ALT 對 Antigravity 上游版本採用明確 allowlist。版本較新、符合某個 semver 範圍，或唯讀稽核得到 `PASS`，都不會自動成為「已驗證支援版本」。唯一的正式清單是 [`compatibility/manifest.json`](compatibility/manifest.json)。
+
+## 三種判定
+
+- **結構相容候選（candidate structurally compatible）**：唯讀稽核得到 `PASS`，目前檔案結構與 patch anchors 相符，但尚未完成真實安裝的 apply／verify／restore。
+- **已驗證支援版本（verified supported version）**：唯讀稽核、synthetic tests 與受控真實 apply／restore 全部通過，並已明確加入 manifest。
+- **不支援／阻擋變更（unsupported/blocking change）**：版本未列入 allowlist，或必要結構、anchor、unpacked 路徑、程序狀態與 archive 完整性任一項不安全。
+
+## 上游更新 SOP
+
+```text
+官方 Antigravity 更新
+→ 本機唯讀 audit
+→ 比對 fingerprint 與所有 patch anchors
+→ 有差異時人工／Codex review
+→ synthetic tests
+→ 確認 Antigravity 完全關閉
+→ 受控真實 apply → 完整性驗證 → restore
+→ 確認官方未中文化 archive 已精確還原
+→ 明確將版本標為 verified
+→ PR review → 人工 release
+```
+
+官方更新通常會覆蓋既有中文化。更新後應先保持官方版本，等該版本出現在 verified allowlist，再重新套用 ALT。
+
+## 唯讀稽核
+
+```powershell
+npm ci
+npm run audit:antigravity -- --install-dir "$env:LOCALAPPDATA\Programs\antigravity" --json .build\audit.json --fingerprint .build\fingerprint.json
+```
+
+Exit code：`0` = `PASS`、`2` = `REVIEW_REQUIRED`、`3` = `BLOCKED`。稽核只可在 OS 暫存目錄與指定輸出位置寫入資料，不得建立 `app.asar.bak` 或替換真實 `app.asar`。fingerprint 只保存版本、大小、SHA-256、成員存在狀態與 anchor 計數，不保存官方檔案內容。
+
+## 安裝器安全邊界
+
+Windows 安裝器在進入 mutation 前先執行同一套相容性 auditor。preflight 會唯讀確認安裝位置、archive 版本、明確 allowlist、結構／anchors、unpacked 路徑與程序狀態。只有 `PASS` 才可進行備份、暫存解包、patch、暫存重打包、驗證及原子替換。
+
+archive 不會原地修改。替換期間保留原始 archive；替換或 post-replacement 驗證失敗時，必須自動 rollback 並以 SHA-256 確認原始 archive 已回到正式路徑。synthetic E2E 的 log override 只接受系統暫存目錄內含 `antigravity-alt-installer-` 的測試路徑，正常使用者記錄仍位於 `%LOCALAPPDATA%\Antigravity-ZH-Hant-TW-ALT\`。

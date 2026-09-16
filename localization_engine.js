@@ -1,19 +1,44 @@
 const fs = require('fs');
 const path = require('path');
 const child_process = require('child_process');
+const crypto = require('crypto');
 const asar = require('@electron/asar');
+const {
+    getCompatibilityEntry,
+    getVerifiedVersions,
+    isVerifiedVersion
+} = require('./compatibility');
 
 const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
 const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
 const EDITION = 'ALT';
 const ENGINE_VERSION = '1.0.0';
-const SUPPORTED_ANTIGRAVITY_VERSION = '2.13.0';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
 
 const SIGNATURE_START = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION START --- */';
 const SIGNATURE_END = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION END --- */';
+
+function sha256File(filePath) {
+    return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function reportEngineError(options, code, message, details = {}) {
+    console.error(`[錯誤] ${message}`);
+    if (options && typeof options.onError === 'function') {
+        options.onError({ code, message, modified: false, ...details });
+    }
+}
+
+function isAuditApprovedCandidate(asarPath, version, auditReport) {
+    return Boolean(auditReport &&
+        auditReport.status === 'PASS' &&
+        auditReport.noMutation === true &&
+        auditReport.upstreamVersion === version &&
+        auditReport.archive &&
+        auditReport.archive.sha256 === sha256File(asarPath));
+}
 
 function resolveAsarCli() {
     const candidates = [
@@ -124,17 +149,31 @@ function injectTranslationFile(filePath, label, translationJs) {
     return true;
 }
 
-function replaceArchiveSafely(newAsarPath, asarPath) {
+function replaceArchiveSafely(newAsarPath, asarPath, options = {}) {
     const previousPath = `${asarPath}.pre-localization`;
-    if (fs.existsSync(previousPath)) fs.unlinkSync(previousPath);
+    if (fs.existsSync(previousPath)) {
+        throw new Error(`偵測到未處理的交易檔案：${previousPath}`);
+    }
+    if (!fs.existsSync(asarPath)) throw new Error(`找不到要替換的 archive：${asarPath}`);
+    const originalHash = sha256File(asarPath);
 
     fs.renameSync(asarPath, previousPath);
     try {
+        if (options.faultInjection === 'after-original-move') throw new Error('fault injection: after-original-move');
         fs.renameSync(newAsarPath, asarPath);
+        if (options.faultInjection === 'after-replacement') throw new Error('fault injection: after-replacement');
+        if (!fs.existsSync(asarPath)) throw new Error('替換後找不到 app.asar');
+        if (typeof options.validateReplacement === 'function' && !options.validateReplacement(asarPath)) {
+            throw new Error('替換後完整性驗證失敗');
+        }
+        if (options.faultInjection === 'post-verification') throw new Error('fault injection: post-verification');
         fs.unlinkSync(previousPath);
     } catch (e) {
         if (fs.existsSync(asarPath)) fs.unlinkSync(asarPath);
-        fs.renameSync(previousPath, asarPath);
+        if (fs.existsSync(previousPath)) fs.renameSync(previousPath, asarPath);
+        if (!fs.existsSync(asarPath) || sha256File(asarPath) !== originalHash) {
+            throw new Error(`${e.message}; 緊急 rollback 完整性驗證失敗`);
+        }
         throw e;
     }
 }
@@ -753,7 +792,7 @@ function detectInstallationDir(manualDir) {
         }
 
         console.error(`[錯誤] 指定的安裝路徑不存在：${manualDir}`);
-        process.exit(1);
+        return '';
     }
 
     const candidates = [];
@@ -779,7 +818,7 @@ function detectInstallationDir(manualDir) {
     }
 
     console.error('[錯誤] 找不到 Antigravity 安裝目錄。請使用 --install-dir 指定路徑。');
-    process.exit(1);
+    return '';
 }
 
 function runCommandSync(cmd) {
@@ -883,12 +922,12 @@ function createTrayCreatePatch() {
     /* --- TRAY TRANSLATION END --- */`;
 }
 
-function install20(resourcesDir, options = {}) {
+function install20MutationFlow(resourcesDir, options = {}) {
     const asarPath = path.join(resourcesDir, 'app.asar');
     const bakPath = path.join(resourcesDir, 'app.asar.bak');
 
     if (!fs.existsSync(asarPath)) {
-        console.error(`[錯誤] 在 resources 目錄中找不到 app.asar：${resourcesDir}`);
+        reportEngineError(options, 'MISSING_INSTALLATION', `在 resources 目錄中找不到 app.asar：${resourcesDir}`);
         return false;
     }
 
@@ -897,12 +936,24 @@ function install20(resourcesDir, options = {}) {
     }
 
     const installed = inspectAsar(asarPath);
-    if (installed.version !== SUPPORTED_ANTIGRAVITY_VERSION) {
-        console.error(`[錯誤] 此版本僅驗證支援 Antigravity ${SUPPORTED_ANTIGRAVITY_VERSION}。`);
-        console.error(`  偵測到的版本：${installed.version || '無法辨識'}`);
+    const verifiedVersions = getVerifiedVersions();
+    const verified = isVerifiedVersion(installed.version);
+    const controlledCandidate = isAuditApprovedCandidate(asarPath, installed.version, options.candidateAudit);
+    if (!verified && !controlledCandidate) {
+        reportEngineError(
+            options,
+            'UNSUPPORTED_VERSION',
+            '偵測到的 Antigravity 版本尚未通過 ALT 相容性驗證。',
+            {
+                detectedVersion: installed.version || '無法辨識',
+                supportedVersions: verifiedVersions
+            }
+        );
         return false;
     }
-    console.log(`[版本檢查] Antigravity ${installed.version} 已通過相容性檢查。`);
+    const compatibilityEntry = getCompatibilityEntry(installed.version);
+    const profile = compatibilityEntry ? compatibilityEntry.profile : options.candidateAudit.profile;
+    console.log(`[版本檢查] Antigravity ${installed.version} 已通過${verified ? '已驗證版本' : '受控候選版本'}相容性檢查（profile: ${profile}）。`);
 
     if (!ensureAntigravitySafeForMutation(options)) return false;
 
@@ -1030,7 +1081,8 @@ function install20(resourcesDir, options = {}) {
     }
 
     const packed = inspectAsar(newAsarPath);
-    if (packed.version !== SUPPORTED_ANTIGRAVITY_VERSION || !packed.localized || !packed.wizardLocalized) {
+    const wizardValid = !installed.wizardPresent || (packed.wizardPresent && packed.wizardLocalized);
+    if (packed.version !== installed.version || !packed.localized || !wizardValid) {
         console.error(`[錯誤] 打包驗證失敗（版本：${packed.version || '未知'}，主介面簽章：${packed.localized ? '有' : '無'}，安裝精靈簽章：${packed.wizardLocalized ? '有' : '無'}）。`);
         fs.rmSync(tempDir, { recursive: true, force: true });
         if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
@@ -1046,7 +1098,15 @@ function install20(resourcesDir, options = {}) {
     }
 
     try {
-        replaceArchiveSafely(newAsarPath, asarPath);
+        replaceArchiveSafely(newAsarPath, asarPath, {
+            faultInjection: options.faultInjection,
+            validateReplacement: replacementPath => {
+                const replacement = inspectAsar(replacementPath);
+                return replacement.version === installed.version &&
+                    replacement.localized &&
+                    (!installed.wizardPresent || replacement.wizardLocalized);
+            }
+        });
     } catch (e) {
         console.error(`[錯誤] 無法安全替換 app.asar：${e.message}`);
         fs.rmSync(tempDir, { recursive: true, force: true });
@@ -1058,6 +1118,73 @@ function install20(resourcesDir, options = {}) {
 
     console.log(`[完成] ${PROJECT_NAME} 已套用至 Antigravity ${packed.version}。`);
     return true;
+}
+
+function recoverArchiveAfterFailedInstall(resourcesDir, baseline) {
+    const asarPath = path.join(resourcesDir, 'app.asar');
+    const previousPath = `${asarPath}.pre-localization`;
+    const backupPath = `${asarPath}.bak`;
+    const candidatePaths = [previousPath, backupPath];
+    try {
+        if (fs.existsSync(asarPath) && baseline.sha256 && sha256File(asarPath) === baseline.sha256) {
+            return { valid: true, recovered: false, exact: true };
+        }
+        for (const candidate of candidatePaths) {
+            if (!fs.existsSync(candidate)) continue;
+            const inspected = inspectAsar(candidate);
+            if (!inspected.version || inspected.version !== baseline.version) continue;
+            const recoveryTemp = `${asarPath}.recovery.tmp`;
+            if (fs.existsSync(recoveryTemp)) fs.unlinkSync(recoveryTemp);
+            fs.copyFileSync(candidate, recoveryTemp);
+            if (fs.existsSync(asarPath)) fs.unlinkSync(asarPath);
+            fs.renameSync(recoveryTemp, asarPath);
+            const exact = baseline.sha256 ? sha256File(asarPath) === baseline.sha256 : false;
+            if (fs.existsSync(previousPath)) fs.unlinkSync(previousPath);
+            return { valid: true, recovered: true, exact, source: path.basename(candidate) };
+        }
+        const current = fs.existsSync(asarPath) ? inspectAsar(asarPath) : { version: '' };
+        return { valid: current.version === baseline.version, recovered: false, exact: false };
+    } catch (error) {
+        return { valid: false, recovered: false, exact: false, error: error.message };
+    }
+}
+
+function cleanupFailedInstallArtifacts(resourcesDir) {
+    for (const name of [
+        'app.asar.localized.tmp',
+        'app.asar.localized.tmp.unpacked',
+        'app.asar.restore.tmp',
+        'app.asar.restore.tmp.unpacked',
+        'app.asar.recovery.tmp'
+    ]) {
+        const target = path.join(resourcesDir, name);
+        if (fs.existsSync(target)) fs.rmSync(target, { recursive: true, force: true });
+    }
+}
+
+function install20(resourcesDir, options = {}) {
+    const asarPath = path.join(resourcesDir, 'app.asar');
+    const inspected = fs.existsSync(asarPath) ? inspectAsar(asarPath) : { version: '' };
+    const baseline = {
+        version: inspected.version,
+        sha256: fs.existsSync(asarPath) ? sha256File(asarPath) : ''
+    };
+    let success = false;
+    try {
+        success = install20MutationFlow(resourcesDir, options);
+    } catch (error) {
+        console.error(`[錯誤] 安裝交易發生未預期例外：${error.message}`);
+    }
+    if (!success && baseline.version) {
+        const integrity = recoverArchiveAfterFailedInstall(resourcesDir, baseline);
+        cleanupFailedInstallArtifacts(resourcesDir);
+        if (!integrity.valid) {
+            console.error(`[嚴重錯誤] 安裝失敗後無法確認 app.asar 完整性：${integrity.error || '找不到可驗證 archive'}`);
+        } else {
+            console.error(`[完整性] 安裝未完成；app.asar ${integrity.recovered ? '已自動 rollback' : '仍保持可驗證狀態'}${integrity.exact ? '，SHA-256 與安裝前一致' : ''}。`);
+        }
+    }
+    return success;
 }
 
 function restore20(resourcesDir, options = {}) {
@@ -1101,7 +1228,13 @@ function restore20(resourcesDir, options = {}) {
         }
 
         if (fs.existsSync(asarPath)) {
-            replaceArchiveSafely(restoreTempPath, asarPath);
+            replaceArchiveSafely(restoreTempPath, asarPath, {
+                faultInjection: options.faultInjection,
+                validateReplacement: replacementPath => {
+                    const replacement = inspectAsar(replacementPath);
+                    return replacement.version === backup.version && !replacement.localized;
+                }
+            });
         } else {
             fs.renameSync(restoreTempPath, asarPath);
         }
@@ -1143,14 +1276,30 @@ function printVersion() {
     console.log(`Edition: ${EDITION}`);
     console.log(`Project ID: ${PROJECT_ID}`);
     console.log(`Engine version: ${ENGINE_VERSION}`);
-    console.log(`Supported Antigravity version: ${SUPPORTED_ANTIGRAVITY_VERSION}`);
+    console.log(`Verified supported Antigravity versions: ${getVerifiedVersions().join(', ')}`);
     console.log(`Signature: ${SIGNATURE}`);
+}
+
+function writeErrorSummary(summaryPath, error) {
+    if (!summaryPath) return;
+    const lines = [
+        `錯誤代碼：${error.code || 'ENGINE_FAILURE'}`,
+        `原因：${error.message || '中文化引擎執行失敗。'}`
+    ];
+    if (error.detectedVersion) lines.push(`偵測版本：${error.detectedVersion}`);
+    if (Array.isArray(error.supportedVersions)) lines.push(`已驗證版本：${error.supportedVersions.join(', ')}`);
+    if (error.modified === false) lines.push('Antigravity 未被修改。');
+    else lines.push('請查看完整記錄確認 Antigravity 狀態。');
+    fs.mkdirSync(path.dirname(summaryPath), { recursive: true });
+    fs.writeFileSync(summaryPath, `${lines.join('\n')}\n`, 'utf-8');
 }
 
 function main() {
     let restore = false;
     let manualDir = '';
     let skipProcessClose = false;
+    let errorSummaryPath = '';
+    let lastError = null;
 
     const args = process.argv.slice(2);
 
@@ -1162,35 +1311,55 @@ function main() {
             i++;
         } else if (args[i] === '--skip-process-close') {
             skipProcessClose = true;
+        } else if (args[i] === '--error-summary') {
+            errorSummaryPath = path.resolve(args[i + 1] || '');
+            i++;
         } else if (args[i] === '--version' || args[i] === '-v') {
             printVersion();
             return;
         }
     }
 
+    if (errorSummaryPath && fs.existsSync(errorSummaryPath)) fs.unlinkSync(errorSummaryPath);
+    const onError = error => {
+        lastError = error;
+        writeErrorSummary(errorSummaryPath, error);
+    };
+
     const installDir = detectInstallationDir(manualDir);
+    if (!installDir) {
+        onError({ code: 'MISSING_INSTALLATION', message: '找不到 Antigravity 安裝目錄。', modified: false });
+        process.exitCode = 1;
+        return;
+    }
     const resourcesDir = locateResourcesDir(installDir);
 
     if (!fs.existsSync(resourcesDir)) {
-        console.error(`[錯誤] 無法定位有效的 resources 目錄：${resourcesDir}`);
-        process.exit(1);
+        onError({ code: 'MISSING_INSTALLATION', message: `無法定位有效的 resources 目錄：${resourcesDir}`, modified: false });
+        process.exitCode = 1;
+        return;
     }
 
     const asarPath = path.join(resourcesDir, 'app.asar');
     const bakPath = path.join(resourcesDir, 'app.asar.bak');
 
     if (!fs.existsSync(asarPath) && !(restore && fs.existsSync(bakPath))) {
-        console.error('[錯誤] 找不到 app.asar。本工具僅支援 Antigravity 2.0。');
-        process.exit(1);
+        onError({ code: 'MISSING_INSTALLATION', message: '找不到 app.asar。本工具僅支援 Antigravity 2.0。', modified: false });
+        process.exitCode = 1;
+        return;
     }
 
+    const options = { skipProcessClose, onError };
+    let success;
     if (restore) {
         console.log(`====== 正在還原 ${PROJECT_NAME} ======`);
-        process.exitCode = restore20(resourcesDir, { skipProcessClose }) ? 0 : 1;
+        success = restore20(resourcesDir, options);
     } else {
         console.log(`====== 正在套用 ${PROJECT_NAME} ======`);
-        process.exitCode = install20(resourcesDir, { skipProcessClose }) ? 0 : 1;
+        success = install20(resourcesDir, options);
     }
+    if (!success && !lastError) onError({ code: 'ENGINE_FAILURE', message: '中文化引擎執行失敗，請查看完整記錄。', modified: null });
+    process.exitCode = success ? 0 : 1;
 }
 
 if (require.main === module) main();
@@ -1200,7 +1369,8 @@ module.exports = {
     SIGNATURE_END,
     EDITION,
     ENGINE_VERSION,
-    SUPPORTED_ANTIGRAVITY_VERSION,
+    getVerifiedVersions,
+    isAuditApprovedCandidate,
     interpretMacAntigravityProcessResult,
     getMacAntigravityProcessState,
     ensureMacAntigravitySafeForMutation,
@@ -1208,6 +1378,8 @@ module.exports = {
     cleanJsContent,
     generateJs,
     injectTranslationFile,
+    replaceArchiveSafely,
+    recoverArchiveAfterFailedInstall,
     inspectAsar,
     install20,
     restore20

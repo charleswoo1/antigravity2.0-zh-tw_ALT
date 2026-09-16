@@ -10,6 +10,8 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const buildRoot = path.join(repoRoot, '.build');
 const runtimeCache = path.join(repoRoot, 'vendor', 'runtime');
 const manifestPath = path.join(repoRoot, 'build', 'runtime-manifest.json');
+const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
+const compatibilityManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'compatibility', 'manifest.json'), 'utf-8'));
 
 function parseArgs(argv) {
     const result = { platform: '', arch: '', output: '', offline: false };
@@ -89,6 +91,12 @@ function copyRequiredPayloadFiles(payloadDir) {
         fs.copyFileSync(path.join(repoRoot, file), path.join(payloadDir, file));
     }
     fs.cpSync(path.join(repoRoot, 'dicts'), path.join(payloadDir, 'dicts'), { recursive: true });
+    fs.cpSync(path.join(repoRoot, 'compatibility'), path.join(payloadDir, 'compatibility'), { recursive: true });
+    fs.mkdirSync(path.join(payloadDir, 'tools'), { recursive: true });
+    fs.copyFileSync(
+        path.join(repoRoot, 'tools', 'compatibility-audit.js'),
+        path.join(payloadDir, 'tools', 'compatibility-audit.js')
+    );
 }
 
 async function main() {
@@ -158,8 +166,10 @@ async function main() {
     fs.writeFileSync(path.join(payloadDir, 'payload-manifest.json'), JSON.stringify({
         product: 'Antigravity 2.0 Traditional Chinese ALT',
         edition: 'ALT',
-        productVersion: '1.0.0',
-        supportedAntigravityVersion: '2.13.0',
+        productVersion: packageJson.version,
+        verifiedSupportedAntigravityVersions: Object.entries(compatibilityManifest.versions)
+            .filter(([, entry]) => entry.status === 'verified')
+            .map(([version]) => version),
         runtime: {
             name: manifest.runtime.name,
             version: manifest.runtime.version,

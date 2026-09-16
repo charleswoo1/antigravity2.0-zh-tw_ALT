@@ -10,7 +10,7 @@ const engine = require('../localization_engine');
 async function main() {
     assert.strictEqual(engine.EDITION, 'ALT');
     assert.strictEqual(engine.ENGINE_VERSION, '1.0.0');
-    assert.strictEqual(engine.SUPPORTED_ANTIGRAVITY_VERSION, '2.13.0');
+    assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0']);
 
     const dictDir = path.join(__dirname, '..', 'dicts');
     const dictionary = {};
@@ -46,7 +46,7 @@ async function main() {
         fs.mkdirSync(wizardDir, { recursive: true });
         fs.writeFileSync(path.join(fixtureDir, 'package.json'), JSON.stringify({
             name: 'antigravity',
-            version: engine.SUPPORTED_ANTIGRAVITY_VERSION
+            version: '2.13.0'
         }), 'utf-8');
         fs.writeFileSync(path.join(distDir, 'preload.js'), 'console.log("fixture");\n', 'utf-8');
         fs.writeFileSync(path.join(wizardDir, 'wizardPreload.js'), 'console.log("wizard fixture");\n', 'utf-8');
