@@ -139,6 +139,10 @@ async function main() {
         shell: process.platform === 'win32'
     });
     fs.cpSync(path.join(depsDir, 'node_modules'), path.join(payloadDir, 'node_modules'), { recursive: true });
+    // npm's .bin shims/symlinks are not needed at runtime because the engine invokes
+    // @electron/asar's CLI by its explicit file path. Removing .bin also avoids
+    // invalid symlink destinations when the macOS app bundle is codesigned.
+    fs.rmSync(path.join(payloadDir, 'node_modules', '.bin'), { recursive: true, force: true });
     run(process.execPath, [
         path.join(repoRoot, 'build', 'common', 'generate-third-party-notices.js'),
         '--node-modules', path.join(depsDir, 'node_modules'),
