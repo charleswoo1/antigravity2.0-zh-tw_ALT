@@ -466,6 +466,8 @@ Do not:
   - `115316b` — `build(windows): add zero-prerequisite ALT installers`
   - `f2fd74d` — `build(macos): add standalone ALT app packaging`
   - `53b9892` — `docs: make ALT 1.0.0 the current user path`
+  - `71f62c5` — `docs: record ALT migration execution result`
+  - `55cfed5` — `fix(macos): address PR review safety issues`
 - PR: [#3 — feat: migrate mainline to ALT 1.0.0](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/3)
 - Tests run:
   - `npm run check` — passed
@@ -474,7 +476,9 @@ Do not:
   - Windows x64 payload preparation and bundled Node.js 24.21.0 execution verification — passed
   - `npm run check:windows-installer` — passed with a synthetic Antigravity 2.13.0 ASAR, including install, repeated install, restore, and non-zero failure propagation
   - macOS x64 and arm64 payload preparation, official runtime SHA-256 verification, and structural verification — passed on Windows
-- Windows validation: `VALIDATED_ON_WINDOWS_X64`. Both Inno Setup EXEs built successfully and passed isolated end-to-end tests. The final local artifacts were `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows.exe` (SHA-256 `8B21EB07570924F08D739CEC84857934AACE9AEBD9EA67BFACA2EAA17CCCA0B4`) and `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows-Restore.exe` (SHA-256 `22D33DECE243E58D2A103FA6A4180AA7E2D4DCBCCCD153447EE72A7225F72BBD`). Generated artifacts remain ignored and are not committed.
+  - macOS process-close regression guard — passed; graceful AppleScript quit is followed only by exact-name `pkill -x Antigravity`, with no broad full-command match
+  - macOS signing-source regression guard — passed; `--deep` is absent from signing and retained only for verification
+- Windows validation: `VALIDATED_ON_WINDOWS_X64`. Both Inno Setup EXEs built successfully and passed isolated end-to-end tests. The final local artifacts were `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows.exe` (SHA-256 `E3135FF0FC1ACFBABFFE3B32618DFAA0DFC6DDB281512E04C1F779D999F85B42`) and `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows-Restore.exe` (SHA-256 `E54EA7615679825DC69FBEC69E839621E2027B71F4EC449B2B86702AE7B1A586`). Generated artifacts remain ignored and are not committed.
 - macOS validation: `PENDING_MANUAL_PLATFORM_VALIDATION`. Both architecture payloads and official runtime checksums were verified, but `.app` construction, ad-hoc signing, Gatekeeper launch, install, and restore must still be run on matching macOS x64/arm64 hosts.
 - Remaining blockers: Real-platform macOS validation is required before claiming macOS artifact success. It does not block review of the version-controlled build implementation.
-- Notes: No GitHub Actions workflow was created or used. `release/v2` was not merged, modified, or deleted. No official Antigravity `app.asar` or other proprietary payload was committed or shipped.
+- Notes: PR #3 review feedback was addressed by narrowing macOS process termination, removing `--deep` from app signing, and marking macOS experimental/pending in the README. No GitHub Actions workflow was created or used. `release/v2` was not merged, modified, or deleted. No official Antigravity `app.asar` or other proprietary payload was committed or shipped.
