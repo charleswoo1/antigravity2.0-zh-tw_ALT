@@ -139,7 +139,9 @@ Payload 不包含 npm，也不包含 Antigravity 官方檔案。
 
 本專案允許 GitHub Actions 用於 **CI、測試與建置驗證**，包括 Windows / macOS standard GitHub-hosted runners。正式 Release、production asset 發布、PR merge、branch/tag 刪除與其他破壞性操作仍維持人工控制，不由 CI 自動執行。
 
-所有核心測試與 build 流程仍必須能在開發者本機執行；GitHub Actions 不是唯一建置途徑。PR CI 預設採最小權限，且不得讓未受信任的 PR 程式碼取得 repository secrets 或 write token。完整規範請參閱 [`AGENTS.md`](AGENTS.md)。
+所有核心測試與 build 流程仍必須能在開發者本機執行；GitHub Actions 不是唯一建置途徑。PR CI 預設採最小權限，且不得讓未受信任的 PR 程式碼取得 repository secrets 或 write token。
+
+目前 CI 會執行 Ubuntu 核心測試、Windows 2025 x64 installer build + synthetic E2E，以及 macOS 15 Intel x64 / Apple Silicon arm64 standalone app build、ad-hoc signing 與 ZIP 結構驗證。CI 上傳的短期 artifact 僅供驗證，不代表正式 Release。完整規範請參閱 [`AGENTS.md`](AGENTS.md)。
 
 ## 舊版本文件
 

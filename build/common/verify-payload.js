@@ -35,6 +35,7 @@ function main() {
         'payload 缺少可執行的 @electron/asar CLI'
     );
     assert.ok(fs.existsSync(path.join(payloadDir, 'runtime', 'NODE-LICENSE.txt')), 'payload 缺少 Node.js license');
+    assert.ok(!fs.existsSync(path.join(payloadDir, 'node_modules', '.bin')), 'payload 不應包含 npm .bin shims/symlinks');
 
     const forbidden = walk(payloadDir).filter(file => ['app.asar', 'app.asar.bak'].includes(path.basename(file).toLowerCase()));
     assert.deepStrictEqual(forbidden, [], `payload 不得包含 Antigravity 官方 ASAR：${forbidden.join(', ')}`);
