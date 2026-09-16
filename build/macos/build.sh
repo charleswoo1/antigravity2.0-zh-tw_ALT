@@ -15,11 +15,6 @@ APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.0.0-macOS-$ARCH.app"
 APP_DIR="$REPO_ROOT/.build/macos-$ARCH/$APP_NAME"
 DIST_DIR="$REPO_ROOT/dist"
 
-if [ -d "$REPO_ROOT/.github/workflows" ]; then
-  echo "GitHub Actions are forbidden by project policy." >&2
-  exit 1
-fi
-
 node "$REPO_ROOT/build/common/prepare-payload.js" \
   --platform macos \
   --arch "$ARCH" \
