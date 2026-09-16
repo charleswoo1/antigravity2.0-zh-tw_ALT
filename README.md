@@ -135,9 +135,11 @@ payload/
 
 Payload 不包含 npm，也不包含 Antigravity 官方檔案。
 
-## GitHub Actions 政策
+## GitHub Actions / CI 政策
 
-本專案禁止 GitHub Actions。測試、建置、打包、簽署與發佈驗證都必須能在開發者本機執行。完整規範請參閱 [`AGENTS.md`](AGENTS.md)。
+本專案允許 GitHub Actions 用於 **CI、測試與建置驗證**，包括 Windows / macOS standard GitHub-hosted runners。正式 Release、production asset 發布、PR merge、branch/tag 刪除與其他破壞性操作仍維持人工控制，不由 CI 自動執行。
+
+所有核心測試與 build 流程仍必須能在開發者本機執行；GitHub Actions 不是唯一建置途徑。PR CI 預設採最小權限，且不得讓未受信任的 PR 程式碼取得 repository secrets 或 write token。完整規範請參閱 [`AGENTS.md`](AGENTS.md)。
 
 ## 舊版本文件
 
