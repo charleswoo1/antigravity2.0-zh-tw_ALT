@@ -11,10 +11,6 @@ $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $payloadDir = Join-Path $repoRoot ".build\windows-$Arch\payload"
 $distDir = Join-Path $repoRoot 'dist'
 
-if (Test-Path -LiteralPath (Join-Path $repoRoot '.github\workflows')) {
-    throw '本專案禁止 GitHub Actions；偵測到 .github/workflows。'
-}
-
 $nodeCommand = (Get-Command node.exe -ErrorAction Stop).Source
 $prepareArgs = @(
     (Join-Path $repoRoot 'build\common\prepare-payload.js'),
