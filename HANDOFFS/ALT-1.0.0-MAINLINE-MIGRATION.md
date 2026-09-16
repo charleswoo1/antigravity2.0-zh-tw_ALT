@@ -1,6 +1,6 @@
 # Handoff Contract — ALT 1.0.0 Mainline Migration
 
-**Status:** `READY_FOR_CODEX`  
+**Status:** `READY_FOR_REVIEW`  
 **Issue:** #1 — ALT 1.0.0 mainline migration: zero-prerequisite Windows/macOS installers  
 **Repository:** `charleswoo1/antigravity2.0-zh-tw_ALT`  
 **Target branch:** `main`  
@@ -458,14 +458,23 @@ Do not:
 
 ## 13. Execution Result
 
-**Codex: update this section during implementation.**
-
-- Status:
-- Implementation branch:
+- Status: `READY_FOR_REVIEW`
+- Implementation branch: `feature/alt-1.0.0-mainline`
 - Commits:
-- PR:
+  - `748d37f` — `feat: establish ALT 1.0.0 product metadata`
+  - `8c48ccc` — `build: add pinned portable runtime payload`
+  - `115316b` — `build(windows): add zero-prerequisite ALT installers`
+  - `f2fd74d` — `build(macos): add standalone ALT app packaging`
+  - `53b9892` — `docs: make ALT 1.0.0 the current user path`
+- PR: [#3 — feat: migrate mainline to ALT 1.0.0](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/3)
 - Tests run:
-- Windows validation:
-- macOS validation:
-- Remaining blockers:
-- Notes:
+  - `npm run check` — passed
+  - `npm run check:packaging` — passed
+  - `npm audit --omit=dev` — passed, 0 vulnerabilities
+  - Windows x64 payload preparation and bundled Node.js 24.21.0 execution verification — passed
+  - `npm run check:windows-installer` — passed with a synthetic Antigravity 2.13.0 ASAR, including install, repeated install, restore, and non-zero failure propagation
+  - macOS x64 and arm64 payload preparation, official runtime SHA-256 verification, and structural verification — passed on Windows
+- Windows validation: `VALIDATED_ON_WINDOWS_X64`. Both Inno Setup EXEs built successfully and passed isolated end-to-end tests. The final local artifacts were `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows.exe` (SHA-256 `8B21EB07570924F08D739CEC84857934AACE9AEBD9EA67BFACA2EAA17CCCA0B4`) and `Antigravity-ZH-Hant-TW-ALT-1.0.0-Windows-Restore.exe` (SHA-256 `22D33DECE243E58D2A103FA6A4180AA7E2D4DCBCCCD153447EE72A7225F72BBD`). Generated artifacts remain ignored and are not committed.
+- macOS validation: `PENDING_MANUAL_PLATFORM_VALIDATION`. Both architecture payloads and official runtime checksums were verified, but `.app` construction, ad-hoc signing, Gatekeeper launch, install, and restore must still be run on matching macOS x64/arm64 hosts.
+- Remaining blockers: Real-platform macOS validation is required before claiming macOS artifact success. It does not block review of the version-controlled build implementation.
+- Notes: No GitHub Actions workflow was created or used. `release/v2` was not merged, modified, or deleted. No official Antigravity `app.asar` or other proprietary payload was committed or shipped.
