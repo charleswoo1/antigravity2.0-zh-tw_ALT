@@ -8,6 +8,10 @@ const asar = require('@electron/asar');
 const engine = require('../localization_engine');
 
 async function main() {
+    assert.strictEqual(engine.EDITION, 'ALT');
+    assert.strictEqual(engine.ENGINE_VERSION, '1.0.0');
+    assert.strictEqual(engine.SUPPORTED_ANTIGRAVITY_VERSION, '2.13.0');
+
     const dictDir = path.join(__dirname, '..', 'dicts');
     const dictionary = {};
     for (const file of fs.readdirSync(dictDir).filter(name => name.endsWith('.json'))) {

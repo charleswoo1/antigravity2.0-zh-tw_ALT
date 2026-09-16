@@ -4,8 +4,10 @@ const child_process = require('child_process');
 const asar = require('@electron/asar');
 
 const PROJECT_ID = 'antigravity2-zh-hant-tw';
-const PROJECT_NAME = 'Antigravity 2.0 繁體中文套件';
-const ENGINE_VERSION = '1.0.7';
+const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
+const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
+const EDITION = 'ALT';
+const ENGINE_VERSION = '1.0.0';
 const SUPPORTED_ANTIGRAVITY_VERSION = '2.13.0';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
@@ -14,9 +16,12 @@ const SIGNATURE_START = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION START --- */
 const SIGNATURE_END = '/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION END --- */';
 
 function resolveAsarCli() {
-    const localAsarPath = path.join(__dirname, 'node_modules', '@electron', 'asar', 'bin', 'asar.js');
-    if (fs.existsSync(localAsarPath)) {
-        return localAsarPath;
+    const candidates = [
+        path.join(__dirname, 'node_modules', '@electron', 'asar', 'bin', 'asar.mjs'),
+        path.join(__dirname, 'node_modules', '@electron', 'asar', 'bin', 'asar.js')
+    ];
+    for (const localAsarPath of candidates) {
+        if (fs.existsSync(localAsarPath)) return localAsarPath;
     }
     return null;
 }
@@ -25,8 +30,8 @@ function runAsarCommand(action, args) {
     const asarCli = resolveAsarCli();
     if (!asarCli) {
         console.error('[錯誤] 找不到本地 @electron/asar CLI。');
-        console.error('  請先在專案目錄執行 npm install，再重新執行安裝。');
-        return { success: false, stdout: '', stderr: '本地 @electron/asar 未安裝' };
+        console.error('  發行套件可能不完整，請重新下載 ALT 安裝程式。');
+        return { success: false, stdout: '', stderr: '內建 @electron/asar 不存在' };
     }
 
     const nodeExe = process.execPath;
@@ -139,12 +144,9 @@ function checkEnvironment() {
     if (!asarCli) {
         console.error('');
         console.error('╔══════════════════════════════════════════════════════════╗');
-        console.error('║  [環境檢查] 找不到本地 @electron/asar CLI                ║');
+        console.error('║  [環境檢查] 找不到內建 @electron/asar CLI                ║');
         console.error('║                                                          ║');
-        console.error('║  請先在專案根目錄執行：                                  ║');
-        console.error('║    npm install                                            ║');
-        console.error('║                                                          ║');
-        console.error('║  完成後再重新執行安裝腳本。                              ║');
+        console.error('║  發行套件可能不完整，請重新下載 ALT 安裝程式。            ║');
         console.error('╚══════════════════════════════════════════════════════════╝');
         console.error('');
         return false;
@@ -682,19 +684,66 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function closeAntigravityProcesses() {
+function closeWindowsAntigravityProcesses() {
     console.log('[1] 正在關閉 Antigravity，以避免檔案被占用...');
 
     try {
-        if (process.platform === 'win32') {
-            child_process.execSync('taskkill /f /im Antigravity.exe /t >nul 2>nul');
-        } else {
-            child_process.execSync('pkill -f Antigravity > /dev/null 2>&1');
-        }
+        child_process.execSync('taskkill /f /im Antigravity.exe /t >nul 2>nul');
     } catch (e) {}
 
     const start = Date.now();
     while (Date.now() - start < 1500) {}
+}
+
+function interpretMacAntigravityProcessResult(result) {
+    if (!result || result.error || result.signal) return 'unknown';
+    if (result.status === 0) return 'running';
+    if (result.status === 1) return 'not-running';
+    return 'unknown';
+}
+
+function getMacAntigravityProcessState(processRunner = child_process.spawnSync) {
+    try {
+        const result = processRunner('pgrep', ['-x', 'Antigravity'], {
+            encoding: 'utf-8',
+            stdio: 'pipe',
+            timeout: 5000
+        });
+        return interpretMacAntigravityProcessResult(result);
+    } catch (e) {
+        return 'unknown';
+    }
+}
+
+function ensureMacAntigravitySafeForMutation(options = {}) {
+    const platform = options.platform || process.platform;
+    if (platform !== 'darwin') return true;
+    const state = getMacAntigravityProcessState(options.processRunner);
+    if (state === 'running') {
+        console.error('[錯誤] 偵測到 Antigravity 仍在執行。請先完全關閉 Antigravity，再重新執行 ALT。');
+        return false;
+    }
+    if (state === 'unknown') {
+        console.error('[錯誤] 無法確認 Antigravity 是否仍在執行。為保護官方檔案，ALT 已安全中止；請確認 Antigravity 已完全關閉後再試。');
+        return false;
+    }
+
+    return true;
+}
+
+function ensureAntigravitySafeForMutation(options = {}) {
+    const platform = options.platform || process.platform;
+
+    // Compatibility bypass for internal Windows fixture tests only. The normal
+    // macOS path always performs the detection guard, even when this flag is set.
+    if (options.skipProcessClose && platform !== 'darwin') return true;
+
+    if (platform === 'win32') {
+        closeWindowsAntigravityProcesses();
+        return true;
+    }
+
+    return ensureMacAntigravitySafeForMutation(options);
 }
 
 function detectInstallationDir(manualDir) {
@@ -855,7 +904,7 @@ function install20(resourcesDir, options = {}) {
     }
     console.log(`[版本檢查] Antigravity ${installed.version} 已通過相容性檢查。`);
 
-    if (!options.skipProcessClose) closeAntigravityProcesses();
+    if (!ensureAntigravitySafeForMutation(options)) return false;
 
     if (!createOrRefreshBackup(asarPath, bakPath)) return false;
 
@@ -867,7 +916,7 @@ function install20(resourcesDir, options = {}) {
     console.log('[解包] 正在解包 app.asar...');
     const extractRes = runAsarCommand('extract', [asarPath, tempDir]);
     if (!extractRes.success || !fs.existsSync(tempDir)) {
-        console.error('[錯誤] 解包失敗，請確認已執行 npm install 並確認 Node.js 可正常使用。');
+        console.error('[錯誤] 內建解包工具執行失敗。請重新下載 ALT 安裝程式；若問題持續，請查看執行記錄。');
         console.error(`詳情：${extractRes.stderr}\n${extractRes.stdout}`);
         return false;
     }
@@ -960,9 +1009,15 @@ function install20(resourcesDir, options = {}) {
         console.log('[修改] 啟動畫面文字調整完成。');
     }
 
-    console.log('[打包] 正在以官方 unpacked 結構重新打包 app.asar...');
     const newAsarPath = path.join(resourcesDir, 'app.asar.localized.tmp');
     const newUnpackedPath = `${newAsarPath}.unpacked`;
+    if (!ensureMacAntigravitySafeForMutation(options)) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
+        if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
+        return false;
+    }
+    console.log('[打包] 正在以官方 unpacked 結構重新打包 app.asar...');
     if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
     if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
     const packRes = runAsarCommand('pack', ['--unpack-dir', OFFICIAL_UNPACK_DIR, tempDir, newAsarPath]);
@@ -977,6 +1032,13 @@ function install20(resourcesDir, options = {}) {
     const packed = inspectAsar(newAsarPath);
     if (packed.version !== SUPPORTED_ANTIGRAVITY_VERSION || !packed.localized || !packed.wizardLocalized) {
         console.error(`[錯誤] 打包驗證失敗（版本：${packed.version || '未知'}，主介面簽章：${packed.localized ? '有' : '無'}，安裝精靈簽章：${packed.wizardLocalized ? '有' : '無'}）。`);
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
+        if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
+        return false;
+    }
+
+    if (!ensureMacAntigravitySafeForMutation(options)) {
         fs.rmSync(tempDir, { recursive: true, force: true });
         if (fs.existsSync(newAsarPath)) fs.unlinkSync(newAsarPath);
         if (fs.existsSync(newUnpackedPath)) fs.rmSync(newUnpackedPath, { recursive: true, force: true });
@@ -1021,7 +1083,7 @@ function restore20(resourcesDir, options = {}) {
         }
     }
 
-    if (!options.skipProcessClose) closeAntigravityProcesses();
+    if (!ensureAntigravitySafeForMutation(options)) return false;
 
     console.log('[還原] 正在還原官方 app.asar...');
     const restoreTempPath = path.join(resourcesDir, 'app.asar.restore.tmp');
@@ -1033,11 +1095,17 @@ function restore20(resourcesDir, options = {}) {
             throw new Error('還原暫存檔驗證失敗');
         }
 
+        if (!ensureMacAntigravitySafeForMutation(options)) {
+            if (fs.existsSync(restoreTempPath)) fs.unlinkSync(restoreTempPath);
+            return false;
+        }
+
         if (fs.existsSync(asarPath)) {
             replaceArchiveSafely(restoreTempPath, asarPath);
         } else {
             fs.renameSync(restoreTempPath, asarPath);
         }
+        if (!ensureMacAntigravitySafeForMutation(options)) return false;
         fs.unlinkSync(bakPath);
     } catch (e) {
         if (fs.existsSync(restoreTempPath)) fs.unlinkSync(restoreTempPath);
@@ -1071,6 +1139,8 @@ function locateResourcesDir(installDir) {
 
 function printVersion() {
     console.log(`${PROJECT_NAME}`);
+    console.log(`Product: ${PRODUCT_NAME_EN}`);
+    console.log(`Edition: ${EDITION}`);
     console.log(`Project ID: ${PROJECT_ID}`);
     console.log(`Engine version: ${ENGINE_VERSION}`);
     console.log(`Supported Antigravity version: ${SUPPORTED_ANTIGRAVITY_VERSION}`);
@@ -1080,6 +1150,7 @@ function printVersion() {
 function main() {
     let restore = false;
     let manualDir = '';
+    let skipProcessClose = false;
 
     const args = process.argv.slice(2);
 
@@ -1089,6 +1160,8 @@ function main() {
         } else if (args[i] === '--install-dir') {
             manualDir = args[i + 1] || '';
             i++;
+        } else if (args[i] === '--skip-process-close') {
+            skipProcessClose = true;
         } else if (args[i] === '--version' || args[i] === '-v') {
             printVersion();
             return;
@@ -1113,10 +1186,10 @@ function main() {
 
     if (restore) {
         console.log(`====== 正在還原 ${PROJECT_NAME} ======`);
-        restore20(resourcesDir);
+        process.exitCode = restore20(resourcesDir, { skipProcessClose }) ? 0 : 1;
     } else {
         console.log(`====== 正在套用 ${PROJECT_NAME} ======`);
-        install20(resourcesDir);
+        process.exitCode = install20(resourcesDir, { skipProcessClose }) ? 0 : 1;
     }
 }
 
@@ -1125,7 +1198,13 @@ if (require.main === module) main();
 module.exports = {
     SIGNATURE_START,
     SIGNATURE_END,
+    EDITION,
+    ENGINE_VERSION,
     SUPPORTED_ANTIGRAVITY_VERSION,
+    interpretMacAntigravityProcessResult,
+    getMacAntigravityProcessState,
+    ensureMacAntigravitySafeForMutation,
+    ensureAntigravitySafeForMutation,
     cleanJsContent,
     generateJs,
     injectTranslationFile,

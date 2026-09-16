@@ -16,6 +16,9 @@ app.asar.bak
 
 # Release 打包輸出
 dist-release/
+.build/
+dist/
+vendor/runtime/
 
 # Logs
 logs
