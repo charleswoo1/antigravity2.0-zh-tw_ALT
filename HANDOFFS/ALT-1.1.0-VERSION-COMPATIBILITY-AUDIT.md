@@ -30,10 +30,12 @@ Codex later confirmed that the inspected log contained the synthetic Windows ins
 
 The synthetic failure test currently uses the normal persistent ALT log location under `%LOCALAPPDATA%\Antigravity-ZH-Hant-TW-ALT\`, so test diagnostics can be confused with a real user install failure.
 
-This task must solve both problems together:
+This task must solve these problems together:
 
 1. make upstream compatibility auditing repeatable and mostly automated;
-2. make installer/test failure diagnostics isolated and user-readable.
+2. make installer/test failure diagnostics isolated and user-readable;
+3. move compatibility/version validation into a true **preflight gate** before any Antigravity mutation is possible;
+4. investigate the reported case where a failed install was followed by Antigravity no longer launching, and guarantee rollback/integrity behavior for every mutation-stage failure.
 
 ---
 
@@ -169,6 +171,68 @@ Persist only safe metadata needed for future comparison. It may include:
 Do **not** persist complete official file contents.
 
 The design should allow the next Antigravity version to be compared against the last verified fingerprint without requiring a full manual source review when nothing material changed.
+
+### 4.4 Mandatory installer preflight gate
+
+The current Windows installer invokes the localization engine from Inno Setup `ssPostInstall`. This means the progress bar can be almost complete before the engine performs its version check. Although the current engine checks the upstream version before calling backup/mutation logic, this ordering is too late from the installer UX and safety-boundary perspective.
+
+Refactor the Windows install path into two explicit phases:
+
+```text
+PRE-FLIGHT (read only)
+  locate Antigravity
+  → read app.asar/package.json
+  → determine upstream version
+  → verify version is explicitly allowed
+  → verify required structure/anchors/profile
+  → verify Antigravity process state
+  → verify target is readable
+  → no backup, no repack, no rename, no write to Antigravity
+        ↓ only if PASS
+MUTATION
+  backup
+  → extract to temp
+  → patch temp copy
+  → repack temp archive
+  → validate temp archive
+  → atomic replacement
+  → post-install integrity check
+```
+
+Requirements:
+
+- unsupported version must fail **before the main install/mutation phase starts**;
+- before preflight returns PASS, there must be **zero writes under the Antigravity installation directory**;
+- preflight may write only ALT-owned temporary/log files;
+- the installer should present the detected and supported versions immediately on preflight failure;
+- the GUI should not visually run to the end of the installation progress bar before reporting a simple version incompatibility;
+- prefer an Inno Setup pre-install hook such as `PrepareToInstall` / equivalent early gate, using a minimal temporarily extracted runtime/preflight payload when needed;
+- do not duplicate compatibility logic independently in Pascal if that risks drift; keep one authoritative compatibility implementation where practical;
+- silent installer mode must use the same preflight gate and non-zero failure semantics.
+
+### 4.5 Transactional mutation and launch-integrity guarantee
+
+The user reported that after the failed installer attempt, Antigravity no longer launched. The current unsupported-version code path is expected to return before `createOrRefreshBackup()`, so this symptom must be investigated rather than assumed to be caused by the version mismatch itself.
+
+Codex must inspect and record the real local state before further mutation, including as applicable:
+
+- current `app.asar` existence, size, version and hash;
+- presence of `app.asar.bak`, `app.asar.pre-localization`, `app.asar.localized.tmp`, `app.asar.restore.tmp`, and associated `.unpacked` directories;
+- whether the official Antigravity executable starts against the current archive;
+- whether any prior ALT/installer temporary artifact is shadowing or replacing the expected archive.
+
+Mutation-phase requirements:
+
+- never modify the original archive in-place;
+- patch/repack only a temporary copy;
+- validate the completed temporary archive before replacement;
+- replacement must remain atomic/rollback-safe;
+- if any exception occurs after the original archive has been moved/renamed, restore the exact pre-install archive automatically;
+- on every failed install, perform a final integrity check confirming a launchable/original archive path exists;
+- do not delete the last known-good official backup until restore/install success is fully verified;
+- leave diagnostic artifacts only in ALT-owned locations, never as ambiguous files that Antigravity may attempt to load.
+
+Add regression/fault-injection tests around replacement failure and post-replacement verification failure, not only failures that occur before mutation.
 
 ---
 
@@ -381,6 +445,12 @@ Document that an upstream update normally overwrites localization and that users
 - [ ] Real `app.asar` and extracted official source are not committed or uploaded.
 - [ ] Windows synthetic E2E logs are isolated from normal user logs.
 - [ ] Missing-installation and unsupported-version failures have distinct diagnostics.
+- [ ] Windows installer performs a read-only preflight before the main mutation/install phase.
+- [ ] Unsupported upstream versions cause zero writes under the Antigravity installation directory.
+- [ ] A simple unsupported-version failure is shown before the installer progress reaches the mutation phase.
+- [ ] The reported post-failure 'Antigravity cannot launch' state is investigated and its root cause recorded.
+- [ ] Mutation is transactional: injected failures after backup/replacement cannot leave Antigravity without a valid original or verified localized archive.
+- [ ] Fault-injection tests cover rollback after replacement-stage failures.
 - [ ] Installer error UI exposes a concise actionable root cause instead of only `exit code 1`.
 - [ ] Installer failures preserve non-zero exit codes.
 - [ ] Controlled real-install test ends with the official unlocalized archive restored.
