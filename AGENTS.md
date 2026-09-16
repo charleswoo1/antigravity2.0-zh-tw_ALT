@@ -20,21 +20,40 @@
 - 未經 contract 明確授權，不得刪除長期 branch、tag、Release 或大規模改寫 Git history。
 - 若執行時發現 contract 的前提已失效，應停止高風險步驟，在 Issue/PR 中記錄 blocker，不得自行猜測破壞性替代方案。
 
-## GitHub Actions 禁用政策
+## GitHub Actions 受控 CI 政策
 
-本專案不使用 GitHub Actions。所有貢獻者、自動化工具與 Agent 都必須遵守以下規則：
+本專案允許使用 GitHub Actions，但用途限定為 **CI、測試與建置驗證**。所有貢獻者、自動化工具與 Agent 都必須遵守以下規則：
 
-- 不得新增、修改、啟用或執行任何 GitHub Actions workflow。
-- 不得建立 `.github/workflows/` 目錄或任何 workflow YAML 檔案。
-- 不得將測試、建置、發佈、部署、排程或安全掃描設計為 GitHub Actions 作業。
-- 不得建議、要求或依賴 GitHub Actions Marketplace 中的 action。
-- 如需自動化，應優先提供可在使用者本機執行的 Node.js、PowerShell 或 shell 指令與腳本，並保持人工可驗證性。
-- 如任務或外部工具要求使用 GitHub Actions，必須停止該路徑，並改用不依賴 GitHub Actions 的本機方案。
+### 允許用途
+
+- 可在 Pull Request、push 至 `main` 或 `workflow_dispatch` 時執行測試、lint、smoke test、dependency audit 與 packaging/build validation。
+- 可使用 GitHub 提供的 standard GitHub-hosted runners，包括 Windows、Linux 與 macOS runner。
+- 可建置 Windows / macOS 驗證用 artifact，並使用 GitHub Actions artifact 暫存測試產物。
+- 可執行不改變 repository 狀態的安全檢查，例如版本、checksum、package、installer/app bundle 結構驗證。
+- 可使用必要且可信任的 GitHub 官方 action；第三方 action 必須有明確必要性，且優先鎖定到可稽核的版本或 commit。
+
+### 禁止用途（除非使用者明確授權）
+
+- 不得自動 merge Pull Request。
+- 不得自動建立或發布正式 GitHub Release。
+- 不得自動上傳 production release asset。
+- 不得自動刪除 branch、tag、Release 或改寫 Git history。
+- 不得執行部署、發布、破壞性資料變更或其他不可逆操作。
+- 不得為 CI 提高不必要的 repository write 權限。
+- 不得讓來自 fork / Pull Request 的未受信任程式碼取得 repository secrets、write token 或其他敏感憑證。
+
+### Workflow 權限與安全
+
+- CI workflow 預設使用最小權限，優先設定 `permissions: contents: read`。
+- 若單一 job 確實需要額外權限，必須只在該 job/工作流程範圍內授予最低必要權限並在 PR 說明原因。
+- 一般 PR 驗證不得使用 production secrets。
+- 不得使用 `pull_request_target` 執行 PR 提供的未受信任程式碼，除非另有經 review 的安全設計。
+- CI 失敗不得觸發任何自動修復、merge、release 或 destructive fallback。
 
 ## 驗證與發布
 
-- 所有驗證必須可以在本機完成。
-- 發布與版本建立不得以 GitHub Actions 為前提。
-- GitHub 僅用於 Git 版本管理、原始碼儲存、Issue、Pull Request 與 Release 檔案托管（若需）。
+- 所有核心測試與 build 流程仍必須能在本機執行；GitHub Actions 是 CI / validation 層，不得成為唯一可用的建置方式。
+- 正式發布與版本建立維持人工控制；除非使用者另行明確授權，不得由 GitHub Actions 自動發布。
+- GitHub 可用於 Git 版本管理、原始碼儲存、Issue、Pull Request、CI/build validation 與 Release 檔案托管。
 - Release 不得包含 Antigravity 官方 `app.asar` 或其他官方 proprietary 檔案。
 - 第三方 runtime/dependency 若被打包進 Release，必須保留適用的授權與 notices。
