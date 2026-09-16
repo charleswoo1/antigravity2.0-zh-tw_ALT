@@ -1,6 +1,6 @@
 # Handoff Contract — ALT 1.0.0 macOS Process Safety
 
-**Status:** `READY_FOR_REVIEW`  
+**Status:** `COMPLETE`  
 **Issue:** #4 — ALT 1.0.0 macOS process safety: detect running Antigravity and abort  
 **Parent migration:** #1  
 **Current implementation PR:** #3 — `feature/alt-1.0.0-mainline` → `main`  
@@ -244,7 +244,7 @@ Do not delete `release/v2` as part of this handoff.
 
 ## 10. Execution Result
 
-- Status: `READY_FOR_REVIEW`
+- Status: `COMPLETE` — merged to `main` by PR #3 as merge commit `2348fbb`
 - Implementation commit(s):
   - `e23430a` — `fix(macos): fail safely when Antigravity is running`
   - `922efc5` — `fix: clean late macOS guard artifacts`
