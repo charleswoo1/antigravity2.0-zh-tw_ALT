@@ -18,7 +18,7 @@
    - 更新 contract 的 `Execution Result`。
    - 將 contract 狀態改為 `READY_FOR_REVIEW`。
 6. Review 通過並 merge 後，contract 才改為 `COMPLETE`。
-7. 禁止 GitHub Actions；所有 build/test/release 工作都使用本機流程。
+7. GitHub Actions 可用於 CI、測試與 build validation；正式 merge/release 與破壞性操作維持人工控制。所有核心 build/test 流程仍須可在本機執行，並遵守 `AGENTS.md` 的最小權限與 secrets 安全規範。
 
 ## Contract 狀態
 
