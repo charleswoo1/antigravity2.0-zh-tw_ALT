@@ -1,6 +1,6 @@
 # Handoff Contract — ALT 1.0.0 macOS Process Safety
 
-**Status:** `READY_FOR_CODEX`  
+**Status:** `READY_FOR_REVIEW`  
 **Issue:** #4 — ALT 1.0.0 macOS process safety: detect running Antigravity and abort  
 **Parent migration:** #1  
 **Current implementation PR:** #3 — `feature/alt-1.0.0-mainline` → `main`  
@@ -244,14 +244,19 @@ Do not delete `release/v2` as part of this handoff.
 
 ## 10. Execution Result
 
-**Codex: update during implementation.**
-
-- Status:
-- Implementation commit(s):
-- PR:
-- Process-state helper:
+- Status: `READY_FOR_REVIEW`
+- Implementation commit(s): `e23430a` — `fix(macos): fail safely when Antigravity is running`
+- PR: [#3 — feat: migrate mainline to ALT 1.0.0](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/3)
+- Process-state helper: `getMacAntigravityProcessState(processRunner)` invokes exactly `pgrep -x Antigravity` with a 5-second timeout and maps status `0` to `running`, status `1` to `not-running`, and errors, signals, missing results, or all other statuses to `unknown`. Both `running` and `unknown` fail closed. macOS ignores the internal Windows-fixture `skipProcessClose` bypass and rechecks immediately before backup/restore mutation, localized archive creation, archive replacement, and backup deletion.
 - Tests run:
-- Windows regression result:
-- macOS real-platform validation:
-- Remaining blockers:
-- Notes:
+  - `npm run check` — passed, including status interpretation, exact command arguments, spawn-error handling, forbidden termination-command regression assertions, install/restore no-mutation fixtures, and a process-started-during-install fixture
+  - `npm run check:packaging` — passed
+  - `npm ci --ignore-scripts --no-fund` — passed
+  - `npm audit --omit=dev` — passed, 0 vulnerabilities
+  - macOS x64 and arm64 payload preparation, official runtime SHA-256 verification, and structural verification — passed on Windows
+  - Windows x64 Inno Setup build — passed
+  - `npm run check:windows-installer` — passed after rebuild, including install, repeated install, restore, and non-zero failure propagation
+- Windows regression result: `PASSED_ON_WINDOWS_X64`. Windows retains exact `taskkill /f /im Antigravity.exe` behavior. Final local artifacts: install SHA-256 `9C8D8DCFF19E17BB8311C2B0DEDB99753A56AE112B31D4E8C0145E4E6198FAC5`; restore SHA-256 `44BC923E900C24E94819A985BEB9F1086BEF5C857252089DE175C2FF915F464A`. Generated artifacts remain ignored and are not committed.
+- macOS real-platform validation: `PENDING_MANUAL_PLATFORM_VALIDATION`. This Windows host cannot build/sign/launch the `.app` or verify quarantine, Gatekeeper, and live `pgrep` behavior.
+- Remaining blockers: Matching macOS x64/arm64 hosts are still required for the documented real-distribution validation before macOS can be described as production-supported.
+- Notes: macOS contains no AppleScript quit, `pkill`, or `killall` path. README states that ALT never closes Antigravity automatically and safely aborts when it is running. No GitHub Actions were added or used; `release/v2` remains untouched; no proprietary Antigravity ASAR was committed or shipped.
