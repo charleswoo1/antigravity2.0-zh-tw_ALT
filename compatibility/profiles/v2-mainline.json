@@ -13,6 +13,7 @@
     },
     "dist/menu.js": {
       "required": false,
+      "missingSeverity": "review",
       "anchors": [
         {
           "id": "menu-set-application-menu",
@@ -38,6 +39,7 @@
     },
     "dist/tray.js": {
       "required": false,
+      "missingSeverity": "review",
       "anchors": [
         {
           "id": "tray-create-function",
@@ -56,6 +58,7 @@
     },
     "dist/loadingOverlay.js": {
       "required": false,
+      "missingSeverity": "review",
       "anchors": [
         {
           "id": "loading-overlay-text",
@@ -67,6 +70,7 @@
     },
     "dist/ideInstall/wizardPreload.js": {
       "required": false,
+      "missingSeverity": "review",
       "anchors": []
     }
   },

@@ -12,18 +12,23 @@ async function createFixture(root, options = {}) {
     const sourceDir = path.join(root, 'source');
     const resourcesDir = path.join(root, 'Antigravity', 'resources');
     const distDir = path.join(sourceDir, 'dist');
+    const wizardDir = path.join(distDir, 'ideInstall');
     fs.mkdirSync(distDir, { recursive: true });
+    fs.mkdirSync(wizardDir, { recursive: true });
     fs.mkdirSync(resourcesDir, { recursive: true });
     fs.writeFileSync(path.join(sourceDir, 'package.json'), JSON.stringify({
         name: 'antigravity',
         version: options.version || '2.14.0'
     }));
     if (!options.missingPreload) fs.writeFileSync(path.join(distDir, 'preload.js'), 'console.log("fixture");\n');
-    fs.writeFileSync(path.join(distDir, 'menu.js'), options.badMenu
-        ? 'electron_1.Menu.setApplicationMenu(otherMenu);\n'
-        : "const items = [{ label: 'New Window' }, { label: 'Docs' }];\nelectron_1.Menu.setApplicationMenu(menu);\n");
+    if (!options.missingMenu) {
+        fs.writeFileSync(path.join(distDir, 'menu.js'), options.badMenu
+            ? 'electron_1.Menu.setApplicationMenu(otherMenu);\n'
+            : "const items = [{ label: 'New Window' }, { label: 'Docs' }];\nelectron_1.Menu.setApplicationMenu(menu);\n");
+    }
     fs.writeFileSync(path.join(distDir, 'tray.js'), "function createTray(actions) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\n");
     fs.writeFileSync(path.join(distDir, 'loadingOverlay.js'), '<div class="text">Loading Antigravity</div>\n');
+    if (!options.missingWizard) fs.writeFileSync(path.join(wizardDir, 'wizardPreload.js'), 'console.log("wizard fixture");\n');
     await asar.createPackage(sourceDir, path.join(resourcesDir, 'app.asar'));
     fs.mkdirSync(path.join(resourcesDir, 'app.asar.unpacked', 'node_modules', 'chrome-devtools-mcp'), { recursive: true });
     return { installDir: path.join(root, 'Antigravity'), asarPath: path.join(resourcesDir, 'app.asar') };
@@ -59,11 +64,29 @@ async function main() {
         assert.ok(ambiguous.issues.some(issue => issue.id === 'ambiguous-artifact:app.asar.pre-localization'));
         fs.unlinkSync(ambiguousArtifact);
 
+        const localizedSource = path.join(tempRoot, 'localized-source');
+        fs.copyFileSync(passFixture.asarPath, `${passFixture.asarPath}.bak`);
+        asar.extractAll(passFixture.asarPath, localizedSource);
+        fs.appendFileSync(path.join(localizedSource, 'dist', 'preload.js'), '\n/* --- ANTIGRAVITY ZH-HANT-TW LOCALIZATION START --- */\n');
+        fs.writeFileSync(path.join(localizedSource, 'dist', 'tray.js'), '已中文化 tray fixture\n');
+        fs.writeFileSync(path.join(localizedSource, 'dist', 'loadingOverlay.js'), '已中文化 loading fixture\n');
+        await asar.createPackage(localizedSource, passFixture.asarPath);
+        const localized = auditInstallation({ installDir: passFixture.installDir });
+        assert.strictEqual(localized.localized, true);
+        assert.strictEqual(localized.status, 'PASS', '重複安裝的 preflight 應以同版本官方備份驗證原始 patch anchors');
+        assert.strictEqual(localized.preAuditBackupExists, true);
+
         const reviewFixture = await createFixture(path.join(tempRoot, 'review'), { badMenu: true });
         const review = auditInstallation({ installDir: reviewFixture.installDir });
         assert.strictEqual(review.status, 'REVIEW_REQUIRED');
         assert.strictEqual(review.exitCode, 2);
         assert.ok(review.issues.some(issue => issue.id === 'anchor:menu-set-application-menu'));
+
+        const missingPatchTargetFixture = await createFixture(path.join(tempRoot, 'missing-patch-target'), { missingMenu: true });
+        const missingPatchTarget = auditInstallation({ installDir: missingPatchTargetFixture.installDir });
+        assert.strictEqual(missingPatchTarget.status, 'REVIEW_REQUIRED', '已知 optional patch target 消失不得 PASS');
+        assert.strictEqual(missingPatchTarget.exitCode, 2);
+        assert.ok(missingPatchTarget.issues.some(issue => issue.id === 'missing:dist/menu.js'));
 
         const blockedFixture = await createFixture(path.join(tempRoot, 'blocked'), { missingPreload: true });
         const blocked = auditInstallation({ installDir: blockedFixture.installDir });

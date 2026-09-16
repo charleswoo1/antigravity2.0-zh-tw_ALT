@@ -151,6 +151,44 @@ function auditInstallation(options = {}) {
         const issues = [];
         const members = {};
         let localized = false;
+        try {
+            localized = asar.extractFile(location.asarPath, path.join('dist', 'preload.js'))
+                .toString('utf-8').includes(SIGNATURE_START);
+        } catch (error) {
+            // The required-member check below owns the diagnostic for a missing preload.
+        }
+
+        let structuralAsarPath = location.asarPath;
+        const backupPath = `${location.asarPath}.bak`;
+        if (localized) {
+            if (!fs.existsSync(backupPath)) {
+                issues.push({
+                    severity: 'blocked',
+                    id: 'localized-backup-missing',
+                    message: '已中文化 archive 缺少可供結構稽核與安全還原的官方備份'
+                });
+            } else {
+                try {
+                    asar.uncache(backupPath);
+                    const backupPackage = JSON.parse(asar.extractFile(backupPath, 'package.json').toString('utf-8'));
+                    if (backupPackage.version !== version) {
+                        issues.push({
+                            severity: 'blocked',
+                            id: 'localized-backup-version-mismatch',
+                            message: `官方備份版本 ${backupPackage.version || '無法辨識'} 與目前版本 ${version || '無法辨識'} 不一致`
+                        });
+                    } else {
+                        structuralAsarPath = backupPath;
+                    }
+                } catch (error) {
+                    issues.push({
+                        severity: 'blocked',
+                        id: 'localized-backup-invalid',
+                        message: `無法檢查已中文化 archive 的官方備份：${error.message}`
+                    });
+                }
+            }
+        }
 
         const transactionalArtifacts = [
             'app.asar.pre-localization',
@@ -184,10 +222,18 @@ function auditInstallation(options = {}) {
         for (const [memberPath, definition] of Object.entries(profile.members)) {
             let buffer;
             try {
-                buffer = asar.extractFile(location.asarPath, path.join(...memberPath.split('/')));
+                buffer = asar.extractFile(structuralAsarPath, path.join(...memberPath.split('/')));
             } catch (error) {
-                members[memberPath] = { exists: false, required: definition.required };
-                if (definition.required) issues.push({ severity: 'blocked', id: `missing:${memberPath}`, message: `缺少必要成員 ${memberPath}` });
+                members[memberPath] = {
+                    exists: false,
+                    required: definition.required,
+                    missingSeverity: definition.missingSeverity || null
+                };
+                if (definition.required) {
+                    issues.push({ severity: 'blocked', id: `missing:${memberPath}`, message: `缺少必要成員 ${memberPath}` });
+                } else if (definition.missingSeverity === 'review') {
+                    issues.push({ severity: 'review', id: `missing:${memberPath}`, message: `已知 patch target 消失：${memberPath}` });
+                }
                 continue;
             }
 
@@ -195,7 +241,6 @@ function auditInstallation(options = {}) {
             fs.mkdirSync(path.dirname(extractedPath), { recursive: true });
             fs.writeFileSync(extractedPath, buffer);
             const text = buffer.toString('utf-8');
-            if (memberPath === 'dist/preload.js') localized = text.includes(SIGNATURE_START);
             const anchors = (definition.anchors || []).map(anchor => {
                 const count = countAnchor(text, anchor);
                 const matched = count === anchor.expectedCount;
