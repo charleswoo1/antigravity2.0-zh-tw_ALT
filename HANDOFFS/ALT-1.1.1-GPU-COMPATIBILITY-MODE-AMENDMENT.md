@@ -1,9 +1,9 @@
 # Handoff Amendment — ALT 1.1.1 Windows 11 25H2 GPU Compatibility Mode
 
-**Status:** `READY_TO_MERGE`  
+**Status:** `COMPLETE`  
 **Applies to:** `HANDOFFS/ALT-1.1.1-WINDOWS-INSTALLER-PROGRESS-GPU-KNOWN-ISSUE.md`  
-**Issue:** #12  
-**PR:** #13  
+**Issue:** #12 — closed by PR #13  
+**PR:** #13 — merged to `main` as `c722e2a6f06a6b963f51dab6e32bcbc36bacce97`  
 **Prepared:** 2026-09-17
 
 ## Why this amendment exists
@@ -56,4 +56,10 @@ Validated on Windows 11 Enterprise 25H2 build `26200.9448` before release prepar
 - compatibility-mode launch remains reliable when normal relaunch fails: PASS;
 - release preparation authorized by the user after validation.
 
-Automated CI on the amended implementation also passed. PR #13 is therefore ready for final merge/release processing, subject only to the normal final CI/head-SHA check.
+## Completion
+
+- PR #13 final head CI run #35: PASS.
+- PR #13 merged to `main`: `c722e2a6f06a6b963f51dab6e32bcbc36bacce97`.
+- Issue #12: closed.
+- README stable `releases/latest/download/...` links and fixed public Windows asset filenames are in `main`.
+- Release processing for ALT 1.1.1 is authorized.
