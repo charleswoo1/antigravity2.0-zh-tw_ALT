@@ -89,7 +89,7 @@ if (($actualNames -join "`n") -ne ($expectedSorted -join "`n")) {
     throw "Release staging output does not match the expected asset set. Actual: $($actualNames -join ', ')"
 }
 
-Write-Host "Windows Release assets staged for ALT $version:"
+Write-Host "Windows Release assets staged for ALT ${version}:"
 foreach ($name in $expectedNames) {
     Write-Host "  $(Join-Path $OutputDir $name)"
 }
