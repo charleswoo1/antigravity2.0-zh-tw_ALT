@@ -7,9 +7,12 @@ const path = require('path');
 const asar = require('@electron/asar');
 const engine = require('../localization_engine');
 
+const repoRoot = path.resolve(__dirname, '..');
+const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
+
 async function main() {
     assert.strictEqual(engine.EDITION, 'ALT');
-    assert.strictEqual(engine.ENGINE_VERSION, '1.1.1');
+    assert.strictEqual(engine.ENGINE_VERSION, packageJson.version);
     assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0']);
 
     const dictDir = path.join(__dirname, '..', 'dicts');
