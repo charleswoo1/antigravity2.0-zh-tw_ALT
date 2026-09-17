@@ -62,7 +62,7 @@ jobs:
         run: npm run check:windows-installer
 
       - name: Upload Windows CI artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ci-windows-x64-${{ github.sha }}
           path: dist/*.exe
@@ -113,7 +113,7 @@ jobs:
           "$APP_PATH/Contents/Resources/payload/runtime/node" --version | grep -Fx 'v24.21.0'
 
       - name: Upload macOS CI artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ci-macos-${{ matrix.arch }}-${{ github.sha }}
           path: dist/*.zip
