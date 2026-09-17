@@ -2,11 +2,35 @@
 
 本專案的正式 GitHub Release 維持**人工控制**。GitHub Actions 只負責 CI、測試與建置驗證，不得自動建立正式 Release 或上傳 production asset。
 
+## 版本來源
+
+`package.json.version` 是 ALT build / release version 的權威來源。Windows installer、macOS artifact / bundle metadata 與 CI 都應由它衍生，不應另外修改目前版本字串。
+
+升版建議使用：
+
+```bash
+npm version <new-version> --no-git-tag-version
+```
+
+npm 的 `version` lifecycle 會執行版本同步工具，使 `localization_engine.js` 的 `ENGINE_VERSION` 跟著 `package.json.version` 更新。若直接手動修改 `package.json.version`，必須再執行：
+
+```bash
+npm run sync:version
+```
+
+可用下列指令確認版本一致性：
+
+```bash
+npm run check:packaging
+```
+
+Git tag 與正式 Release 仍在完成測試後人工建立，不由 `npm version` 自動發布。
+
 ## Windows x64
 
 ### 1. 確認版本與測試
 
-`package.json`、installer、engine 與 release notes 的 ALT version 必須一致，並先完成：
+`package.json.version`、runtime engine 與 release notes 的 ALT version 必須一致，並先完成：
 
 ```bash
 npm ci --ignore-scripts --no-fund
@@ -22,7 +46,7 @@ npm run check:packaging
 powershell -ExecutionPolicy Bypass -File .\build\windows\build.ps1 -Arch x64
 ```
 
-`dist/` 會保留版本化 build artifact，例如 ALT 1.1.1：
+Windows build 會從 `package.json.version` 讀取版本並注入 Inno Setup。`dist/` 會保留版本化 build artifact，例如 ALT 1.1.1：
 
 ```text
 Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe
