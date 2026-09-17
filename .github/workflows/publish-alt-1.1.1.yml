@@ -1,0 +1,114 @@
+name: Publish ALT 1.1.1
+
+on:
+  push:
+    branches:
+      - release/alt-1.1.1-publish
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-alt-1.1.1
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish Windows release
+    runs-on: windows-2025
+    env:
+      EXPECTED_MAIN_SHA: 14966e1d42a49c950dcebcb8d5e1bdbe75f97d24
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout release source from main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Verify frozen main commit
+        shell: powershell
+        run: |
+          $actual = (git rev-parse HEAD).Trim()
+          if ($actual -ne $env:EXPECTED_MAIN_SHA) {
+            throw "main moved: expected $env:EXPECTED_MAIN_SHA but got $actual"
+          }
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.21.0
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Run core tests
+        run: npm run check
+
+      - name: Run packaging tests
+        run: npm run check:packaging
+
+      - name: Build Windows x64 installers
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File .\build\windows\build.ps1 -Arch x64
+
+      - name: Run Windows installer E2E
+        run: npm run check:windows-installer
+
+      - name: Prepare stable release asset names and checksums
+        shell: powershell
+        run: |
+          $installSource = 'dist\Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe'
+          $restoreSource = 'dist\Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore.exe'
+          $installAsset = 'dist\Antigravity-ZH-Hant-TW-ALT-Windows.exe'
+          $restoreAsset = 'dist\Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe'
+          Copy-Item -LiteralPath $installSource -Destination $installAsset -Force
+          Copy-Item -LiteralPath $restoreSource -Destination $restoreAsset -Force
+          $releaseFiles = @($installAsset, $restoreAsset)
+          $lines = foreach ($file in $releaseFiles) {
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $file).Hash.ToLowerInvariant()
+            $name = Split-Path -Leaf $file
+            "$hash  $name"
+          }
+          [System.IO.File]::WriteAllLines(
+            (Join-Path $PWD 'dist\SHA256SUMS.txt'),
+            $lines,
+            [System.Text.UTF8Encoding]::new($false)
+          )
+          Get-Content 'dist\SHA256SUMS.txt'
+
+      - name: Write release notes
+        shell: powershell
+        run: |
+          @'
+          ## Antigravity 2.0 繁體中文 ALT 1.1.1
+
+          正式支援：Windows x64；已驗證 Antigravity 2.13.0、2.14.0。
+
+          ### 1.1.1 重點
+          - 修正 Windows 安裝器進度顯示：中文化／驗證尚未完成時不會提前顯示 100%。
+          - Install 與 Restore 使用各自正確的進度文字。
+          - Windows 11 25H2 / Build 26200.x 安裝完成後提供相容性提醒。
+          - 若正常 Antigravity 關閉後反覆無法重新啟動，可選擇建立「Antigravity 相容模式」桌面捷徑。
+          - 相容模式使用 `--disable-gpu-sandbox`，只建議在正常模式無法啟動時暫時使用；此參數會降低 Chromium GPU process 的 sandbox 隔離。
+          - 正常 Antigravity 捷徑不會被修改；不提供 `--no-sandbox`。
+
+          ### 下載
+          - `Antigravity-ZH-Hant-TW-ALT-Windows.exe`：繁體中文安裝程式
+          - `Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe`：官方英文還原工具
+          - `SHA256SUMS.txt`：SHA-256 校驗值
+
+          macOS x64 / Apple Silicon 目前仍屬實驗性、待實機驗證，因此本次正式 Release 不提供 macOS asset。
+          '@ | Set-Content -LiteralPath 'release-notes.md' -Encoding utf8
+
+      - name: Publish GitHub Release v1.1.1
+        shell: powershell
+        run: |
+          gh release create v1.1.1 `
+            'dist\Antigravity-ZH-Hant-TW-ALT-Windows.exe' `
+            'dist\Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe' `
+            'dist\SHA256SUMS.txt' `
+            --repo $env:GITHUB_REPOSITORY `
+            --target $env:EXPECTED_MAIN_SHA `
+            --title 'ALT 1.1.1' `
+            --notes-file 'release-notes.md' `
+            --latest
