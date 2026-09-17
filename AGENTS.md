@@ -30,6 +30,7 @@
 - 可使用 GitHub 提供的 standard GitHub-hosted runners，包括 Windows、Linux 與 macOS runner。
 - 可建置 Windows / macOS 驗證用 artifact，並使用 GitHub Actions artifact 暫存測試產物。
 - 可執行不改變 repository 狀態的安全檢查，例如版本、checksum、package、installer/app bundle 結構驗證。
+- 可在隔離測試目錄執行正式 release-preparation script，驗證固定 asset 命名與 checksum 邏輯，但不得把該 staging output 自動發布成 production Release asset。
 - 可使用必要且可信任的 GitHub 官方 action；第三方 action 必須有明確必要性，且優先鎖定到可稽核的版本或 commit。
 
 ### 禁止用途（除非使用者明確授權）
@@ -55,5 +56,15 @@
 - 所有核心測試與 build 流程仍必須能在本機執行；GitHub Actions 是 CI / validation 層，不得成為唯一可用的建置方式。
 - 正式發布與版本建立維持人工控制；除非使用者另行明確授權，不得由 GitHub Actions 自動發布。
 - GitHub 可用於 Git 版本管理、原始碼儲存、Issue、Pull Request、CI/build validation 與 Release 檔案托管。
+- Windows build / CI artifact 可保留 ALT 版本號；正式 GitHub Release 的 Windows 公開 asset 必須固定使用以下名稱：
+
+```text
+Antigravity-ZH-Hant-TW-ALT-Windows.exe
+Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
+SHA256SUMS.txt
+```
+
+- 人工發布 Windows Release 前必須使用 `build/release/prepare-windows-release.ps1` 從版本化 build artifact 建立獨立 staging output，並只上傳該 staging output 中的三個固定名稱檔案。完整 procedure 參閱 `RELEASING.md`。
+- README 的 `releases/latest/download/...` 永久下載連結依賴上述固定 asset 名稱；不得將帶版本號的 `.exe` 原名當成 production Release asset 上傳。
 - Release 不得包含 Antigravity 官方 `app.asar` 或其他官方 proprietary 檔案。
 - 第三方 runtime/dependency 若被打包進 Release，必須保留適用的授權與 notices。
