@@ -5,7 +5,7 @@
 - ALT 目前版本：**1.1.1**
 - 明確支援的 Antigravity 版本：**2.13.0、2.14.0**
 - 正式驗證平台：**Windows x64**
-- 實驗性／待實機驗證：macOS x64、Apple Silicon
+- 公開先行版本：**macOS x64、Apple Silicon**（CI build／簽署／ZIP 驗證已通過，完整人工實機驗證仍待完成）
 - 一般使用者不需要安裝 Node.js、npm、套件管理器或建置工具
 - 安裝與還原流程可在下載完成後離線執行
 
@@ -17,26 +17,39 @@
 
 - **[下載繁體中文安裝程式](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/Antigravity-ZH-Hant-TW-ALT-Windows.exe)**
 - **[下載官方英文還原工具](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe)**
+
+### macOS Apple Silicon（arm64）
+
+- **[下載 macOS Apple Silicon 版](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip)**
+
+### macOS Intel（x64）
+
+- **[下載 macOS Intel 版](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip)**
+
+### 校驗與版本說明
+
 - [下載 SHA-256 校驗檔](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/SHA256SUMS.txt)
 - [查看最新 Release 與版本說明](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest)
 
-上面的下載網址使用 GitHub `releases/latest`，會自動指向目前最新的正式 Release，不需要隨每次版本更新 README。為維持這些永久下載網址，正式 Release 的 Windows asset 固定使用以下檔名：
+上面的下載網址使用 GitHub `releases/latest`，會自動指向目前最新的正式 Release，不需要隨每次版本更新 README。為維持永久下載網址，公開 Release asset 固定使用以下檔名：
 
 ```text
 Antigravity-ZH-Hant-TW-ALT-Windows.exe
 Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
+Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip
+Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip
 SHA256SUMS.txt
 ```
 
-版本號由 GitHub Release tag（例如 `v1.1.1`）與安裝程式內部版本識別，不放進上述公開下載 asset 檔名。
+版本號由 GitHub Release tag（例如 `v1.1.1`）與應用程式／安裝程式內部版本識別，不放進上述公開下載 asset 檔名。
 
 目前 Windows Release 未使用商業 Authenticode 程式碼簽章，因此 Windows SmartScreen 可能顯示「Windows 已保護您的電腦」或「未知發行者」提示。請只從本 Repository 的 GitHub Releases 下載，並可使用 `SHA256SUMS.txt` 驗證檔案完整性。
 
-### macOS
+### macOS 驗證狀態
 
-ALT 1.1.1 的 macOS x64／Apple Silicon 目前仍為 **實驗性、`PENDING_MANUAL_PLATFORM_VALIDATION`**。CI 已完成 payload、checksum、app build、ad-hoc signing 與 ZIP 結構驗證，但尚未完成相符架構 Mac 上的下載後 quarantine、Gatekeeper、實際套用與還原驗證。
+ALT 1.1.1 的 macOS x64／Apple Silicon 已通過 GitHub Actions 的 payload、checksum、app build、ad-hoc signing 與 ZIP 結構驗證，並已提供公開 Release 下載。
 
-因此 **ALT 1.1.1 的正式公開 Release 先提供 Windows x64**。macOS CI artifact 只供驗證，不視為正式使用者下載版本；完成實機驗證後再升格為正式 Release asset。
+目前仍未完成相符架構 Mac 上的完整人工實機驗證，包含下載後 quarantine、Gatekeeper、實際套用與還原流程。因此 macOS 1.1.1 應視為 **公開先行版本**；若發現平台問題，會以後續 ALT 版本修正，而不回收既有版本紀錄。
 
 ## Windows 使用方式
 
