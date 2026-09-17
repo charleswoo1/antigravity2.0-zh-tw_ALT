@@ -46,6 +46,12 @@ assert.ok(
 );
 assert.ok(!windowsInstaller.includes(`Antigravity-ZH-Hant-TW-ALT-${version}-Windows`), 'installer 不得硬編碼目前 package version');
 
+const windowsInstallerTest = read('tests', 'windows-installer.test.js');
+assert.ok(windowsInstallerTest.includes("const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json')"), 'Windows E2E 必須從 package.json 讀取版本');
+assert.ok(windowsInstallerTest.includes('`Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows.exe`'), 'Windows E2E install artifact lookup 必須使用 package version');
+assert.ok(windowsInstallerTest.includes('`Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows-Restore.exe`'), 'Windows E2E restore artifact lookup 必須使用 package version');
+assert.ok(!windowsInstallerTest.includes(`ALT-${version}-Windows.exe`), 'Windows E2E 不得硬編碼目前 package version');
+
 const macBuild = read('build', 'macos', 'build.sh');
 assert.ok(macBuild.includes("node -p \"require('./package.json').version\""), 'macOS build 必須從 package.json 讀取版本');
 assert.ok(macBuild.includes('APP_NAME="Antigravity-ZH-Hant-TW-ALT-$VERSION-macOS-$ARCH.app"'), 'macOS artifact name 必須使用動態 VERSION');
