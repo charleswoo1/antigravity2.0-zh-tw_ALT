@@ -141,9 +141,9 @@ begin
   Result := IsAffectedWindowsGpuBuildNumber(Version.Build);
 end;
 
-function SafeModeShortcutPath(): String;
+function CompatibilityModeShortcutPath(): String;
 begin
-  Result := ExpandConstant('{userdesktop}\Antigravity 安全模式（停用 GPU）.lnk');
+  Result := ExpandConstant('{userdesktop}\Antigravity 相容模式.lnk');
 end;
 
 function OfficialAntigravityExecutable(): String;
@@ -163,24 +163,7 @@ begin
   end;
 end;
 
-procedure CopyDisableGpuArgument(Sender: TObject);
-var
-  ResultCode: Integer;
-begin
-  if Exec(
-    ExpandConstant('{cmd}'),
-    '/D /S /C "<nul set /p=--disable-gpu|clip.exe"',
-    '',
-    SW_HIDE,
-    ewWaitUntilTerminated,
-    ResultCode
-  ) and (ResultCode = 0) then
-    SetGpuNoticeStatus('已複製 --disable-gpu')
-  else
-    SetGpuNoticeStatus('無法複製 --disable-gpu，請手動複製此參數。');
-end;
-
-procedure CreateGpuSafeModeShortcut(Sender: TObject);
+procedure CreateGpuCompatibilityModeShortcut(Sender: TObject);
 var
   ExePath: String;
 begin
@@ -192,16 +175,16 @@ begin
 
   try
     CreateShellLink(
-      SafeModeShortcutPath(),
-      'Antigravity 安全模式（停用 GPU）',
+      CompatibilityModeShortcutPath(),
+      'Antigravity 相容模式',
       ExePath,
-      '--disable-gpu',
+      '--disable-gpu-sandbox',
       ExtractFileDir(ExePath),
       ExePath,
       0,
       SW_SHOWNORMAL
     );
-    SetGpuNoticeStatus('已建立桌面捷徑：Antigravity 安全模式（停用 GPU）');
+    SetGpuNoticeStatus('已建立桌面捷徑：Antigravity 相容模式');
   except
     SetGpuNoticeStatus('建立捷徑失敗：' + GetExceptionMessage());
   end;
@@ -210,13 +193,12 @@ end;
 procedure ShowGpuKnownIssueNotice();
 var
   MessageLabel: TNewStaticText;
-  CopyButton: TNewButton;
   ShortcutButton: TNewButton;
   DoneButton: TNewButton;
   NextTop: Integer;
 begin
   { Compact fixed-size advisory for high-DPI systems. }
-  GpuNoticeForm := CreateCustomForm(ScaleX(360), ScaleY(232), True, True);
+  GpuNoticeForm := CreateCustomForm(ScaleX(360), ScaleY(210), True, True);
   try
     GpuNoticeForm.Caption := 'Windows 11 25H2 相容性提醒';
     GpuNoticeForm.Position := poScreenCenter;
@@ -228,8 +210,8 @@ begin
     MessageLabel.WordWrap := True;
     MessageLabel.Caption :=
       '部分 Windows 11 25H2（Build 26200.x）系統可能在關閉 Antigravity 後無法再次啟動。' + #13#10 +
-      '此問題也能在官方英文版重現，較可能與 Antigravity / Electron 的 GPU 啟動路徑相容性有關。' + #13#10 +
-      '若反覆發生，可重新啟動 Windows，或使用 --disable-gpu／下方安全模式捷徑。安全模式只停用 GPU 加速，不會修改正常捷徑。';
+      '此問題也能在官方英文版重現，較可能與 Antigravity / Electron 的 GPU sandbox 相容性有關。' + #13#10 +
+      '若遇到問題，請先重新啟動 Windows；若仍反覆發生，可建立下方「Antigravity 相容模式」捷徑。相容模式會停用 GPU process sandbox，降低該程序的安全隔離，僅建議在正常模式無法啟動時使用；正常捷徑不會被修改。';
     MessageLabel.AdjustHeight();
     NextTop := MessageLabel.Top + MessageLabel.Height + ScaleY(6);
 
@@ -242,20 +224,13 @@ begin
 
     ShortcutButton := TNewButton.Create(GpuNoticeForm);
     ShortcutButton.Parent := GpuNoticeForm;
-    ShortcutButton.SetBounds(ScaleX(16), NextTop, ScaleX(328), ScaleY(28));
-    ShortcutButton.Caption := '建立「Antigravity 安全模式（停用 GPU）」捷徑';
-    ShortcutButton.OnClick := @CreateGpuSafeModeShortcut;
-    NextTop := NextTop + ScaleY(34);
-
-    CopyButton := TNewButton.Create(GpuNoticeForm);
-    CopyButton.Parent := GpuNoticeForm;
-    CopyButton.SetBounds(ScaleX(16), NextTop, ScaleX(142), ScaleY(26));
-    CopyButton.Caption := '複製 --disable-gpu';
-    CopyButton.OnClick := @CopyDisableGpuArgument;
+    ShortcutButton.SetBounds(ScaleX(16), NextTop, ScaleX(230), ScaleY(28));
+    ShortcutButton.Caption := '建立「Antigravity 相容模式」捷徑';
+    ShortcutButton.OnClick := @CreateGpuCompatibilityModeShortcut;
 
     DoneButton := TNewButton.Create(GpuNoticeForm);
     DoneButton.Parent := GpuNoticeForm;
-    DoneButton.SetBounds(ScaleX(256), NextTop, ScaleX(88), ScaleY(26));
+    DoneButton.SetBounds(ScaleX(256), NextTop, ScaleX(88), ScaleY(28));
     DoneButton.Caption := '完成';
     DoneButton.Default := True;
     DoneButton.Cancel := True;
