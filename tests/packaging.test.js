@@ -96,22 +96,21 @@ assert.ok(windowsInstaller.includes('GetWindowsVersionEx(Version);'), 'Windows b
 assert.ok(windowsInstaller.includes('(not GpuNoticeShown) and (not WizardSilent) and IsAffectedWindowsGpuBuild()'),
     'GPU advisory 必須只在互動模式顯示一次');
 assert.ok(windowsInstaller.includes('InstallOperationSucceeded'), 'GPU advisory 必須受成功安裝旗標保護');
-assert.ok(windowsInstaller.includes('CreateCustomForm(ScaleX(360), ScaleY(232), True, True)'),
+assert.ok(windowsInstaller.includes('CreateCustomForm(ScaleX(360), ScaleY(210), True, True)'),
     'GPU advisory 應保持緊湊，避免高 DPI 系統出現過大的提醒視窗');
 assert.ok(windowsInstaller.includes('MessageLabel.AdjustHeight();'),
     'GPU advisory 說明文字必須依實際換行自動調整高度，避免文字被按鈕遮住');
 assert.ok(windowsInstaller.includes('NextTop := MessageLabel.Top + MessageLabel.Height + ScaleY(6);'),
     'GPU advisory 後續控制項必須從實際量測後的文字底部開始排版，避免固定座標覆蓋文字');
-assert.ok(windowsInstaller.includes('"<nul set /p=--disable-gpu|clip.exe"'),
-    '複製動作必須以無換行輸入只複製 --disable-gpu');
-assert.ok(windowsInstaller.includes("'{userdesktop}\\Antigravity 安全模式（停用 GPU）.lnk'"),
-    '安全模式捷徑必須固定寫入目前使用者桌面的同一路徑');
+assert.ok(!windowsInstaller.includes('clip.exe'), '相容模式流程不再提供 --disable-gpu 複製按鈕');
+assert.ok(windowsInstaller.includes("'{userdesktop}\\Antigravity 相容模式.lnk'"),
+    '相容模式捷徑必須固定寫入目前使用者桌面的同一路徑');
 assert.ok(windowsInstaller.includes("FileExists(ExePath)"), '建立捷徑前必須驗證官方 Antigravity.exe 存在');
-assert.match(windowsInstaller, /CreateShellLink\([\s\S]*?ExePath,[\s\S]*?'--disable-gpu',[\s\S]*?ExtractFileDir\(ExePath\),[\s\S]*?ExePath/,
-    '安全模式捷徑必須指向官方執行檔，僅帶 --disable-gpu，並使用官方目錄與圖示');
-assert.ok(!windowsInstaller.includes('--disable-gpu-sandbox'), 'installer 不得提供削弱 GPU sandbox 的參數');
+assert.match(windowsInstaller, /CreateShellLink\([\s\S]*?ExePath,[\s\S]*?'--disable-gpu-sandbox',[\s\S]*?ExtractFileDir\(ExePath\),[\s\S]*?ExePath/,
+    '相容模式捷徑必須指向官方執行檔，僅帶 --disable-gpu-sandbox，並使用官方目錄與圖示');
+assert.ok(!windowsInstaller.includes('Antigravity 安全模式（停用 GPU）'), 'installer 不得再建立舊的 --disable-gpu 安全模式捷徑');
 assert.ok(!windowsInstaller.includes('--no-sandbox'), 'installer 不得提供 --no-sandbox');
-assert.ok(!/\[Icons\][\s\S]*?Antigravity(?! 安全模式)/.test(windowsInstaller), 'installer 不得修改正常 Antigravity 捷徑');
+assert.ok(!/\[Icons\][\s\S]*?Antigravity(?! 相容模式)/.test(windowsInstaller), 'installer 不得修改正常 Antigravity 捷徑');
 
 const macBuild = fs.readFileSync(path.join(repoRoot, 'build', 'macos', 'build.sh'), 'utf-8');
 assert.ok(!/GitHub Actions.*(?:forbidden|禁止)|禁止 GitHub Actions/i.test(macBuild), 'macOS build script 不得拒絕 GitHub Actions');
