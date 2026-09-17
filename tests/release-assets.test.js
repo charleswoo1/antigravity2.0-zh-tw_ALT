@@ -43,6 +43,7 @@ assert.ok(!/contents:\s*write/.test(ci), 'CI 不得取得 contents: write');
 assert.ok(!/gh\s+release|create-release|action-gh-release/i.test(ci), 'CI 不得自動建立或上傳 GitHub Release');
 assert.ok(ci.includes('prepare-windows-release.ps1'), 'Windows CI 必須實際驗證固定名稱 staging script');
 assert.ok(ci.includes('.build\\release-assets-ci'), 'CI 的 Release staging 驗證必須使用隔離測試目錄');
-assert.ok(!/release-assets-ci[\s\S]*upload-artifact/i.test(ci), 'CI 不得把 fixed-name staging output 當成 production Release asset 上傳');
+assert.ok(!/path:\s*\.build\\release-assets-ci/.test(ci), 'CI 不得上傳 fixed-name staging output');
+assert.ok(/path:\s*dist\/\*\.exe/.test(ci), 'CI artifact 應繼續上傳版本化 dist installer');
 
 console.log('Fixed-name Windows Release asset policy tests passed.');
