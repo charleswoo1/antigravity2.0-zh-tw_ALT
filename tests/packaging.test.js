@@ -76,6 +76,22 @@ assert.ok(completionIndex >= 0 && completionIndex < engineStepIndex,
 assert.ok(!/CurStep <> ssPostInstall then[\s\S]*?Exec\(ExpandConstant\('\{cmd\}'\)/.test(windowsInstaller),
     '不得在已達正常安裝進度終點的 ssPostInstall 才啟動 localization engine');
 
+assert.match(
+    windowsInstaller,
+    /#if Mode == "Install"\s+SetInstallerPhase\(15, '正在檢查 Antigravity 相容性…'\);\s+#else\s+SetInstallerPhase\(15, '正在準備還原官方英文…'\);\s+#endif/,
+    'Restore PrepareToInstall 不得顯示 Install-only 的相容性檢查文字'
+);
+assert.match(
+    windowsInstaller,
+    /#if Mode == "Install"\s+SetInstallerPhase\(95, '正在完成安裝…'\);\s+#else\s+SetInstallerPhase\(95, '正在完成還原…'\);\s+#endif/,
+    'Restore 95% phase 必須使用還原語意'
+);
+assert.match(
+    windowsInstaller,
+    /#if Mode == "Install"\s+SetInstallerPhase\(100, '安裝完成'\);\s+#else\s+SetInstallerPhase\(100, '還原完成'\);\s+#endif/,
+    'Restore 100% phase 必須顯示還原完成而非安裝完成'
+);
+
 assert.ok(windowsInstaller.includes('GetWindowsVersionEx(Version);'), 'Windows build detection 必須使用 Inno 支援的版本 API');
 assert.ok(windowsInstaller.includes('(not GpuNoticeShown) and (not WizardSilent) and IsAffectedWindowsGpuBuild()'),
     'GPU advisory 必須只在互動模式顯示一次');
