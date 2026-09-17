@@ -34,6 +34,8 @@ for (const name of [publicInstall, publicRestore, checksum]) {
 }
 
 assert.ok(/^[\x00-\x7F]*$/.test(releaseScript), 'release-preparation script 必須維持 ASCII-only，確保 Windows PowerShell 5.1 可直接解析 UTF-8 no-BOM repository file');
+assert.ok(!releaseScript.includes('$version:'), 'Windows PowerShell 5.1 中變數後直接接冒號會被誤解析，必須使用 ${version}:');
+assert.ok(releaseScript.includes('${version}:'), 'release-preparation script 應使用 Windows PowerShell 5.1 相容的 ${version}: 插值');
 assert.ok(releaseScript.includes("Join-Path $repoRoot 'package.json'"), 'release-preparation 必須從 package.json 取得版本');
 assert.ok(releaseScript.includes('Get-FileHash'), 'release-preparation 必須驗證 SHA-256');
 assert.ok(releaseScript.includes('Release staging directory contains unexpected files'), 'release staging 必須拒絕未知檔案');
