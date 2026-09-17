@@ -9,7 +9,7 @@ const engine = require('../localization_engine');
 
 async function main() {
     assert.strictEqual(engine.EDITION, 'ALT');
-    assert.strictEqual(engine.ENGINE_VERSION, '1.1.0');
+    assert.strictEqual(engine.ENGINE_VERSION, '1.1.1');
     assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0']);
 
     const dictDir = path.join(__dirname, '..', 'dicts');

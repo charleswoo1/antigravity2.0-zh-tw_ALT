@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — ALT 1.1.1 Windows Installer Progress UX + GPU Known-Issue Safe Mode
 
-**Status:** `READY_FOR_CODEX`  
+**Status:** `READY_FOR_REVIEW`
 **Issue:** #12 — Fix Windows installer progress UX and add Windows 11 25H2 GPU workaround guidance  
 **Target:** `main`  
 **Functional baseline commit:** `685b93bd87ecf18339a94b174ac9ded7bc18a678`  
@@ -442,19 +442,19 @@ fix: correct Windows installer progress and add 25H2 GPU safe mode
 
 Codex must update this section before handoff back to ChatGPT/user review.
 
-**Implementation status:** `NOT_STARTED`  
-**Branch:**  
-**Commit(s):**  
-**PR:**  
-**Detected implementation baseline:**  
-**Files changed:**  
-**Progress UX implementation:**  
-**Windows build detection implementation:**  
-**Known-issue notice implementation:**  
-**Safe-mode shortcut implementation:**  
-**Version bump result:**  
-**Tests run:**  
-**Test results:**  
+**Implementation status:** `READY_FOR_REVIEW`
+**Branch:** `fix/windows-installer-progress-gpu-known-issue`
+**Commit(s):** `95a2a8a` (`fix: correct Windows installer progress and add GPU safe mode`); Execution Result follow-up commits on the same branch
+**PR:** [#13 — fix: correct Windows installer progress and add 25H2 GPU safe mode](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/13)
+**Detected implementation baseline:** `77dc21add023be5973940567fb62b5a5ab3a6749` (`origin/main` after required fast-forward sync; functional baseline `685b93bd87ecf18339a94b174ac9ded7bc18a678` remains in history)
+**Files changed:** `.github/workflows/ci.yml`, `COMPATIBILITY.md`, `README.md`, `THIRD_PARTY_LICENSES.md`, `build/common/generate-third-party-notices.js`, `build/common/verify-payload.js`, `build/macos/app/Info.plist`, `build/macos/build.sh`, `build/windows/build.ps1`, `build/windows/installer.iss`, `localization_engine.js`, `package-lock.json`, `package.json`, `tests/packaging.test.js`, `tests/smoke.test.js`, `tests/windows-installer.test.js`, `tools/compatibility-audit.js`, and this contract.
+**Progress UX implementation:** `PrepareToInstall` remains the read-only preflight and reports phase 15%/45%. Mutation moved from `ssPostInstall` to `ssInstall`; immediately before the synchronous engine `Exec`, interactive progress is repainted at 80% with `正在套用繁體中文化並驗證安裝結果…`. Engine success alone sets `EngineSucceeded` and advances to 95%; `ssPostInstall` checks that flag before permitting 100% / `安裝完成`. All engine launch/nonzero failure paths occur before the success flag, so they cannot report successful 100% first. `SetInstallerPhase` is a no-op under `WizardSilent`, preserving silent UI behavior.
+**Windows build detection implementation:** Isolated `IsAffectedWindowsGpuBuildNumber` predicate returns true only for build `26200`; `IsAffectedWindowsGpuBuild` obtains the documented `TWindowsVersion.Build` via Inno Setup `GetWindowsVersionEx`. Static deterministic tests cover 26200=true, 26100=false, and 26300=false.
+**Known-issue notice implementation:** A Traditional Chinese custom form is shown from `wpFinished` only when the Install build reached successful `ssPostInstall`, the OS build is affected, the wizard is interactive, and the notice has not already been shown. The Restore compiler branch contains no notice invocation. Actions are `完成`, `複製 --disable-gpu`, and `建立「Antigravity 安全模式（停用 GPU）」捷徑`; the copy path uses Windows `clip.exe` with a verified 13-byte no-newline input.
+**Safe-mode shortcut implementation:** The compatibility auditor writes its already-resolved install directory only after PASS. The installer reuses that value, requires the corresponding official `Antigravity.exe` to exist, and calls `CreateShellLink` at the fixed current-user Desktop path `Antigravity 安全模式（停用 GPU）.lnk` with exactly `--disable-gpu`, the executable directory as working directory, and the official executable as icon. Repeated clicks target the same `.lnk`; failures update advisory status only and do not affect the completed localization. No normal shortcut/configuration is touched.
+**Version bump result:** All authoritative current product/build/runtime, lockfile, Windows/macOS artifact, CI, packaging-test, generated notice, and README references are now ALT `1.1.1`. Historical handoff/legacy references were left unchanged.
+**Tests run:** `npm ci --ignore-scripts --no-fund`; `npm run check`; `npm run check:packaging`; `powershell -ExecutionPolicy Bypass -File .\build\windows\build.ps1 -Arch x64`; `npm run check:windows-installer`; isolated Windows command check confirming clipboard input bytes equal exactly `--disable-gpu` (13 bytes, no newline); `git diff --check`.
+**Test results:** PASS. Core smoke, compatibility audit, transactional rollback fault injection, macOS process-safety, packaging/CI policy, Inno compile, and Windows synthetic installer E2E all passed. Inno Setup 6.7.3 produced both `Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe` and `Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore.exe`. Silent install/reinstall/restore and failure exit behavior passed; the E2E also verifies the installer receives the preflight-resolved directory.
 **Affected-machine validation:** `PENDING_USER_VALIDATION`  
-**Known limitations / blockers:**  
-**Notes for reviewer:**  
+**Known limitations / blockers:** Inno GUI rendering, actual build-26200 notice display, clipboard integration, and real Desktop `.lnk` properties cannot be fully asserted by the isolated headless E2E without mutating a real user desktop. No implementation blocker remains; affected-machine acceptance is intentionally pending.
+**Notes for reviewer:** Manual GUI procedure: (1) start ALT 1.1.1 Windows installer interactively; (2) pass preflight; (3) observe mutation and confirm progress stays visibly below 100% while `localization_engine.js` runs; (4) confirm status describes localization/verification; (5) confirm 100% / completion appears only after success; (6) on build 26200.9448, verify the notice, exact clipboard content, safe-mode shortcut target/argument/working directory/icon, unchanged normal shortcut, safe-mode launch, and repeated-click idempotency. Also verify Restore and silent Install do not show the advisory or create a shortcut. Do not merge until this user validation and review are complete.

@@ -62,7 +62,7 @@ jobs:
         run: npm run check:windows-installer
 
       - name: Upload Windows CI artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ci-windows-x64-${{ github.sha }}
           path: dist/*.exe
@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.1.0-macOS-${{ matrix.arch }}.app"
+          APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.1.1-macOS-${{ matrix.arch }}.app"
           ZIP_PATH="dist/$APP_NAME.zip"
           EXTRACT_DIR=".build/ci-extract-${{ matrix.arch }}"
           rm -rf "$EXTRACT_DIR"
@@ -113,7 +113,7 @@ jobs:
           "$APP_PATH/Contents/Resources/payload/runtime/node" --version | grep -Fx 'v24.21.0'
 
       - name: Upload macOS CI artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ci-macos-${{ matrix.arch }}-${{ github.sha }}
           path: dist/*.zip

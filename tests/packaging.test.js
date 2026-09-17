@@ -9,9 +9,9 @@ const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'build', 'runtim
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 const engine = require('../localization_engine');
 
-assert.strictEqual(packageJson.version, '1.1.0');
+assert.strictEqual(packageJson.version, '1.1.1');
 assert.strictEqual(engine.EDITION, 'ALT');
-assert.strictEqual(engine.ENGINE_VERSION, '1.1.0');
+assert.strictEqual(engine.ENGINE_VERSION, '1.1.1');
 assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0']);
 assert.strictEqual(manifest.runtime.version, '24.21.0');
 
@@ -55,6 +55,62 @@ assert.ok(windowsInstaller.includes('LoadStringsFromFile'), 'installer 必須使
 assert.ok(!windowsInstaller.includes('LoadStringFromFile('), 'installer 不得以 AnsiString API 讀取 UTF-8 中文 summary');
 assert.ok(windowsInstaller.includes('TestModeActive and'), 'process-safety bypass 必須綁定已驗證的 test mode');
 assert.ok(windowsInstaller.includes('SaveStringsToUTF8File'), 'Windows E2E 必須能驗證 installer 解碼後的繁中 summary');
+
+const affectedBuildMatch = windowsInstaller.match(/function IsAffectedWindowsGpuBuildNumber[\s\S]*?Result := Build = (\d+);[\s\S]*?end;/);
+assert.ok(affectedBuildMatch, 'installer 必須保留可測試的 GPU affected-build predicate');
+const affectedBuild = Number(affectedBuildMatch[1]);
+assert.strictEqual(affectedBuild === 26200, true, 'build 26200 必須顯示 GPU advisory');
+assert.strictEqual(26100 === affectedBuild, false, 'build 26100 不得顯示 build-specific advisory');
+assert.strictEqual(26300 === affectedBuild, false, 'build 26300 不得顯示 build-specific advisory');
+
+const engineStepIndex = windowsInstaller.indexOf('if CurStep <> ssInstall then');
+const engineExecIndex = windowsInstaller.indexOf("Exec(ExpandConstant('{cmd}')", engineStepIndex);
+const successFlagIndex = windowsInstaller.indexOf('EngineSucceeded := True;', engineExecIndex);
+const completionIndex = windowsInstaller.indexOf("SetInstallerPhase(100, '安裝完成')");
+assert.ok(engineStepIndex >= 0, 'localization mutation 必須在 ssInstall 階段執行，而不是已完成的 ssPostInstall 階段');
+assert.ok(windowsInstaller.indexOf("SetInstallerPhase(80, '正在套用繁體中文化並驗證安裝結果…')", engineStepIndex) < engineExecIndex,
+    '同步 localization engine 啟動前必須把可見進度固定在 100% 以下並更新狀態');
+assert.ok(successFlagIndex > engineExecIndex, '只有 localization engine 成功後才能設定成功旗標');
+assert.ok(completionIndex >= 0 && completionIndex < engineStepIndex,
+    '100% 完成狀態必須只出現在 ssPostInstall 的成功旗標分支');
+assert.ok(!/CurStep <> ssPostInstall then[\s\S]*?Exec\(ExpandConstant\('\{cmd\}'\)/.test(windowsInstaller),
+    '不得在已達正常安裝進度終點的 ssPostInstall 才啟動 localization engine');
+
+assert.match(
+    windowsInstaller,
+    /#if Mode == "Install"\s+SetInstallerPhase\(15, '正在檢查 Antigravity 相容性…'\);\s+#else\s+SetInstallerPhase\(15, '正在準備還原官方英文…'\);\s+#endif/,
+    'Restore PrepareToInstall 不得顯示 Install-only 的相容性檢查文字'
+);
+assert.match(
+    windowsInstaller,
+    /#if Mode == "Install"\s+SetInstallerPhase\(95, '正在完成安裝…'\);\s+#else\s+SetInstallerPhase\(95, '正在完成還原…'\);\s+#endif/,
+    'Restore 95% phase 必須使用還原語意'
+);
+assert.match(
+    windowsInstaller,
+    /#if Mode == "Install"\s+SetInstallerPhase\(100, '安裝完成'\);\s+#else\s+SetInstallerPhase\(100, '還原完成'\);\s+#endif/,
+    'Restore 100% phase 必須顯示還原完成而非安裝完成'
+);
+
+assert.ok(windowsInstaller.includes('GetWindowsVersionEx(Version);'), 'Windows build detection 必須使用 Inno 支援的版本 API');
+assert.ok(windowsInstaller.includes('(not GpuNoticeShown) and (not WizardSilent) and IsAffectedWindowsGpuBuild()'),
+    'GPU advisory 必須只在互動模式顯示一次');
+assert.ok(windowsInstaller.includes('InstallOperationSucceeded'), 'GPU advisory 必須受成功安裝旗標保護');
+assert.ok(windowsInstaller.includes('CreateCustomForm(ScaleX(360), ScaleY(210), True, True)'),
+    'GPU advisory 應保持緊湊，避免高 DPI 系統出現過大的提醒視窗');
+assert.ok(windowsInstaller.includes('MessageLabel.AdjustHeight();'),
+    'GPU advisory 說明文字必須依實際換行自動調整高度，避免文字被按鈕遮住');
+assert.ok(windowsInstaller.includes('NextTop := MessageLabel.Top + MessageLabel.Height + ScaleY(6);'),
+    'GPU advisory 後續控制項必須從實際量測後的文字底部開始排版，避免固定座標覆蓋文字');
+assert.ok(!windowsInstaller.includes('clip.exe'), '相容模式流程不再提供 --disable-gpu 複製按鈕');
+assert.ok(windowsInstaller.includes("'{userdesktop}\\Antigravity 相容模式.lnk'"),
+    '相容模式捷徑必須固定寫入目前使用者桌面的同一路徑');
+assert.ok(windowsInstaller.includes("FileExists(ExePath)"), '建立捷徑前必須驗證官方 Antigravity.exe 存在');
+assert.match(windowsInstaller, /CreateShellLink\([\s\S]*?ExePath,[\s\S]*?'--disable-gpu-sandbox',[\s\S]*?ExtractFileDir\(ExePath\),[\s\S]*?ExePath/,
+    '相容模式捷徑必須指向官方執行檔，僅帶 --disable-gpu-sandbox，並使用官方目錄與圖示');
+assert.ok(!windowsInstaller.includes('Antigravity 安全模式（停用 GPU）'), 'installer 不得再建立舊的 --disable-gpu 安全模式捷徑');
+assert.ok(!windowsInstaller.includes('--no-sandbox'), 'installer 不得提供 --no-sandbox');
+assert.ok(!/\[Icons\][\s\S]*?Antigravity(?! 相容模式)/.test(windowsInstaller), 'installer 不得修改正常 Antigravity 捷徑');
 
 const macBuild = fs.readFileSync(path.join(repoRoot, 'build', 'macos', 'build.sh'), 'utf-8');
 assert.ok(!/GitHub Actions.*(?:forbidden|禁止)|禁止 GitHub Actions/i.test(macBuild), 'macOS build script 不得拒絕 GitHub Actions');

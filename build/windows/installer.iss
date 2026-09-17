@@ -1,4 +1,4 @@
-#define AppVersion "1.1.0"
+#define AppVersion "1.1.1"
 #ifndef SourceRoot
   #define SourceRoot "..\..\.build\windows-x64\payload"
 #endif
@@ -13,11 +13,11 @@
 #endif
 
 #if Mode == "Restore"
-  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows-Restore"
+  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore"
   #define DisplayName "Antigravity 2.0 繁體中文 ALT 版 — 還原"
   #define EngineArguments "--restore"
 #else
-  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows"
+  #define ArtifactName "Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows"
   #define DisplayName "Antigravity 2.0 繁體中文 ALT 版"
   #define EngineArguments ""
 #endif
@@ -50,6 +50,24 @@ var
   SetupExitCode: Integer;
   PayloadExtracted: Boolean;
   TestModeActive: Boolean;
+  EngineSucceeded: Boolean;
+  InstallOperationSucceeded: Boolean;
+  GpuNoticeShown: Boolean;
+  ResolvedAntigravityDir: String;
+  GpuNoticeForm: TSetupForm;
+  GpuNoticeStatusLabel: TNewStaticText;
+
+procedure SetInstallerPhase(const Percent: Integer; const StatusText: String);
+begin
+  if WizardSilent then
+    exit;
+  WizardForm.ProgressGauge.Max := 100;
+  WizardForm.ProgressGauge.Position := Percent;
+  WizardForm.StatusLabel.Caption := StatusText;
+  WizardForm.StatusLabel.Update;
+  WizardForm.ProgressGauge.Update;
+  WizardForm.Update;
+end;
 
 function IsSafeTestLogDir(const Candidate: String): Boolean;
 var
@@ -101,6 +119,132 @@ begin
     SaveStringsToUTF8File(FileName + '.decoded.txt', SummaryLines, False);
 end;
 
+function LoadFirstUTF8Line(const FileName: String): String;
+var
+  Lines: TArrayOfString;
+begin
+  Result := '';
+  if LoadStringsFromFile(FileName, Lines) and (GetArrayLength(Lines) > 0) then
+    Result := Trim(Lines[0]);
+end;
+
+function IsAffectedWindowsGpuBuildNumber(const Build: Cardinal): Boolean;
+begin
+  Result := Build = 26200;
+end;
+
+function IsAffectedWindowsGpuBuild(): Boolean;
+var
+  Version: TWindowsVersion;
+begin
+  GetWindowsVersionEx(Version);
+  Result := IsAffectedWindowsGpuBuildNumber(Version.Build);
+end;
+
+function CompatibilityModeShortcutPath(): String;
+begin
+  Result := ExpandConstant('{userdesktop}\Antigravity 相容模式.lnk');
+end;
+
+function OfficialAntigravityExecutable(): String;
+begin
+  if ResolvedAntigravityDir = '' then begin
+    Result := '';
+    exit;
+  end;
+  Result := AddBackslash(ResolvedAntigravityDir) + 'Antigravity.exe';
+end;
+
+procedure SetGpuNoticeStatus(const StatusText: String);
+begin
+  if GpuNoticeStatusLabel <> nil then begin
+    GpuNoticeStatusLabel.Caption := StatusText;
+    GpuNoticeStatusLabel.Update;
+  end;
+end;
+
+procedure CreateGpuCompatibilityModeShortcut(Sender: TObject);
+var
+  ExePath: String;
+begin
+  ExePath := OfficialAntigravityExecutable();
+  if (ExePath = '') or (not FileExists(ExePath)) then begin
+    SetGpuNoticeStatus('無法建立捷徑：找不到已驗證的官方 Antigravity.exe。');
+    exit;
+  end;
+
+  try
+    CreateShellLink(
+      CompatibilityModeShortcutPath(),
+      'Antigravity 相容模式',
+      ExePath,
+      '--disable-gpu-sandbox',
+      ExtractFileDir(ExePath),
+      ExePath,
+      0,
+      SW_SHOWNORMAL
+    );
+    SetGpuNoticeStatus('已建立桌面捷徑：Antigravity 相容模式');
+  except
+    SetGpuNoticeStatus('建立捷徑失敗：' + GetExceptionMessage());
+  end;
+end;
+
+procedure ShowGpuKnownIssueNotice();
+var
+  MessageLabel: TNewStaticText;
+  ShortcutButton: TNewButton;
+  DoneButton: TNewButton;
+  NextTop: Integer;
+begin
+  { Compact fixed-size advisory for high-DPI systems. }
+  GpuNoticeForm := CreateCustomForm(ScaleX(360), ScaleY(210), True, True);
+  try
+    GpuNoticeForm.Caption := 'Windows 11 25H2 相容性提醒';
+    GpuNoticeForm.Position := poScreenCenter;
+
+    MessageLabel := TNewStaticText.Create(GpuNoticeForm);
+    MessageLabel.Parent := GpuNoticeForm;
+    MessageLabel.SetBounds(ScaleX(16), ScaleY(12), ScaleX(328), ScaleY(1));
+    MessageLabel.AutoSize := False;
+    MessageLabel.WordWrap := True;
+    MessageLabel.Caption :=
+      '部分 Windows 11 25H2（Build 26200.x）系統可能在關閉 Antigravity 後無法再次啟動。' + #13#10 +
+      '此問題也能在官方英文版重現，較可能與 Antigravity / Electron 的 GPU sandbox 相容性有關。' + #13#10 +
+      '若遇到問題，請先重新啟動 Windows；若仍反覆發生，可建立下方「Antigravity 相容模式」捷徑。相容模式會停用 GPU process sandbox，降低該程序的安全隔離，僅建議在正常模式無法啟動時使用；正常捷徑不會被修改。';
+    MessageLabel.AdjustHeight();
+    NextTop := MessageLabel.Top + MessageLabel.Height + ScaleY(6);
+
+    GpuNoticeStatusLabel := TNewStaticText.Create(GpuNoticeForm);
+    GpuNoticeStatusLabel.Parent := GpuNoticeForm;
+    GpuNoticeStatusLabel.SetBounds(ScaleX(16), NextTop, ScaleX(328), ScaleY(18));
+    GpuNoticeStatusLabel.AutoSize := False;
+    GpuNoticeStatusLabel.WordWrap := True;
+    NextTop := NextTop + ScaleY(24);
+
+    ShortcutButton := TNewButton.Create(GpuNoticeForm);
+    ShortcutButton.Parent := GpuNoticeForm;
+    ShortcutButton.SetBounds(ScaleX(16), NextTop, ScaleX(230), ScaleY(28));
+    ShortcutButton.Caption := '建立「Antigravity 相容模式」捷徑';
+    ShortcutButton.OnClick := @CreateGpuCompatibilityModeShortcut;
+
+    DoneButton := TNewButton.Create(GpuNoticeForm);
+    DoneButton.Parent := GpuNoticeForm;
+    DoneButton.SetBounds(ScaleX(256), NextTop, ScaleX(88), ScaleY(28));
+    DoneButton.Caption := '完成';
+    DoneButton.Default := True;
+    DoneButton.Cancel := True;
+    DoneButton.ModalResult := mrOk;
+
+    GpuNoticeForm.ActiveControl := DoneButton;
+    GpuNoticeForm.ShowModal;
+  finally
+    GpuNoticeStatusLabel := nil;
+    GpuNoticeForm.Free;
+    GpuNoticeForm := nil;
+  end;
+end;
+
 procedure FailSetup(const MessageText: String; const ExitCode: Integer);
 begin
   SetupExitCode := ExitCode;
@@ -125,6 +269,11 @@ var
   SummaryText: String;
 begin
   Result := '';
+#if Mode == "Install"
+  SetInstallerPhase(15, '正在檢查 Antigravity 相容性…');
+#else
+  SetInstallerPhase(15, '正在準備還原官方英文…');
+#endif
   if not PayloadExtracted then begin
     ExtractTemporaryFiles('*');
     PayloadExtracted := True;
@@ -147,8 +296,10 @@ begin
   LogPath := LogDir + '\last-Preflight.log';
   SummaryPath := LogDir + '\last-Preflight.summary.txt';
   JsonPath := LogDir + '\last-Preflight.json';
+  ResolvedAntigravityDir := LogDir + '\last-Preflight.install-dir.txt';
   DeleteFile(SummaryPath);
   DeleteFile(JsonPath);
+  DeleteFile(ResolvedAntigravityDir);
 
   ExtraArguments := '';
   AntigravityDir := ExpandConstant('{param:AntigravityDir|}');
@@ -158,7 +309,8 @@ begin
     ExtraArguments := ExtraArguments + ' --require-not-running';
 
   CommandLine := '/D /S /C ""' + NodePath + '" "' + AuditorPath + '"' + ExtraArguments +
-    ' --require-verified --json "' + JsonPath + '" --error-summary "' + SummaryPath +
+    ' --require-verified --json "' + JsonPath + '" --resolved-install-dir "' + ResolvedAntigravityDir +
+    '" --error-summary "' + SummaryPath +
     '" > "' + LogPath + '" 2>&1"';
   if not Exec(ExpandConstant('{cmd}'), CommandLine, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then begin
     SetupExitCode := 1;
@@ -172,7 +324,10 @@ begin
       '原因：ALT 相容性 preflight 失敗。' + #13#10 + 'Antigravity 未被修改。'
     );
     Result := SummaryText + #13#10 + '詳細記錄：' + LogPath;
+    exit;
   end;
+  ResolvedAntigravityDir := LoadFirstUTF8Line(ResolvedAntigravityDir);
+  SetInstallerPhase(45, '正在準備繁體中文化…');
 #endif
 end;
 
@@ -194,7 +349,19 @@ var
   AntigravityDir: String;
   ExtraArguments: String;
 begin
-  if CurStep <> ssPostInstall then
+  if CurStep = ssPostInstall then begin
+    if EngineSucceeded then begin
+      InstallOperationSucceeded := True;
+#if Mode == "Install"
+      SetInstallerPhase(100, '安裝完成');
+#else
+      SetInstallerPhase(100, '還原完成');
+#endif
+    end;
+    exit;
+  end;
+
+  if CurStep <> ssInstall then
     exit;
 
   if not PayloadExtracted then begin
@@ -219,6 +386,11 @@ begin
 
   ExtraArguments := ExtraArguments + ' --error-summary "' + SummaryPath + '"';
   CommandLine := '/D /S /C ""' + NodePath + '" "' + EnginePath + '" {#EngineArguments}' + ExtraArguments + ' > "' + LogPath + '" 2>&1"';
+#if Mode == "Install"
+  SetInstallerPhase(80, '正在套用繁體中文化並驗證安裝結果…');
+#else
+  SetInstallerPhase(80, '正在還原官方英文並驗證安裝結果…');
+#endif
   if not Exec(ExpandConstant('{cmd}'), CommandLine, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then begin
     FailSetup('無法啟動內建的 ALT 執行環境。記錄：' + LogPath, 1);
     exit;
@@ -233,6 +405,21 @@ begin
     exit;
   end;
 
-  if not WizardSilent then
-    MsgBox('{#DisplayName} 已完成。' + #13#10 + '執行記錄：' + LogPath, mbInformation, MB_OK);
+  EngineSucceeded := True;
+#if Mode == "Install"
+  SetInstallerPhase(95, '正在完成安裝…');
+#else
+  SetInstallerPhase(95, '正在完成還原…');
+#endif
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+#if Mode == "Install"
+  if (CurPageID = wpFinished) and InstallOperationSucceeded and
+    (not GpuNoticeShown) and (not WizardSilent) and IsAffectedWindowsGpuBuild() then begin
+    GpuNoticeShown := True;
+    ShowGpuKnownIssueNotice();
+  end;
+#endif
 end;

@@ -33,14 +33,14 @@ async function main() {
         return;
     }
 
-    const installExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows.exe');
-    const restoreExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows-Restore.exe');
+    const installExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe');
+    const restoreExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore.exe');
     assert.ok(fs.existsSync(installExe), `缺少安裝檔：${installExe}`);
     assert.ok(fs.existsSync(restoreExe), `缺少還原檔：${restoreExe}`);
 
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'antigravity-alt-installer-'));
     const persistentLogDir = path.join(process.env.LOCALAPPDATA, 'Antigravity-ZH-Hant-TW-ALT');
-    const persistentFiles = ['last-Preflight.log', 'last-Preflight.json', 'last-Preflight.summary.txt', 'last-Install.log', 'last-Install.summary.txt', 'last-Restore.log', 'last-Restore.summary.txt'];
+    const persistentFiles = ['last-Preflight.log', 'last-Preflight.json', 'last-Preflight.summary.txt', 'last-Preflight.install-dir.txt', 'last-Install.log', 'last-Install.summary.txt', 'last-Restore.log', 'last-Restore.summary.txt'];
     const persistentBefore = new Map(persistentFiles.map(name => {
         const filePath = path.join(persistentLogDir, name);
         return [name, fs.existsSync(filePath) ? fs.readFileSync(filePath) : null];
@@ -77,6 +77,11 @@ async function main() {
         const installed = engine.inspectAsar(path.join(resourcesDir, 'app.asar'));
         assert.strictEqual(installed.localized, true, installed.error);
         assert.ok(fs.existsSync(path.join(resourcesDir, 'app.asar.bak')), '安裝後未建立官方備份');
+        assert.strictEqual(
+            fs.readFileSync(path.join(testLogDir, 'last-Preflight.install-dir.txt'), 'utf-8').trim(),
+            installDir,
+            'installer 必須沿用 preflight 已解析的安裝目錄供安全模式捷徑驗證'
+        );
 
         childProcess.execFileSync(installExe, commonArgs, { stdio: 'inherit' });
         const preload = asar.extractFile(path.join(resourcesDir, 'app.asar'), path.join('dist', 'preload.js')).toString('utf-8');
