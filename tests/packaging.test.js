@@ -96,6 +96,8 @@ assert.ok(windowsInstaller.includes('GetWindowsVersionEx(Version);'), 'Windows b
 assert.ok(windowsInstaller.includes('(not GpuNoticeShown) and (not WizardSilent) and IsAffectedWindowsGpuBuild()'),
     'GPU advisory 必須只在互動模式顯示一次');
 assert.ok(windowsInstaller.includes('InstallOperationSucceeded'), 'GPU advisory 必須受成功安裝旗標保護');
+assert.ok(windowsInstaller.includes('CreateCustomForm(ScaleX(440), ScaleY(292), True, True)'),
+    'GPU advisory 應保持 compact，且不得再被 WizardSizePercent 額外放大');
 assert.ok(windowsInstaller.includes('"<nul set /p=--disable-gpu|clip.exe"'),
     '複製動作必須以無換行輸入只複製 --disable-gpu');
 assert.ok(windowsInstaller.includes("'{userdesktop}\\Antigravity 安全模式（停用 GPU）.lnk'"),
