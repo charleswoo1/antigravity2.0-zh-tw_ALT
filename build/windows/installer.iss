@@ -214,14 +214,16 @@ var
   ShortcutButton: TNewButton;
   DoneButton: TNewButton;
 begin
-  GpuNoticeForm := CreateCustomForm(ScaleX(620), ScaleY(360), False, False);
+  { Keep the advisory compact on high-DPI laptops. KeepSize prevents
+    WizardSizePercent from enlarging this secondary dialog further. }
+  GpuNoticeForm := CreateCustomForm(ScaleX(440), ScaleY(292), True, True);
   try
     GpuNoticeForm.Caption := 'Windows 11 25H2 相容性提醒';
     GpuNoticeForm.Position := poScreenCenter;
 
     MessageLabel := TNewStaticText.Create(GpuNoticeForm);
     MessageLabel.Parent := GpuNoticeForm;
-    MessageLabel.SetBounds(ScaleX(24), ScaleY(20), ScaleX(572), ScaleY(230));
+    MessageLabel.SetBounds(ScaleX(18), ScaleY(14), ScaleX(404), ScaleY(160));
     MessageLabel.AutoSize := False;
     MessageLabel.WordWrap := True;
     MessageLabel.Caption :=
@@ -232,25 +234,25 @@ begin
 
     GpuNoticeStatusLabel := TNewStaticText.Create(GpuNoticeForm);
     GpuNoticeStatusLabel.Parent := GpuNoticeForm;
-    GpuNoticeStatusLabel.SetBounds(ScaleX(24), ScaleY(254), ScaleX(572), ScaleY(28));
+    GpuNoticeStatusLabel.SetBounds(ScaleX(18), ScaleY(180), ScaleX(404), ScaleY(28));
     GpuNoticeStatusLabel.AutoSize := False;
     GpuNoticeStatusLabel.WordWrap := True;
 
-    CopyButton := TNewButton.Create(GpuNoticeForm);
-    CopyButton.Parent := GpuNoticeForm;
-    CopyButton.SetBounds(ScaleX(24), ScaleY(300), ScaleX(142), ScaleY(30));
-    CopyButton.Caption := '複製 --disable-gpu';
-    CopyButton.OnClick := @CopyDisableGpuArgument;
-
     ShortcutButton := TNewButton.Create(GpuNoticeForm);
     ShortcutButton.Parent := GpuNoticeForm;
-    ShortcutButton.SetBounds(ScaleX(178), ScaleY(300), ScaleX(292), ScaleY(30));
+    ShortcutButton.SetBounds(ScaleX(18), ScaleY(215), ScaleX(404), ScaleY(30));
     ShortcutButton.Caption := '建立「Antigravity 安全模式（停用 GPU）」捷徑';
     ShortcutButton.OnClick := @CreateGpuSafeModeShortcut;
 
+    CopyButton := TNewButton.Create(GpuNoticeForm);
+    CopyButton.Parent := GpuNoticeForm;
+    CopyButton.SetBounds(ScaleX(18), ScaleY(253), ScaleX(150), ScaleY(28));
+    CopyButton.Caption := '複製 --disable-gpu';
+    CopyButton.OnClick := @CopyDisableGpuArgument;
+
     DoneButton := TNewButton.Create(GpuNoticeForm);
     DoneButton.Parent := GpuNoticeForm;
-    DoneButton.SetBounds(ScaleX(482), ScaleY(300), ScaleX(114), ScaleY(30));
+    DoneButton.SetBounds(ScaleX(324), ScaleY(253), ScaleX(98), ScaleY(28));
     DoneButton.Caption := '完成';
     DoneButton.Default := True;
     DoneButton.Cancel := True;
