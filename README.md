@@ -2,7 +2,7 @@
 
 **Antigravity 2.0 Traditional Chinese ALT**（ALT = Alternative）是一套在使用者本機將 Antigravity 2.0 介面套用為繁體中文（台灣）的工具。
 
-- ALT 產品版本：**1.1.0**
+- ALT 產品版本：**1.1.1**
 - 支援的 Antigravity 版本：**2.13.0、2.14.0**
 - 已驗證平台：Windows x64
 - 實驗性／待實機驗證平台：macOS x64／Apple Silicon
@@ -18,14 +18,20 @@
 ### Windows
 
 1. 先安裝並更新官方 Antigravity 至明確支援的 **2.13.0 或 2.14.0**。
-2. 從 Releases 下載 `Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows.exe`。
+2. 從 Releases 下載 `Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe`。
 3. 完全關閉 Antigravity。
 4. 執行下載的安裝程式。
 5. 完成後重新開啟 Antigravity。
 
-需要恢復官方英文原版時，執行 `Antigravity-ZH-Hant-TW-ALT-1.1.0-Windows-Restore.exe`。
+需要恢復官方英文原版時，執行 `Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore.exe`。
 
 安裝器使用內建、已固定版本的 Node.js runtime，不會呼叫系統 Node，也不會在使用者電腦上執行 `npm install`。最後一次執行記錄位於 `%LOCALAPPDATA%\Antigravity-ZH-Hant-TW-ALT\`。
+
+#### Windows 11 25H2 / Build 26200.x 已知問題
+
+部分 Windows 11 25H2（Build 26200.x）系統可能在關閉 Antigravity 後無法再次啟動。目前測試與公開案例指向 Antigravity / Electron GPU 啟動路徑的相容性；官方英文版也能重現，因此不宜將原因歸於 ALT 中文化內容。
+
+若遇到此問題，可先重新啟動 Windows；這可能只會暫時恢復。問題持續時，可用 `--disable-gpu` 啟動，或在 ALT 1.1.1 成功安裝後的提醒視窗中，自行建立桌面的 `Antigravity 安全模式（停用 GPU）` 捷徑。該捷徑只是以 `--disable-gpu` 啟動同一套官方 Antigravity，並非另一個 Antigravity 版本；正常捷徑不會被修改。此提醒會在上游或 Windows 修正經實際驗證後重新評估或移除。
 
 ### macOS
 
@@ -35,8 +41,8 @@ ALT 不會自動關閉 Antigravity；若偵測到 Antigravity 仍在執行，會
 
 依電腦架構下載其中一個檔案：
 
-- Apple Silicon：`Antigravity-ZH-Hant-TW-ALT-1.1.0-macOS-arm64.app.zip`
-- Intel：`Antigravity-ZH-Hant-TW-ALT-1.1.0-macOS-x64.app.zip`
+- Apple Silicon：`Antigravity-ZH-Hant-TW-ALT-1.1.1-macOS-arm64.app.zip`
+- Intel：`Antigravity-ZH-Hant-TW-ALT-1.1.1-macOS-x64.app.zip`
 
 使用方式：
 
@@ -46,7 +52,7 @@ ALT 不會自動關閉 Antigravity；若偵測到 Antigravity 仍在執行，會
 4. 開啟 ALT app，選擇「套用繁體中文」或「還原官方英文」。
 5. 完成後重新開啟 Antigravity。
 
-ALT 1.1.0 的私人 macOS build 使用 ad-hoc signing，未使用付費 Developer ID 或 Apple notarization。第一次開啟若被 Gatekeeper 阻擋：
+ALT 1.1.1 的私人 macOS build 使用 ad-hoc signing，未使用付費 Developer ID 或 Apple notarization。第一次開啟若被 Gatekeeper 阻擋：
 
 1. 先嘗試開啟 app。
 2. 前往「系統設定」→「隱私權與安全性」。
@@ -59,7 +65,7 @@ ALT 1.1.0 的私人 macOS build 使用 ad-hoc signing，未使用付費 Develope
 - 首次套用時會建立同版本的官方 `app.asar.bak`。
 - 備份版本與目前 Antigravity 不一致時，工具會拒絕不安全的還原。
 - 官方更新通常會覆蓋中文化內容；確認新版本已受支援後，再重新執行 ALT。
-- ALT 1.1.0 明確驗證 Antigravity 2.13.0 與 2.14.0；其他版本會在唯讀 preflight 階段停止，不會寫入 Antigravity 安裝目錄。
+- ALT 1.1.1 明確驗證 Antigravity 2.13.0 與 2.14.0；其他版本會在唯讀 preflight 階段停止，不會寫入 Antigravity 安裝目錄。
 
 ## 翻譯與保護範圍
 

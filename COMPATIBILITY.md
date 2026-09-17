@@ -39,3 +39,9 @@ Exit code：`0` = `PASS`、`2` = `REVIEW_REQUIRED`、`3` = `BLOCKED`。稽核只
 Windows 安裝器在進入 mutation 前先執行同一套相容性 auditor。preflight 會唯讀確認安裝位置、archive 版本、明確 allowlist、結構／anchors、unpacked 路徑與程序狀態。只有 `PASS` 才可進行備份、暫存解包、patch、暫存重打包、驗證及原子替換。
 
 archive 不會原地修改。替換期間保留原始 archive；替換或 post-replacement 驗證失敗時，必須自動 rollback 並以 SHA-256 確認原始 archive 已回到正式路徑。synthetic E2E 的 log override 只接受系統暫存目錄內含 `antigravity-alt-installer-` 的測試路徑，正常使用者記錄仍位於 `%LOCALAPPDATA%\Antigravity-ZH-Hant-TW-ALT\`。
+
+## Windows 11 25H2 GPU 已知問題
+
+目前在 Windows 11 25H2 / Build 26200.x 觀察到 Antigravity 關閉後可能無法再次啟動。測試與公開案例指向 Antigravity / Electron GPU 啟動路徑相容性，且未套用 ALT 的官方英文版也能重現；這是一項安裝後 advisory，不會改變上游版本 allowlist 或阻擋正常的 ALT preflight。
+
+暫時 workaround 是以 `--disable-gpu` 啟動，或由 ALT 1.1.1 安裝成功後的互動提醒選擇建立 `Antigravity 安全模式（停用 GPU）` 桌面捷徑。該捷徑指向同一個官方 `Antigravity.exe`，不代表另一個產品版本，也不會變更正常捷徑。Restore、silent install 與非 26200 build 不顯示此提醒或自動建立捷徑。待上游或 Windows 修正經實機驗證後，應重新評估並移除此 build-specific advisory。

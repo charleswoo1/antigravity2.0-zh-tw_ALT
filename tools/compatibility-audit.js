@@ -352,6 +352,7 @@ function parseArgs(argv) {
         if (argv[i] === '--install-dir') args.installDir = argv[++i];
         else if (argv[i] === '--profile') args.profile = argv[++i];
         else if (argv[i] === '--json') args.jsonPath = argv[++i];
+        else if (argv[i] === '--resolved-install-dir') args.resolvedInstallDirPath = argv[++i];
         else if (argv[i] === '--fingerprint') args.fingerprintPath = argv[++i];
         else if (argv[i] === '--error-summary') args.errorSummaryPath = argv[++i];
         else if (argv[i] === '--require-verified') args.requireVerified = true;
@@ -393,6 +394,10 @@ function main() {
         fs.mkdirSync(path.dirname(path.resolve(args.jsonPath)), { recursive: true });
         fs.writeFileSync(args.jsonPath, JSON.stringify(report, null, 2) + '\n', 'utf-8');
         console.log(`JSON：${path.resolve(args.jsonPath)}`);
+    }
+    if (args.resolvedInstallDirPath && report.status === 'PASS' && report.location) {
+        fs.mkdirSync(path.dirname(path.resolve(args.resolvedInstallDirPath)), { recursive: true });
+        fs.writeFileSync(args.resolvedInstallDirPath, `${report.location.installDir}\n`, 'utf-8');
     }
     if (args.fingerprintPath && report.status === 'PASS') {
         fs.mkdirSync(path.dirname(path.resolve(args.fingerprintPath)), { recursive: true });

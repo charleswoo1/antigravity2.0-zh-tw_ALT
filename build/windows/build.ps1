@@ -46,4 +46,4 @@ foreach ($mode in @('Install', 'Restore')) {
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup $mode build failed with exit code $LASTEXITCODE" }
 }
 
-Write-Host "Windows ALT 1.1.0 artifacts created in $distDir"
+Write-Host "Windows ALT 1.1.1 artifacts created in $distDir"

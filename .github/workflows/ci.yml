@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.1.0-macOS-${{ matrix.arch }}.app"
+          APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.1.1-macOS-${{ matrix.arch }}.app"
           ZIP_PATH="dist/$APP_NAME.zip"
           EXTRACT_DIR=".build/ci-extract-${{ matrix.arch }}"
           rm -rf "$EXTRACT_DIR"
