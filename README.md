@@ -11,18 +11,26 @@
 
 本專案不包含、不散布 Antigravity 官方 `app.asar` 或其他官方 proprietary 二進位檔案；所有修改都在使用者自己的電腦上完成。
 
-## 下載 ALT 1.1.1
+## 下載最新版
 
 ### Windows x64
 
-- **[下載繁體中文安裝程式](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/download/v1.1.1/Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe)**
-- **[下載官方英文還原工具](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/download/v1.1.1/Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore.exe)**
-- [查看 ALT 1.1.1 Release 說明](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/tag/v1.1.1)
-- [查看最新 Release](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest)
+- **[下載繁體中文安裝程式](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/Antigravity-ZH-Hant-TW-ALT-Windows.exe)**
+- **[下載官方英文還原工具](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe)**
+- [下載 SHA-256 校驗檔](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/SHA256SUMS.txt)
+- [查看最新 Release 與版本說明](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest)
 
-> 正式 Release 的 tag 固定為 `v1.1.1`，因此上面的兩個 `.exe` 連結在 Release 發布後即可直接下載，不需要先進入 GitHub Actions。
+上面的下載網址使用 GitHub `releases/latest`，會自動指向目前最新的正式 Release，不需要隨每次版本更新 README。為維持這些永久下載網址，正式 Release 的 Windows asset 固定使用以下檔名：
 
-目前 Windows Release 未使用商業 Authenticode 程式碼簽章，因此 Windows SmartScreen 可能顯示「Windows 已保護您的電腦」或「未知發行者」提示。請只從本 Repository 的 GitHub Releases 下載，並可使用 Release 附帶的 `SHA256SUMS.txt` 驗證檔案完整性。
+```text
+Antigravity-ZH-Hant-TW-ALT-Windows.exe
+Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
+SHA256SUMS.txt
+```
+
+版本號由 GitHub Release tag（例如 `v1.1.1`）與安裝程式內部版本識別，不放進上述公開下載 asset 檔名。
+
+目前 Windows Release 未使用商業 Authenticode 程式碼簽章，因此 Windows SmartScreen 可能顯示「Windows 已保護您的電腦」或「未知發行者」提示。請只從本 Repository 的 GitHub Releases 下載，並可使用 `SHA256SUMS.txt` 驗證檔案完整性。
 
 ### macOS
 
@@ -33,7 +41,7 @@ ALT 1.1.1 的 macOS x64／Apple Silicon 目前仍為 **實驗性、`PENDING_MANU
 ## Windows 使用方式
 
 1. 先安裝並更新官方 Antigravity 至明確支援的 **2.13.0 或 2.14.0**。
-2. 下載上方 `Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe`。
+2. 由上方「下載最新版」取得 `Antigravity-ZH-Hant-TW-ALT-Windows.exe`。
 3. 完全關閉 Antigravity。
 4. 執行 ALT 安裝程式。
 5. 相容性 preflight 通過後，工具才會開始套用繁體中文。
@@ -42,7 +50,7 @@ ALT 1.1.1 的 macOS x64／Apple Silicon 目前仍為 **實驗性、`PENDING_MANU
 需要恢復官方英文時：
 
 1. 完全關閉 Antigravity。
-2. 執行 `Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore.exe`。
+2. 執行 `Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe`。
 3. 還原成功後重新開啟 Antigravity。
 
 Windows 安裝器使用內建、已固定版本的 Node.js runtime，不會呼叫系統 Node，也不會在使用者電腦執行 `npm install`。最後一次執行記錄位於：
