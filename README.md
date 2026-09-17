@@ -38,9 +38,9 @@
 ## Windows 使用方式
 
 1. 先安裝並更新官方 Antigravity 至明確支援的 **2.13.0 或 2.14.0**。
-2. 下載並執行 `Antigravity-ZH-Hant-TW-ALT-Windows.exe`。
+2. 下載 `Antigravity-ZH-Hant-TW-ALT-Windows.exe`。
 3. 完全關閉 Antigravity。
-4. 依安裝程式提示完成相容性檢查與繁體中文套用。
+4. 執行 ALT 安裝程式，依提示完成相容性檢查與繁體中文套用。
 5. 完成後重新開啟 Antigravity。
 
 需要恢復官方英文時：
@@ -64,7 +64,7 @@ Windows 最後一次執行記錄位於：
 1. 確認 Mac 架構並下載對應版本：Apple Silicon 使用 **arm64**，Intel Mac 使用 **x64**。
 2. 解壓縮 ZIP。
 3. 完全關閉 Antigravity。
-4. 開啟解壓後的 `Antigravity-ZH-Hant-TW-ALT-...macOS-....app`。
+4. 開啟解壓後的 **Antigravity ALT app**。
 5. 在視窗中選擇 **「套用繁體中文」**。
 6. 完成後重新開啟 Antigravity。
 
