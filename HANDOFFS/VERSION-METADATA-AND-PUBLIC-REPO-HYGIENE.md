@@ -2,7 +2,7 @@
 
 ## Status
 
-`IMPLEMENTING`
+`IMPLEMENTED_PR_OPEN`
 
 ## Issue
 
@@ -37,9 +37,11 @@ Reduce version drift across build/CI packaging paths and provide a clear contrib
 1. Treat `package.json.version` as the authoritative build/release version input.
 2. Make Windows build read that version and inject it into Inno Setup; installer filenames derive from the injected value.
 3. Make macOS build and CI derive app filenames from `package.json.version`; inject the version into `Info.plist` at build time.
-4. Strengthen packaging regression tests so versioned build paths cannot silently reintroduce hard-coded current-version filenames.
-5. Add `CONTRIBUTING.md`, structured Issue forms, Issue-form configuration and a PR template for public contributors.
-6. Keep repository-admin settings such as rulesets, private vulnerability reporting and automatic branch deletion outside this code PR when the connector does not expose write access.
+4. Add `tools/sync-version.js` so npm version lifecycle / `npm run sync:version` synchronizes runtime `ENGINE_VERSION`; packaging validation rejects version drift.
+5. Remove current-version literals from packaging, smoke and Windows installer E2E tests where they would otherwise break the next ALT version bump.
+6. Strengthen version/release regression tests so versioned build paths cannot silently reintroduce hard-coded current-version filenames.
+7. Add `CONTRIBUTING.md`, structured Bug / Translation / Feature Issue forms, Issue-form configuration and a PR template for public contributors.
+8. Keep repository-admin settings such as rulesets, private vulnerability reporting and automatic branch deletion outside this code PR when the connector does not expose write access.
 
 ## Acceptance criteria
 
@@ -54,15 +56,44 @@ Reduce version drift across build/CI packaging paths and provide a clear contrib
 - `npm run check`
 - `npm run check:packaging`
 - Windows x64 installer build + `npm run check:windows-installer`
-- macOS x64 / arm64 build and ZIP validation in CI
+- Windows fixed-name Release staging validation
+- macOS x64 / arm64 build, codesign and ZIP validation in CI
 
 ## Git / PR
 
 - Branch: `chore/version-source-and-repo-hygiene`
 - Base: `main`
-- PR must reference and close #16.
+- PR: #17 — Centralize version metadata and add public contribution templates
+- PR references and closes #16.
 - Do not merge automatically; leave the completed PR open for review unless the user explicitly requests merge.
 
 ## Execution Result
 
-Pending implementation and CI validation.
+Implementation completed on PR #17.
+
+Validated implementation head: `4acae8071465184af39d2437a718debabeee3a16`.
+
+GitHub Actions CI run #54 (`35194637647`) completed successfully:
+
+- Core / Ubuntu: PASS
+  - smoke/process-safety tests
+  - packaging and CI policy tests
+  - version metadata synchronization/regression tests
+  - production dependency audit
+- Windows x64 installer E2E: PASS
+  - package-version-driven installer build
+  - installer E2E
+  - fixed-name Release staging validation
+  - CI artifact upload
+- macOS x64 app build: PASS
+  - package-version-driven app naming
+  - build/signature validation
+  - `CFBundleShortVersionString` verification
+- macOS arm64 app build: PASS
+  - package-version-driven app naming
+  - build/signature validation
+  - `CFBundleShortVersionString` verification
+
+During the first CI pass, an older release-policy test still expected a literal versioned installer name. That regression guard was corrected to validate the dynamic `AppVersion` composition instead. A subsequent audit also found and removed remaining current-version coupling in Windows installer E2E and smoke tests. Final run #54 passed all four jobs.
+
+Repository-administration items that cannot be changed through the available GitHub connector remain manual: `main` ruleset / branch protection, Private vulnerability reporting setting, automatic deletion of merged head branches, and editing the already-published v1.1.1 Release notes if the GitHub UI still displays mojibake.
