@@ -44,6 +44,7 @@ SHA256SUMS.txt
 - staging output 必須拒絕未知檔案，避免誤把其他檔案一起當成 Release asset。
 - checksum 必須針對固定公開檔名產生。
 - `prepare-windows-release.ps1` 必須可由 Windows PowerShell 5.1 直接執行；因 repository 檔案以 UTF-8 no-BOM 儲存，腳本本體維持 ASCII-only，避免舊版 PowerShell 依系統 code page 誤解析非 ASCII 字元。
+- Windows PowerShell 5.1 雙引號字串內若變數後直接接 `:`，必須使用 `${name}:` 明確分隔變數名稱。
 
 ## Implementation steps
 
@@ -55,7 +56,7 @@ SHA256SUMS.txt
 6. 新增 `RELEASING.md`，記錄人工發布 procedure。
 7. 在 `AGENTS.md` 固化 Release asset 命名政策，以及允許 CI 在隔離目錄執行 staging validation、但禁止自動發布的邊界。
 8. 保留 README 現有固定 `releases/latest/download/...` URL 與固定 asset 說明，並由測試直接驗證 README 與 staging 名稱一致。
-9. 新增 `tests/release-assets.test.js`，並納入 `npm run check:packaging`；額外鎖定 release-preparation script 的 ASCII-only / Windows PowerShell 5.1 相容性。
+9. 新增 `tests/release-assets.test.js`，並納入 `npm run check:packaging`；額外鎖定 release-preparation script 的 ASCII-only 與 Windows PowerShell 5.1 插值相容性。
 10. Windows CI 在 `.build\release-assets-ci` 實際執行 release-preparation script，驗證固定檔名；CI artifact 仍只上傳 `dist/*.exe` 版本化 installer。
 
 ## Acceptance criteria
@@ -102,5 +103,6 @@ Windows CI 會以實際 build artifact 執行相同 staging script 作為 regres
 - 已新增 `tests/release-assets.test.js` 並接入 `npm run check:packaging`；它驗證 installer 仍帶版本號、Release staging 使用固定名稱、README 永久連結一致，以及 CI 不取得 Release write 權限／不發布 fixed-name staging output。
 - 已更新 Windows CI，使用實際 installer build 在 `.build\release-assets-ci` 執行 staging validation；既有 `upload-artifact` 仍只上傳 `dist/*.exe`，因此 CI artifact 與 production Release asset 邊界不變。
 - 已建立 Issue #14、branch `fix/release-asset-fixed-names` 與 PR #15。
-- 第一輪 Windows staging validation 揭露 Windows PowerShell 5.1 對 UTF-8 no-BOM 腳本內繁中文字串的解析相容性問題；Windows build 與既有 installer E2E 本身均已通過。已將 release-preparation script 改為 ASCII-only，並新增 regression assertion，避免未來重新引入同類 parser failure。
+- 第一輪 Windows staging validation 揭露 Windows PowerShell 5.1 對 UTF-8 no-BOM 腳本內繁中文字串的解析相容性問題；Windows build 與既有 installer E2E 本身均已通過。已將 release-preparation script 改為 ASCII-only，並新增 regression assertion。
+- 第二輪 Windows staging validation 再揭露 Windows PowerShell 5.1 對 `"$version:"` 的變數插值解析限制；已改為 `"${version}:"`，並新增對應 regression assertion。
 - 最終 head 由 PR CI 再次完整驗證；通過後即可進入人工 review / merge gate。
