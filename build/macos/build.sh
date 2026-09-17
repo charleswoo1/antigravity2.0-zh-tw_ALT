@@ -10,8 +10,14 @@ esac
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+VERSION="$(cd "$REPO_ROOT" && node -p "require('./package.json').version")"
+if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+  echo "Invalid ALT version in package.json: $VERSION" >&2
+  exit 1
+fi
+
 PAYLOAD_DIR="$REPO_ROOT/.build/macos-$ARCH/payload"
-APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.1.1-macOS-$ARCH.app"
+APP_NAME="Antigravity-ZH-Hant-TW-ALT-$VERSION-macOS-$ARCH.app"
 APP_DIR="$REPO_ROOT/.build/macos-$ARCH/$APP_NAME"
 DIST_DIR="$REPO_ROOT/dist"
 
@@ -28,6 +34,7 @@ cp "$SCRIPT_DIR/app/launcher.sh" "$APP_DIR/Contents/MacOS/launcher"
 chmod 755 "$APP_DIR/Contents/MacOS/launcher"
 cp "$SCRIPT_DIR/app/Info.plist" "$APP_DIR/Contents/Info.plist"
 sed -i '' "s/__ALT_ARCH__/$ARCH/g" "$APP_DIR/Contents/Info.plist"
+sed -i '' "s/__ALT_VERSION__/$VERSION/g" "$APP_DIR/Contents/Info.plist"
 cp -R "$PAYLOAD_DIR" "$APP_DIR/Contents/Resources/payload"
 
 # Sign nested Mach-O runtime before signing the outer app bundle.
