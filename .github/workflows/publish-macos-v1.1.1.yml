@@ -1,0 +1,162 @@
+name: One-time publish macOS v1.1.1
+
+on:
+  push:
+    branches:
+      - release/publish-macos-v1.1.1
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-macos-v1.1.1
+  cancel-in-progress: false
+
+jobs:
+  build-macos:
+    name: Build macOS ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x64
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.21.0
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Validate source
+        run: |
+          npm run check
+          npm run check:packaging
+          VERSION="$(node -p "require('./package.json').version")"
+          test "$VERSION" = "1.1.1"
+
+      - name: Build and stage public macOS asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          ./build/macos/build.sh "${{ matrix.arch }}"
+          SOURCE="dist/Antigravity-ZH-Hant-TW-ALT-${VERSION}-macOS-${{ matrix.arch }}.zip"
+          TARGET="publish/Antigravity-ZH-Hant-TW-ALT-macOS-${{ matrix.arch }}.zip"
+          test -s "$SOURCE"
+          mkdir -p publish
+          cp "$SOURCE" "$TARGET"
+          shasum -a 256 "$TARGET"
+
+      - name: Upload staged asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-macos-${{ matrix.arch }}
+          path: publish/Antigravity-ZH-Hant-TW-ALT-macOS-${{ matrix.arch }}.zip
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish macOS assets to v1.1.1
+    needs: build-macos
+    runs-on: ubuntu-24.04
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Download staged macOS assets
+        uses: actions/download-artifact@v5
+        with:
+          pattern: publish-macos-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Download existing Windows Release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v gh
+          gh release view v1.1.1 -R "$GITHUB_REPOSITORY" >/dev/null
+          gh release download v1.1.1 -R "$GITHUB_REPOSITORY" \
+            --dir release-assets \
+            --pattern 'Antigravity-ZH-Hant-TW-ALT-Windows.exe' \
+            --pattern 'Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe'
+
+      - name: Build combined checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd release-assets
+          for file in \
+            Antigravity-ZH-Hant-TW-ALT-Windows.exe \
+            Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe \
+            Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip \
+            Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip; do
+            test -s "$file"
+          done
+          sha256sum \
+            Antigravity-ZH-Hant-TW-ALT-Windows.exe \
+            Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe \
+            Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip \
+            Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip \
+            > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish assets and correct Release notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'EOF'
+          ## Antigravity 2.0 繁體中文 ALT 1.1.1
+
+          已驗證 Antigravity 版本：**2.13.0、2.14.0**。
+
+          ### 下載平台
+          - `Antigravity-ZH-Hant-TW-ALT-Windows.exe`：Windows x64 繁體中文安裝程式
+          - `Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe`：Windows x64 官方英文還原工具
+          - `Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip`：macOS Apple Silicon（arm64）
+          - `Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip`：macOS Intel（x64）
+          - `SHA256SUMS.txt`：上述公開資產的 SHA-256 校驗值
+
+          ### 1.1.1 重點
+          - 修正 Windows 安裝器進度顯示：中文化／驗證尚未完成時不會提前顯示 100%。
+          - Install 與 Restore 使用各自正確的進度文字。
+          - Windows 11 25H2 / Build 26200.x 安裝完成後提供相容性提醒。
+          - 若正常 Antigravity 關閉後反覆無法重新啟動，可選擇建立「Antigravity 相容模式」桌面捷徑。
+          - 相容模式使用 `--disable-gpu-sandbox`，只建議在正常模式無法啟動時暫時使用；此參數會降低 Chromium GPU process 的 sandbox 隔離。
+          - 正常 Antigravity 捷徑不會被修改；不提供 `--no-sandbox`。
+
+          ### macOS 驗證狀態
+          macOS x64 / Apple Silicon 已通過 GitHub Actions 的 payload、checksum、app build、ad-hoc signing 與 ZIP 結構驗證，因此自本次 Release 起先提供公開下載。
+
+          **目前仍未完成相符架構 Mac 的完整人工實機驗證**，包含下載後 quarantine、Gatekeeper、實際套用與還原流程。macOS 使用者應將 1.1.1 視為先行公開版本；若發現平台問題，將以後續 ALT 版本修正。
+          EOF
+
+          gh release upload v1.1.1 -R "$GITHUB_REPOSITORY" \
+            release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip \
+            release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip \
+            release-assets/SHA256SUMS.txt \
+            --clobber
+          gh release edit v1.1.1 -R "$GITHUB_REPOSITORY" --notes-file release-notes.md
+
+      - name: Verify public Release asset names
+        shell: bash
+        run: |
+          set -euo pipefail
+          assets="$(gh release view v1.1.1 -R "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name')"
+          printf '%s\n' "$assets"
+          for expected in \
+            Antigravity-ZH-Hant-TW-ALT-Windows.exe \
+            Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe \
+            Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip \
+            Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip \
+            SHA256SUMS.txt; do
+            grep -Fxq "$expected" <<< "$assets"
+          done
