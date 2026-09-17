@@ -61,6 +61,21 @@ jobs:
       - name: Run Windows installer E2E
         run: npm run check:windows-installer
 
+      - name: Validate fixed-name Release staging
+        shell: powershell
+        run: |
+          powershell -ExecutionPolicy Bypass -File .\build\release\prepare-windows-release.ps1 -OutputDir .build\release-assets-ci
+          $expected = @(
+            'Antigravity-ZH-Hant-TW-ALT-Windows.exe',
+            'Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe',
+            'SHA256SUMS.txt'
+          ) | Sort-Object
+          $actual = @(Get-ChildItem -LiteralPath .build\release-assets-ci -File | ForEach-Object { $_.Name } | Sort-Object)
+          if (($actual -join "`n") -ne ($expected -join "`n")) {
+            throw "Unexpected Release staging output: $($actual -join ', ')"
+          }
+          Get-Content -LiteralPath .build\release-assets-ci\SHA256SUMS.txt
+
       - name: Upload Windows CI artifacts
         uses: actions/upload-artifact@v7
         with:
