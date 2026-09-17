@@ -96,10 +96,12 @@ assert.ok(windowsInstaller.includes('GetWindowsVersionEx(Version);'), 'Windows b
 assert.ok(windowsInstaller.includes('(not GpuNoticeShown) and (not WizardSilent) and IsAffectedWindowsGpuBuild()'),
     'GPU advisory 必須只在互動模式顯示一次');
 assert.ok(windowsInstaller.includes('InstallOperationSucceeded'), 'GPU advisory 必須受成功安裝旗標保護');
-assert.ok(windowsInstaller.includes('CreateCustomForm(ScaleX(360), ScaleY(224), True, True)'),
+assert.ok(windowsInstaller.includes('CreateCustomForm(ScaleX(360), ScaleY(232), True, True)'),
     'GPU advisory 應保持緊湊，避免高 DPI 系統出現過大的提醒視窗');
 assert.ok(windowsInstaller.includes('MessageLabel.AdjustHeight();'),
     'GPU advisory 說明文字必須依實際換行自動調整高度，避免文字被按鈕遮住');
+assert.ok(windowsInstaller.includes('NextTop := MessageLabel.Top + MessageLabel.Height + ScaleY(6);'),
+    'GPU advisory 後續控制項必須從實際量測後的文字底部開始排版，避免固定座標覆蓋文字');
 assert.ok(windowsInstaller.includes('"<nul set /p=--disable-gpu|clip.exe"'),
     '複製動作必須以無換行輸入只複製 --disable-gpu');
 assert.ok(windowsInstaller.includes("'{userdesktop}\\Antigravity 安全模式（停用 GPU）.lnk'"),
