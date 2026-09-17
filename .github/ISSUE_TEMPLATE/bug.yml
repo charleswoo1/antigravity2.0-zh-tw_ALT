@@ -1,0 +1,57 @@
+name: Bug report
+description: 回報安裝、還原、相容性、執行或介面問題
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感謝回報。若問題可能涉及安全漏洞、非預期指令執行或敏感資料，請不要公開提交，改依 SECURITY.md 使用 Private vulnerability reporting。
+  - type: input
+    id: alt-version
+    attributes:
+      label: ALT 版本
+      placeholder: 例如 1.1.1
+    validations:
+      required: true
+  - type: input
+    id: antigravity-version
+    attributes:
+      label: Antigravity 版本
+      placeholder: 例如 2.14.0
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: 作業系統
+      placeholder: 例如 Windows 11 25H2 Build 26200.9448
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 問題說明
+      description: 說明實際發生的狀況與預期結果。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 重現步驟
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log / 錯誤訊息
+      description: 請移除 Token、帳號、私人路徑或其他敏感資料後再貼上。
+      render: text
+  - type: textarea
+    id: notes
+    attributes:
+      label: 其他資訊
+      description: 截圖、是否能在官方英文版重現、或其他有助分析的資訊。
