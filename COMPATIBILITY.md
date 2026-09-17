@@ -42,6 +42,8 @@ archive 不會原地修改。替換期間保留原始 archive；替換或 post-r
 
 ## Windows 11 25H2 GPU 已知問題
 
-目前在 Windows 11 25H2 / Build 26200.x 觀察到 Antigravity 關閉後可能無法再次啟動。測試與公開案例指向 Antigravity / Electron GPU 啟動路徑相容性，且未套用 ALT 的官方英文版也能重現；這是一項安裝後 advisory，不會改變上游版本 allowlist 或阻擋正常的 ALT preflight。
+目前在 Windows 11 25H2 / Build 26200.x 觀察到 Antigravity 關閉後可能無法再次啟動。測試與公開案例指向 Antigravity / Electron 的 GPU sandbox 啟動路徑相容性，且未套用 ALT 的官方英文版也能重現；這是一項安裝後 advisory，不會改變上游版本 allowlist 或阻擋正常的 ALT preflight。
 
-暫時 workaround 是以 `--disable-gpu` 啟動，或由 ALT 1.1.1 安裝成功後的互動提醒選擇建立 `Antigravity 安全模式（停用 GPU）` 桌面捷徑。該捷徑指向同一個官方 `Antigravity.exe`，不代表另一個產品版本，也不會變更正常捷徑。Restore、silent install 與非 26200 build 不顯示此提醒或自動建立捷徑。待上游或 Windows 修正經實機驗證後，應重新評估並移除此 build-specific advisory。
+若遇到此問題，第一步建議重新啟動 Windows；這可能只會暫時恢復。若仍反覆發生，可由 ALT 1.1.1 安裝成功後的互動提醒建立 `Antigravity 相容模式` 桌面捷徑。相容模式指向同一個官方 `Antigravity.exe`，僅加入 `--disable-gpu-sandbox`；它會停用 Chromium GPU process sandbox、降低該程序的安全隔離，因此只建議在正常模式無法啟動時暫時使用，並在上游或 Windows 修正經實機驗證後停止使用。正常 Antigravity 捷徑不會被修改。
+
+Restore、silent install 與非 26200 build 不顯示此提醒，也不會自動建立相容模式捷徑。`--no-sandbox` 不屬於 ALT 提供的 workaround。
