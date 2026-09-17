@@ -1,6 +1,6 @@
 # Handoff Amendment — ALT 1.1.1 Windows 11 25H2 GPU Compatibility Mode
 
-**Status:** `READY_FOR_REVIEW`  
+**Status:** `READY_TO_MERGE`  
 **Applies to:** `HANDOFFS/ALT-1.1.1-WINDOWS-INSTALLER-PROGRESS-GPU-KNOWN-ISSUE.md`  
 **Issue:** #12  
 **PR:** #13  
@@ -41,21 +41,19 @@ Antigravity 相容模式
 9. `--no-sandbox` remains forbidden and must not be offered.
 10. Restore, silent install, and non-26200 builds must not show the advisory or create the compatibility shortcut automatically.
 
-## Validation status
+## Validation result
 
-User validation already passed the installer progress behavior, compact advisory layout, Restore-specific wording, normal-shortcut preservation, and the general Windows 11 25H2 reproduction flow.
+**Affected-machine validation:** `PASSED_USER_VALIDATION`
 
-Final release gate after this amendment:
+Validated on Windows 11 Enterprise 25H2 build `26200.9448` before release preparation:
 
-1. Install the amended build on the affected machine.
-2. Confirm the advisory contains no `--disable-gpu` copy action or old safe-mode wording.
-3. Create `Antigravity 相容模式` and verify:
-   - target = official `Antigravity.exe`;
-   - arguments = exactly `--disable-gpu-sandbox`;
-   - working directory = official Antigravity directory;
-   - normal shortcut unchanged;
-   - repeated creation produces no duplicate.
-4. Reproduce normal relaunch failure and confirm `Antigravity 相容模式` launches successfully and remains stable.
-5. Confirm Restore does not show the advisory.
+- corrected installer progress behavior: PASS;
+- compact advisory layout and readable text: PASS;
+- Restore-specific progress wording: PASS;
+- normal Antigravity shortcut remains unchanged: PASS;
+- old `--disable-gpu` flow removed from the amended design: PASS;
+- `Antigravity 相容模式` uses `--disable-gpu-sandbox`: PASS;
+- compatibility-mode launch remains reliable when normal relaunch fails: PASS;
+- release preparation authorized by the user after validation.
 
-Until these amended shortcut checks pass, PR #13 remains `PENDING_USER_VALIDATION` and must not be merged.
+Automated CI on the amended implementation also passed. PR #13 is therefore ready for final merge/release processing, subject only to the normal final CI/head-SHA check.
