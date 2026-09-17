@@ -9,9 +9,9 @@ const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'build', 'runtim
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 const engine = require('../localization_engine');
 
-assert.strictEqual(packageJson.version, '1.1.1');
+assert.match(packageJson.version, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/);
 assert.strictEqual(engine.EDITION, 'ALT');
-assert.strictEqual(engine.ENGINE_VERSION, '1.1.1');
+assert.strictEqual(engine.ENGINE_VERSION, packageJson.version);
 assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0']);
 assert.strictEqual(manifest.runtime.version, '24.21.0');
 
@@ -31,6 +31,8 @@ for (const requiredFile of [
     'build/macos/build.sh',
     'build/macos/app/launcher.sh',
     'build/macos/app/Info.plist',
+    'tools/sync-version.js',
+    'tests/version-metadata.test.js',
     '.github/workflows/ci.yml'
 ]) {
     assert.ok(fs.existsSync(path.join(repoRoot, requiredFile)), `缺少 packaging/CI source：${requiredFile}`);
