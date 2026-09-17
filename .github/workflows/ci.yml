@@ -117,7 +117,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APP_NAME="Antigravity-ZH-Hant-TW-ALT-1.1.1-macOS-${{ matrix.arch }}.app"
+          VERSION="$(node -p "require('./package.json').version")"
+          APP_NAME="Antigravity-ZH-Hant-TW-ALT-$VERSION-macOS-${{ matrix.arch }}.app"
           ZIP_PATH="dist/$APP_NAME.zip"
           EXTRACT_DIR=".build/ci-extract-${{ matrix.arch }}"
           rm -rf "$EXTRACT_DIR"
@@ -125,6 +126,7 @@ jobs:
           ditto -x -k "$ZIP_PATH" "$EXTRACT_DIR"
           APP_PATH="$EXTRACT_DIR/$APP_NAME"
           codesign --verify --deep --strict "$APP_PATH"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Contents/Info.plist" | grep -Fx "$VERSION"
           "$APP_PATH/Contents/Resources/payload/runtime/node" --version | grep -Fx 'v24.21.0'
 
       - name: Upload macOS CI artifact

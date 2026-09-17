@@ -4,6 +4,8 @@
 
 - 本專案的產品名稱為 **Antigravity 2.0 繁體中文 ALT 版**（ALT = Alternative）。
 - ALT 自 **1.0.0** 起使用自己的 Semantic Versioning；ALT 版本不得與 Antigravity 官方版本混為同一版本號。
+- `package.json.version` 是目前 ALT build / release version 的權威來源。Windows / macOS artifact naming、bundle metadata 與 CI 驗證不得另外硬編碼目前版本號。
+- 版本升級優先使用 `npm version <new-version> --no-git-tag-version`，讓 npm version lifecycle 同步 runtime `ENGINE_VERSION`；若直接修改 `package.json.version`，必須執行 `npm run sync:version`，且 `npm run check:packaging` 必須能驗證版本一致性。
 - `main` 是唯一長期維護的產品主線。功能開發使用短期 feature/fix branch，完成 review 後回到 `main`。
 - `release/v2` 僅是歷史遷移參考，不是未來產品主線；在 ALT 1.0.0 跨平台驗證完成前不得刪除。
 - 舊 v1 / v2 命名僅可出現在歷史或 legacy 說明，不得作為新產品名稱。

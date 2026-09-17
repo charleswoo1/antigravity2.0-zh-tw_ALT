@@ -5,7 +5,6 @@ const fs = require('fs');
 const path = require('path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 const read = (...parts) => fs.readFileSync(path.join(repoRoot, ...parts), 'utf-8');
 
 const releaseScriptPath = path.join(repoRoot, 'build', 'release', 'prepare-windows-release.ps1');
@@ -14,6 +13,7 @@ assert.ok(fs.existsSync(path.join(repoRoot, 'RELEASING.md')), '缺少 RELEASING.
 
 const releaseScript = fs.readFileSync(releaseScriptPath, 'utf-8');
 const installer = read('build', 'windows', 'installer.iss');
+const windowsBuild = read('build', 'windows', 'build.ps1');
 const readme = read('README.md');
 const agents = read('AGENTS.md');
 const ci = read('.github', 'workflows', 'ci.yml');
@@ -21,11 +21,16 @@ const ci = read('.github', 'workflows', 'ci.yml');
 const publicInstall = 'Antigravity-ZH-Hant-TW-ALT-Windows.exe';
 const publicRestore = 'Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe';
 const checksum = 'SHA256SUMS.txt';
-const versionedInstall = `Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows`;
-const versionedRestore = `Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows-Restore`;
 
-assert.ok(installer.includes(versionedInstall), 'Windows build artifact 必須保留版本號');
-assert.ok(installer.includes(versionedRestore), 'Windows restore build artifact 必須保留版本號');
+assert.ok(
+    installer.includes('#define ArtifactName "Antigravity-ZH-Hant-TW-ALT-" + AppVersion + "-Windows"'),
+    'Windows build artifact 必須以注入的 AppVersion 保留版本號'
+);
+assert.ok(
+    installer.includes('#define ArtifactName "Antigravity-ZH-Hant-TW-ALT-" + AppVersion + "-Windows-Restore"'),
+    'Windows restore build artifact 必須以注入的 AppVersion 保留版本號'
+);
+assert.ok(windowsBuild.includes('"/DAppVersion=$version"'), 'Windows build 必須把 package version 注入 installer');
 
 for (const name of [publicInstall, publicRestore, checksum]) {
     assert.ok(releaseScript.includes(name), `release-preparation script 缺少固定公開名稱：${name}`);

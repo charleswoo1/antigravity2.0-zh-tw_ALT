@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 安全性問題 / Security vulnerability
+    url: https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/security/policy
+    about: 請先閱讀 SECURITY.md，安全性問題不要公開建立一般 Issue。

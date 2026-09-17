@@ -10,6 +10,7 @@ const asar = require('@electron/asar');
 const engine = require('../localization_engine');
 
 const repoRoot = path.resolve(__dirname, '..');
+const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 
 function snapshotTree(root) {
     const result = {};
@@ -33,8 +34,8 @@ async function main() {
         return;
     }
 
-    const installExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows.exe');
-    const restoreExe = path.join(repoRoot, 'dist', 'Antigravity-ZH-Hant-TW-ALT-1.1.1-Windows-Restore.exe');
+    const installExe = path.join(repoRoot, 'dist', `Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows.exe`);
+    const restoreExe = path.join(repoRoot, 'dist', `Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows-Restore.exe`);
     assert.ok(fs.existsSync(installExe), `缺少安裝檔：${installExe}`);
     assert.ok(fs.existsSync(restoreExe), `缺少還原檔：${restoreExe}`);
 
