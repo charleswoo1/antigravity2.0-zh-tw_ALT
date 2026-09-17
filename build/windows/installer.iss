@@ -289,7 +289,11 @@ var
   SummaryText: String;
 begin
   Result := '';
+#if Mode == "Install"
   SetInstallerPhase(15, '正在檢查 Antigravity 相容性…');
+#else
+  SetInstallerPhase(15, '正在準備還原官方英文…');
+#endif
   if not PayloadExtracted then begin
     ExtractTemporaryFiles('*');
     PayloadExtracted := True;
@@ -368,7 +372,11 @@ begin
   if CurStep = ssPostInstall then begin
     if EngineSucceeded then begin
       InstallOperationSucceeded := True;
+#if Mode == "Install"
       SetInstallerPhase(100, '安裝完成');
+#else
+      SetInstallerPhase(100, '還原完成');
+#endif
     end;
     exit;
   end;
@@ -418,7 +426,11 @@ begin
   end;
 
   EngineSucceeded := True;
+#if Mode == "Install"
   SetInstallerPhase(95, '正在完成安裝…');
+#else
+  SetInstallerPhase(95, '正在完成還原…');
+#endif
 end;
 
 procedure CurPageChanged(CurPageID: Integer);
