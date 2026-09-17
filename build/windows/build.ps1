@@ -10,6 +10,12 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $payloadDir = Join-Path $repoRoot ".build\windows-$Arch\payload"
 $distDir = Join-Path $repoRoot 'dist'
+$packagePath = Join-Path $repoRoot 'package.json'
+$packageJson = Get-Content -LiteralPath $packagePath -Raw | ConvertFrom-Json
+$version = [string]$packageJson.version
+if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
+    throw "Invalid ALT version in package.json: $version"
+}
 
 $nodeCommand = (Get-Command node.exe -ErrorAction Stop).Source
 $prepareArgs = @(
@@ -42,8 +48,8 @@ $issPath = Join-Path $repoRoot 'build\windows\installer.iss'
 $archDirective = if ($Arch -eq 'arm64') { 'arm64' } else { 'x64compatible' }
 
 foreach ($mode in @('Install', 'Restore')) {
-    & $IsccPath "/DSourceRoot=$payloadDir" "/DOutputDir=$distDir" "/DMode=$mode" "/DTargetArch=$archDirective" $issPath
+    & $IsccPath "/DAppVersion=$version" "/DSourceRoot=$payloadDir" "/DOutputDir=$distDir" "/DMode=$mode" "/DTargetArch=$archDirective" $issPath
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup $mode build failed with exit code $LASTEXITCODE" }
 }
 
-Write-Host "Windows ALT 1.1.1 artifacts created in $distDir"
+Write-Host "Windows ALT ${version} artifacts created in $distDir"
