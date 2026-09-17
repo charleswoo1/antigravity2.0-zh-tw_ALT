@@ -33,9 +33,10 @@ for (const name of [publicInstall, publicRestore, checksum]) {
     assert.ok(agents.includes(name), `AGENTS.md 未固化 Release asset 名稱：${name}`);
 }
 
+assert.ok(/^[\x00-\x7F]*$/.test(releaseScript), 'release-preparation script 必須維持 ASCII-only，確保 Windows PowerShell 5.1 可直接解析 UTF-8 no-BOM repository file');
 assert.ok(releaseScript.includes("Join-Path $repoRoot 'package.json'"), 'release-preparation 必須從 package.json 取得版本');
 assert.ok(releaseScript.includes('Get-FileHash'), 'release-preparation 必須驗證 SHA-256');
-assert.ok(releaseScript.includes('Release staging directory 含未知檔案'), 'release staging 必須拒絕未知檔案');
+assert.ok(releaseScript.includes('Release staging directory contains unexpected files'), 'release staging 必須拒絕未知檔案');
 assert.ok(releaseScript.includes("WriteAllLines($checksumPath"), 'release-preparation 必須產生 SHA256SUMS.txt');
 
 assert.match(ci, /permissions:\s*\n\s*contents:\s*read/, 'CI 必須維持 contents: read');
