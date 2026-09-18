@@ -10,6 +10,66 @@
 - `release/v2` 僅是歷史遷移參考，不是未來產品主線；在 ALT 1.0.0 跨平台驗證完成前不得刪除。
 - 舊 v1 / v2 命名僅可出現在歷史或 legacy 說明，不得作為新產品名稱。
 
+## 中文化範圍與開發內容保護原則
+
+本專案的中文化目標是翻譯「工具怎麼被操作」，而不是翻譯「開發者正在輸入、執行、除錯或需要原樣比對的內容」。
+
+### 應翻譯的內容
+
+- 選單、導覽、設定頁、按鈕、標籤、對話框、工具提示與一般狀態文字。
+- 說明工具功能與操作方式的 UI 文案。
+- 不會改變程式碼、指令、輸出、識別字或技術內容原貌的介面文字。
+
+### `context` 翻譯原則
+
+`context` 不做全域機械翻譯，必須依實際 UI 與技術語境判斷：
+
+- 簡短 UI 標籤優先使用「脈絡」，例如 `Context` →「脈絡」。
+- 偏模型、LLM 或開發者技術概念時，可使用「上下文」，例如 `Context Window` 可譯為「上下文視窗」。
+- 完整說明文字依句意使用「上下文資訊」、「相關脈絡」、「對話脈絡」、「補充脈絡」等自然用法，不強制統一成單一中文詞。
+- `context menu` 應依既有 UI 術語譯為「快顯功能表」，不得直譯為「脈絡功能表」或「上下文功能表」。
+- `Model Context Protocol (MCP)`、程式碼識別字、API 名稱、變數名稱與受保護開發區域中的 `context` 一律保留原文。
+- 不使用「上下文脈絡」作為預設譯法；若需要較長說明，應依句意改寫，而不是疊加近義詞。
+
+### zh-TW 用詞與品牌基準
+
+中文化詞彙應以台灣地區常用的繁體中文軟體與開發者用語為優先，並遵守以下基準：
+
+- 一般 UI 對使用者的稱呼統一使用「您／您的」，避免同一介面混用「你／您」。
+- **Antigravity** 是產品品牌名稱，除非是說明其字面意義，UI 中不得翻成「反重力」。
+- `Skill / Skills` 譯為「技能」；不得加入原文沒有的「預設」。
+- `Customization System` 譯為「自訂系統」；作為設定分類的 `Customizations` 優先譯為「自訂功能」；指單一 customization 時譯為「自訂項目」。
+- UI 中表示 review / review changes / review policy 時，統一使用「檢閱」；不同語意（例如 audit、vetted）應依原文另行翻譯，不得機械替換。
+- `terminal command` 使用「終端機指令」。`Command Palette` 是既有 UI 名稱，維持「命令選擇區」。
+- `priority` 依句意使用「優先順序」、「優先」或「優先於」，避免使用「優先級」。
+- `details` 在一般 UI 中優先使用「詳細資訊」，避免使用「詳情」。
+- `view` 作為 UI 動詞時優先使用「檢視」。
+- `secret / secrets` 若指憑證或敏感設定中的 secret，依句意使用「機密資訊」；真正的 cryptographic key 則使用「金鑰」，不得一律翻成「密鑰」。
+- 技術術語仍以語意正確為最高原則；不得只為統一字面而進行全域機械替換。
+
+### 受保護區域
+
+以下區域必須刻意保留原文或避免中文化引擎介入：
+
+- 程式碼編輯器內容，包括 Monaco editor 或其他原始碼編輯區。
+- Terminal 內容區，包括 Shell 指令、命令列參數與終端機輸出。
+- Debug Console 內容，包括除錯輸出、stack trace、runtime error 與診斷訊息。
+- 輸入框與可編輯輸入區，包括 `input`、`textarea`、`contenteditable` 等使用者可直接輸入內容的區域。
+- 自動完成、suggestion、completion 等候選選單。
+- 原始碼、Shell 指令、檔案路徑、URL、識別字、log、錯誤輸出或其他需要直接複製、搜尋、比對技術文件的文字。
+- 其他雖含可翻譯英文，但翻譯後可能影響開發、除錯、搜尋或複製操作的技術內容。
+
+區域名稱本身若屬一般 UI（例如選單中的 Terminal、Debug Console 入口）可依正常 UI 規則翻譯；受保護的是其內容區與技術文字，不應因詞庫存在對應項目而被動態改寫。
+
+### 實作與維護要求
+
+- `localization_engine.js` 的 blocked-zone / blocked-tag 保護屬於核心安全邊界，不得為提高「翻譯覆蓋率」而移除、縮小或繞過。
+- 目前至少應持續保護 `monaco-editor`、`editor-container`、`terminal`、`output-view`、`debug-console`、`code-view`、`suggest-widget`，以及 `INPUT`、`TEXTAREA`、`CODE`、`PRE`、`contenteditable` 等區域。
+- 新增或修改翻譯時，必須先判斷文字屬於「操作介面」還是「開發內容」；若有疑義，優先保留原文。
+- 不得以「看到英文就翻譯」作為驗收標準。翻譯覆蓋率不能凌駕開發內容的可複製性、可搜尋性、可除錯性與與官方文件直接比對的能力。
+- 任何涉及 DOM 掃描、attribute 翻譯、tooltip 翻譯或新 selector 的修改，都必須確認不會穿透上述受保護區域。
+- 若新增支援的 Antigravity 版本改變 DOM 結構或 class naming，版本稽核必須重新確認受保護區域仍然有效。
+
 ## GitHub Handoff 合約
 
 - ChatGPT 與 Codex 的正式工作交接一律透過 GitHub，不以聊天內容複製貼上作為唯一規格來源。
