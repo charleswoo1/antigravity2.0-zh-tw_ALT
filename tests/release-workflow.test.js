@@ -64,6 +64,19 @@ for (const asset of [
     assert.ok(releaseWorkflow.includes(asset), `Release workflow 缺少固定公開 asset：${asset}`);
 }
 
+for (const asset of [
+    'Antigravity-ZH-Hant-TW-ALT-Windows.exe',
+    'Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe',
+    'Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip',
+    'Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip',
+    'SHA256SUMS.txt'
+]) {
+    assert.ok(releaseWorkflow.includes('- ' + asset + '：'),
+        `Release notes 必須以純文字保留 asset 名稱，避免 heredoc 反引號觸發 shell command substitution：${asset}`);
+    assert.ok(!releaseWorkflow.includes('- `' + asset + '`：'),
+        `Release notes 不得以未跳脫反引號包住 asset 名稱：${asset}`);
+}
+
 assert.ok(releaseWorkflow.includes('sha256sum'), 'Release workflow 必須重新產生完整 SHA256SUMS.txt');
 assert.ok(releaseWorkflow.includes('git tag -a "$TAG" "$GITHUB_SHA"'), 'tag 必須明確綁定受驗證的 release commit');
 assert.ok(releaseWorkflow.includes('git push origin "refs/tags/$TAG"'), 'Release workflow 必須推送明確 tag');
