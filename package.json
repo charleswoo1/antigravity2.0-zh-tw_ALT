@@ -6,7 +6,7 @@
   "description": "Antigravity 2.0 繁體中文 ALT 版",
   "scripts": {
     "check": "node --check localization_engine.js && node --check tools/compatibility-audit.js && node --check tools/sync-version.js && node tests/smoke.test.js && node tests/localization-protected-zones.test.js && node tests/compatibility-audit.test.js && node tests/transactional-replacement.test.js && node tests/macos-process-safety.test.js",
-    "check:packaging": "node tools/sync-version.js --check && node tests/packaging.test.js && node tests/release-assets.test.js && node tests/version-metadata.test.js",
+    "check:packaging": "node tools/sync-version.js --check && node tests/packaging.test.js && node tests/release-assets.test.js && node tests/version-metadata.test.js && node tests/release-workflow.test.js",
     "check:windows-installer": "node tests/windows-installer.test.js",
     "prepare:windows:x64": "node build/common/prepare-payload.js --platform windows --arch x64",
     "prepare:macos:x64": "node build/common/prepare-payload.js --platform macos --arch x64",
