@@ -6,7 +6,7 @@
 
 ## 版本來源
 
-`package.json.version` 是 ALT build / release version 的權威來源。Windows installer、macOS artifact / bundle metadata、Release branch、Git tag 與 Release title 都必須由它衍生，不應另外硬編碼目前版本字串。
+`package.json.version` 是 ALT build / release version 的權威來源。Windows installer、macOS artifact / bundle metadata、GitHub Pages、Release branch、Git tag 與 Release title 都必須由它衍生，不應另外硬編碼目前版本字串。GitHub Pages 顯示的已驗證 Antigravity 版本則必須由 `compatibility/manifest.json` 的 `verified` entries 衍生。
 
 升版建議使用：
 
@@ -56,7 +56,7 @@ Release branch 必須精確符合 `release/vX.Y.Z`。建立這個 branch 即代�
 - release branch 的 commit SHA 精確等於當下 `origin/main`。
 - 對應 `vX.Y.Z` tag 尚不存在。
 - 對應 GitHub Release 尚不存在。
-- `npm run check`、`npm run check:packaging` 與 production dependency audit 全部通過。
+- `npm run check`、`npm run check:packaging` 與 production dependency audit 全部通過；其中 packaging gate 會強制確認 `docs/index.html` 的 ALT 版本與支援清單已和 `package.json` / `compatibility/manifest.json` 同步。
 
 任一條件失敗就停止，不建立 tag 或 Release。
 

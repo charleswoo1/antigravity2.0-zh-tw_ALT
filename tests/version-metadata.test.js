@@ -26,6 +26,30 @@ const syncVersion = read('tools', 'sync-version.js');
 assert.ok(syncVersion.includes("const packagePath = path.join(repoRoot, 'package.json');"));
 assert.ok(syncVersion.includes("const enginePath = path.join(repoRoot, 'localization_engine.js');"));
 assert.ok(syncVersion.includes("process.argv.includes('--check')"));
+assert.ok(syncVersion.includes("const compatibilityManifestPath = path.join(repoRoot, 'compatibility', 'manifest.json');"),
+    '版本同步工具必須從 compatibility manifest 讀取已驗證的 Antigravity 版本');
+assert.ok(syncVersion.includes("const pagesIndexPath = path.join(repoRoot, 'docs', 'index.html');"),
+    '版本同步工具必須納入 GitHub Pages 首頁');
+assert.ok(syncVersion.includes("entry.status === 'verified'"),
+    'GitHub Pages 支援版本必須只取 manifest 中 verified entries');
+
+const compatibilityManifest = JSON.parse(read('compatibility', 'manifest.json'));
+const verifiedVersions = Object.entries(compatibilityManifest.versions || {})
+    .filter(([, entry]) => entry && entry.status === 'verified')
+    .map(([upstreamVersion]) => upstreamVersion);
+const pagesIndex = read('docs', 'index.html');
+
+assert.ok(
+    pagesIndex.includes(`"softwareVersion": "${version}"`),
+    'GitHub Pages JSON-LD softwareVersion 必須與 package.json.version 同步'
+);
+assert.ok(
+    pagesIndex.includes(
+        `目前 ALT 版本：<strong>${version}</strong>。明確支援 Antigravity <strong>${verifiedVersions.join('、')}</strong>。`
+    ),
+    'GitHub Pages 可見版本與支援清單必須與 package.json / compatibility manifest 同步'
+);
+
 
 const windowsBuild = read('build', 'windows', 'build.ps1');
 assert.ok(windowsBuild.includes("$packagePath = Join-Path $repoRoot 'package.json'"), 'Windows build 必須從 package.json 讀取版本');
