@@ -217,35 +217,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p .build/downloads
+          mkdir -p .build/downloads/windows .build/downloads/macos-x64 .build/downloads/macos-arm64
 
-          download_artifact() {
-            local name="$1"
-            local destination="$2"
-            local artifact_id=""
+          gh run download "$GITHUB_RUN_ID" \
+            --name "release-windows-$GITHUB_SHA" \
+            --dir ".build/downloads/windows"
 
-            for attempt in 1 2 3 4 5; do
-              artifact_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?per_page=100" \
-                --jq ".artifacts[] | select(.name == \"$name\") | .id" | head -n 1)"
-              if [[ -n "$artifact_id" ]]; then
-                break
-              fi
-              sleep 2
-            done
+          gh run download "$GITHUB_RUN_ID" \
+            --name "release-macos-x64-$GITHUB_SHA" \
+            --dir ".build/downloads/macos-x64"
 
-            if [[ -z "$artifact_id" ]]; then
-              echo "Unable to locate artifact: $name" >&2
-              exit 1
-            fi
-
-            mkdir -p "$destination"
-            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > "$destination.zip"
-            unzip -q "$destination.zip" -d "$destination"
-          }
-
-          download_artifact "release-windows-$GITHUB_SHA" ".build/downloads/windows"
-          download_artifact "release-macos-x64-$GITHUB_SHA" ".build/downloads/macos-x64"
-          download_artifact "release-macos-arm64-$GITHUB_SHA" ".build/downloads/macos-arm64"
+          gh run download "$GITHUB_RUN_ID" \
+            --name "release-macos-arm64-$GITHUB_SHA" \
+            --dir ".build/downloads/macos-arm64"
 
       - name: Assemble and verify production assets
         shell: bash
