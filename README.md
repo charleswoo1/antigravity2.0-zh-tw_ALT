@@ -19,8 +19,6 @@
 
 如果您要在 **Windows 或 macOS 將 Google Antigravity 2.0 改為繁體中文（台灣 / zh-TW）**，請依作業系統下載下列最新版 ALT 工具。
 
-## 下載最新版
-
 ### Windows x64
 
 - **[下載繁體中文安裝程式](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/latest/download/Antigravity-ZH-Hant-TW-ALT-Windows.exe)**
