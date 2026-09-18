@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — Antigravity 2.15.0 Compatibility
 
-**Status:** `IN_PROGRESS`  
+**Status:** `READY_FOR_REVIEW`  
 **Issue:** [#27 — 支援 Antigravity 2.15.0 並完成新版中文化相容性驗證](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/27)  
 **Target:** `main`  
 **Baseline commit:** `0ccdc6409d296b9dd2a3d5b6acf828074014e591`  
@@ -72,19 +72,19 @@ The completed work must:
 
 ## 6. Acceptance criteria
 
-- [ ] The real installed version is recorded from `app.asar/package.json`, not trusted from conversation.
-- [ ] Read-only audit returns `PASS` and `noMutation: true` for `2.15.0`.
-- [ ] All production patch anchors and required unpacked paths are present with expected counts.
-- [ ] The safe `2.15.0` fingerprint contains no proprietary source content.
-- [ ] Synthetic core, compatibility, protected-zone, packaging, and version-metadata tests pass.
-- [ ] Controlled real apply verifies the main localization signature and IDE wizard signature where applicable.
-- [ ] Controlled restore returns the exact original archive SHA-256.
-- [ ] No `.bak`, shadow, or transactional temp artifact remains after verification.
-- [ ] `compatibility/manifest.json` explicitly lists `2.15.0` only after real verification succeeds.
-- [ ] ALT version metadata is consistently updated to `1.2.0`.
-- [ ] README and compatibility documentation identify `2.15.0` as supported and retain the future-update safety guidance.
-- [ ] No official Antigravity proprietary payload is committed.
-- [ ] The implementation is committed, pushed, and opened as a PR without automatic merge or release.
+- [x] The real installed version is recorded from `app.asar/package.json`, not trusted from conversation.
+- [x] Read-only audit returns `PASS` and `noMutation: true` for `2.15.0`.
+- [x] All production patch anchors and required unpacked paths are present with expected counts.
+- [x] The safe `2.15.0` fingerprint contains no proprietary source content.
+- [x] Synthetic core, compatibility, protected-zone, packaging, and version-metadata tests pass.
+- [x] Controlled real apply verifies the main localization signature and IDE wizard signature where applicable.
+- [x] Controlled restore returns the exact original archive SHA-256.
+- [x] No `.bak`, shadow, or transactional temp artifact remains after verification.
+- [x] `compatibility/manifest.json` explicitly lists `2.15.0` only after real verification succeeds.
+- [x] ALT version metadata is consistently updated to `1.2.0`.
+- [x] README and compatibility documentation identify `2.15.0` as supported and retain the future-update safety guidance.
+- [x] No official Antigravity proprietary payload is committed.
+- [x] The implementation is committed, pushed, and opened as a PR without automatic merge or release.
 
 ## 7. Tests
 
@@ -118,4 +118,44 @@ The real-install report and final filesystem checks must prove exact restoration
 
 ## 9. Execution Result
 
-Pending. This section will record detected evidence, implementation changes, test commands and results, real apply/restore proof, commit, and PR URL before the contract moves to `READY_FOR_REVIEW`.
+**Detected evidence**
+
+- Real installed version: `2.15.0`, read from the official `app.asar/package.json`.
+- Initial state: official/unlocalized archive; no backup, shadow, or transactional temp artifacts.
+- Read-only audit: `PASS`, `noMutation: true`, profile `v2-mainline`, structurally compatible candidate.
+- Official archive SHA-256: `bde8b6f7602b58974f250a4fd4cf21df8575daa1e60b0aa66168c9d12c2d9639`.
+- Safe fingerprint comparison against `2.14.0`: the localization-scope `preload.js`, `menu.js`, `tray.js`, `loadingOverlay.js`, and `wizardPreload.js` sizes and SHA-256 values are unchanged; every production anchor remains present exactly once. Differences are limited to the complete archive and package version metadata.
+
+**Controlled real-install verification**
+
+- Antigravity process count immediately before mutation: `0`.
+- Apply: `PASS`; detected version `2.15.0`, main localization signature present, IDE wizard signature present.
+- Official unpacked structure remained unchanged: 293 files; aggregate SHA-256 `489a950428406ef0fce5b06219aa35ba2918fffdfbf1ec0b8f28eefea23dcadd`.
+- Restore: `PASS`; final archive version `2.15.0`, official/unlocalized.
+- Final archive SHA-256 exactly matches the pre-apply value: `bde8b6f7602b58974f250a4fd4cf21df8575daa1e60b0aa66168c9d12c2d9639`.
+- Final `.bak`, `.pre-localization`, `.localized.tmp`, and `.restore.tmp` checks: all absent.
+
+**Implementation**
+
+- Added `2.15.0` as an explicit verified manifest entry with a safe metadata-only fingerprint.
+- Updated allowlist assertions in core, compatibility, payload, and packaging tests.
+- Updated independent ALT SemVer metadata and user-facing documentation to `1.2.0`.
+- Fixed Windows PowerShell 5.1 build and release-staging scripts to read the UTF-8 `package.json` explicitly. The first Windows build exposed this pre-existing ANSI decoding failure; regression assertions now protect both scripts.
+
+**Validation**
+
+- `npm ci --ignore-scripts --no-fund`: `PASS` (`0 vulnerabilities`).
+- `npm run check`: `PASS`.
+- `npm run check:packaging`: `PASS`.
+- Windows x64 Install and Restore installer build: `PASS` with Inno Setup 6.7.3.
+- `npm run check:windows-installer`: `PASS`.
+- Isolated Windows fixed-name Release staging validation: `PASS`; three expected files only. No production Release was created or uploaded.
+- `git diff --check`: `PASS`.
+
+**GitHub handoff**
+
+- Contract commit: `ac00675`.
+- Implementation commit: `b4ee609`.
+- Branch: `feature/antigravity-2.15.0-compatibility`.
+- Pull request: [#28 — feat: support Antigravity 2.15.0](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/28).
+- No merge, tag, GitHub Release, production asset upload, or proprietary upstream payload was performed.
