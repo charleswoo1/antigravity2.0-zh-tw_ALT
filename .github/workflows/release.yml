@@ -1,0 +1,341 @@
+name: Controlled Release
+
+run-name: Controlled release ${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - 'release/v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: controlled-release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate release authorization
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.gate.outputs.version }}
+      tag: ${{ steps.gate.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.21.0
+
+      - name: Validate release branch, owner, version, main SHA and tag state
+        id: gate
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_ACTOR" != "$GITHUB_REPOSITORY_OWNER" ]]; then
+            echo "Only the repository owner may trigger a production Release." >&2
+            exit 1
+          fi
+
+          branch="$GITHUB_REF_NAME"
+          if [[ ! "$branch" =~ ^release/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "Release branch must match release/vX.Y.Z exactly." >&2
+            exit 1
+          fi
+
+          version="${BASH_REMATCH[1]}"
+          tag="v$version"
+          package_version="$(node -p "require('./package.json').version")"
+
+          if [[ "$package_version" != "$version" ]]; then
+            echo "package.json version $package_version does not match branch version $version." >&2
+            exit 1
+          fi
+
+          git fetch --no-tags origin main
+          main_sha="$(git rev-parse origin/main)"
+          head_sha="$(git rev-parse HEAD)"
+          if [[ "$head_sha" != "$main_sha" ]]; then
+            echo "Release branch must point exactly to the current origin/main commit." >&2
+            echo "release=$head_sha main=$main_sha" >&2
+            exit 1
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists; refusing to overwrite or reuse it." >&2
+            exit 1
+          fi
+
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $tag already exists; refusing to overwrite or reuse it." >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Run core tests
+        run: npm run check
+
+      - name: Run packaging and policy tests
+        run: npm run check:packaging
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev
+
+  windows-x64:
+    name: Build Windows x64 release assets
+    needs: validate
+    runs-on: windows-2025
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.21.0
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Build Windows x64 installers
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File .\build\windows\build.ps1 -Arch x64
+
+      - name: Run Windows installer E2E
+        run: npm run check:windows-installer
+
+      - name: Prepare fixed-name Windows Release assets
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File .\build\release\prepare-windows-release.ps1 -OutputDir .build\release-assets-production\windows
+
+      - name: Upload Windows release staging
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-windows-${{ github.sha }}
+          path: |
+            .build/release-assets-production/windows/Antigravity-ZH-Hant-TW-ALT-Windows.exe
+            .build/release-assets-production/windows/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
+          if-no-files-found: error
+          retention-days: 3
+
+  macos:
+    name: Build macOS ${{ matrix.arch }} release asset
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x64
+          - runner: macos-15
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24.21.0
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-fund
+
+      - name: Run smoke tests
+        run: npm run check
+
+      - name: Build macOS app
+        run: ./build/macos/build.sh ${{ matrix.arch }}
+
+      - name: Validate and stage fixed-name macOS asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${{ needs.validate.outputs.version }}"
+          arch="${{ matrix.arch }}"
+          app_name="Antigravity-ZH-Hant-TW-ALT-$version-macOS-$arch.app"
+          zip_path="dist/$app_name.zip"
+          extract_dir=".build/release-extract-$arch"
+          output_dir=".build/release-assets-production/$arch"
+          fixed_name="Antigravity-ZH-Hant-TW-ALT-macOS-$arch.zip"
+
+          rm -rf "$extract_dir" "$output_dir"
+          mkdir -p "$extract_dir" "$output_dir"
+          ditto -x -k "$zip_path" "$extract_dir"
+
+          app_path="$extract_dir/$app_name"
+          codesign --verify --deep --strict "$app_path"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Contents/Info.plist" | grep -Fx "$version"
+          "$app_path/Contents/Resources/payload/runtime/node" --version | grep -Fx 'v24.21.0'
+
+          cp "$zip_path" "$output_dir/$fixed_name"
+          test -s "$output_dir/$fixed_name"
+
+      - name: Upload macOS release staging
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-macos-${{ matrix.arch }}-${{ github.sha }}
+          path: .build/release-assets-production/${{ matrix.arch }}/Antigravity-ZH-Hant-TW-ALT-macOS-${{ matrix.arch }}.zip
+          if-no-files-found: error
+          retention-days: 3
+
+  publish:
+    name: Create tag and publish GitHub Release
+    needs:
+      - validate
+      - windows-x64
+      - macos
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.validate.outputs.version }}
+      TAG: ${{ needs.validate.outputs.tag }}
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Download validated staging artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .build/downloads/windows .build/downloads/macos-x64 .build/downloads/macos-arm64
+
+          gh run download "$GITHUB_RUN_ID" \
+            --name "release-windows-$GITHUB_SHA" \
+            --dir ".build/downloads/windows"
+
+          gh run download "$GITHUB_RUN_ID" \
+            --name "release-macos-x64-$GITHUB_SHA" \
+            --dir ".build/downloads/macos-x64"
+
+          gh run download "$GITHUB_RUN_ID" \
+            --name "release-macos-arm64-$GITHUB_SHA" \
+            --dir ".build/downloads/macos-arm64"
+
+      - name: Assemble and verify production assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf release-assets
+          mkdir -p release-assets
+
+          cp ".build/downloads/windows/Antigravity-ZH-Hant-TW-ALT-Windows.exe" release-assets/
+          cp ".build/downloads/windows/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe" release-assets/
+          cp ".build/downloads/macos-x64/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip" release-assets/
+          cp ".build/downloads/macos-arm64/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip" release-assets/
+
+          for file in             Antigravity-ZH-Hant-TW-ALT-Windows.exe             Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe             Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip             Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip; do
+            test -s "release-assets/$file"
+          done
+
+          (
+            cd release-assets
+            sha256sum               Antigravity-ZH-Hant-TW-ALT-Windows.exe               Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe               Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip               Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip               > SHA256SUMS.txt
+          )
+
+          expected="$(printf '%s\n'             Antigravity-ZH-Hant-TW-ALT-Windows.exe             Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe             Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip             Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip             SHA256SUMS.txt | sort)"
+          actual="$(find release-assets -maxdepth 1 -type f -printf '%f\n' | sort)"
+
+          if [[ "$actual" != "$expected" ]]; then
+            echo "Unexpected production asset set:" >&2
+            printf '%s\n' "$actual" >&2
+            exit 1
+          fi
+
+          cat release-assets/SHA256SUMS.txt
+
+      - name: Create immutable release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" "$GITHUB_SHA" -m "ALT $VERSION"
+          git push origin "refs/tags/$TAG"
+
+      - name: Build Release notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          verified_versions="$(node - <<'NODE'
+          const manifest = require('./compatibility/manifest.json');
+          const versions = Object.entries(manifest.versions)
+            .filter(([, entry]) => entry.status === 'verified')
+            .map(([version]) => version);
+          process.stdout.write(versions.join('、'));
+          NODE
+          )"
+
+          cat > release-notes.md <<EOF
+          ## Antigravity 2.0 繁體中文 ALT $VERSION
+
+          已驗證 Antigravity 版本：**$verified_versions**。
+
+          本 Release 由受控發布流程建立：release branch 已確認指向當下 main commit，版本 metadata 一致，且 Windows x64、macOS Intel x64、macOS Apple Silicon arm64 的測試與建置均已通過。
+
+          ### 下載平台
+          - `Antigravity-ZH-Hant-TW-ALT-Windows.exe`：Windows x64 繁體中文安裝程式
+          - `Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe`：Windows x64 官方英文還原工具
+          - `Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip`：macOS Apple Silicon（arm64）
+          - `Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip`：macOS Intel（x64）
+          - `SHA256SUMS.txt`：上述四個公開資產的 SHA-256 校驗值
+
+          ### macOS 驗證狀態
+          macOS x64 / Apple Silicon 會在每次正式 Release 重新執行 payload、checksum、app build、ad-hoc signing 與 ZIP 結構驗證。完整實機使用情境仍以使用者回報與後續驗證為準。
+          EOF
+
+      - name: Create draft Release with all assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG"             release-assets/Antigravity-ZH-Hant-TW-ALT-Windows.exe             release-assets/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe             release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip             release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip             release-assets/SHA256SUMS.txt             --verify-tag             --draft             --title "ALT $VERSION"             --notes-file release-notes.md
+
+      - name: Verify draft asset set and publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$(printf '%s\n'             Antigravity-ZH-Hant-TW-ALT-Windows.exe             Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe             Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip             Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip             SHA256SUMS.txt | sort)"
+
+          actual=""
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            actual="$(gh release view "$TAG" --json assets --jq '.assets[].name' 2>/dev/null | sort || true)"
+            if [[ "$actual" == "$expected" ]]; then
+              break
+            fi
+            sleep 1
+          done
+
+          if [[ "$actual" != "$expected" ]]; then
+            echo "Draft Release asset set is incomplete; leaving the Release as draft." >&2
+            printf 'Expected:\n%s\nActual:\n%s\n' "$expected" "$actual" >&2
+            exit 1
+          fi
+
+          gh release edit "$TAG" --draft=false --latest
+
+      - name: Verify published Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh release view "$TAG" --json isDraft --jq '.isDraft')" = "false"
+          test "$(gh release view "$TAG" --json isPrerelease --jq '.isPrerelease')" = "false"
+          gh release view "$TAG" --json url,assets
