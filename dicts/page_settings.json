@@ -1,5 +1,4 @@
 {
-    "9222": "9222",
     "Agent Settings": "Agent 設定",
     "Loading custom agents...": "正在載入自訂 Agent...",
     "Loading metrics...": "正在載入指標資料...",
@@ -220,6 +219,7 @@
     "~/.gemini/antigravity-browser-profile": "~/.gemini/antigravity-browser-profile",
     "Browser CDP Port": "瀏覽器 CDP 連接埠",
     "Port number for Chrome DevTools Protocol remote debugging. Leave empty for default (9222).": "用於 Chrome DevTools Protocol 遠端偵錯的連接埠號碼。留空則使用預設值 (9222)。",
+    "9222": "9222",
     "By using this app, you agree to its": "使用本應用程式即表示您同意其",
     "Terms of Service": "服務條款",
     "Provide Feedback": "提供意見回饋",
@@ -422,10 +422,12 @@
     "Browse and enable plugins from the Build With Google catalog.": "瀏覽並啟用「以 Google 技術建構」目錄中的外掛程式。",
     "Also includes ": "在此專案中工作時，也會套用 ",
     " when working in this project.": "。",
+
     "Plan": "方案",
     "Weekly Limit": "每週限制",
     "Five Hour Limit": "五小時限制",
     "Within each group, models share a weekly limit and a 5-hour limit. Quota is consumed proportionally to the cost of the tokens. Thus, limits will last longer with shorter tasks or using more cost-effective models. The 5-hour limit smooths out aggregate demand to fairly distribute global capacity across all users, while your weekly limit is tied directly to your individual tier.": "在同一群組中，各模型共享每週限制與五小時限制。配額的消耗與 Token 費用成比例。因此，使用較短的任務或成本效益更高的模型，限制將持續更長時間。五小時限制可平滑整體需求，以公平地將全球算力分配給所有使用者；而每週限制則直接與您個人的訂閱方案綁定。",
+
     "Bug Report": "錯誤回報",
     "Feature Request": "功能請求",
     "Auth and Billing": "驗證與帳單",
