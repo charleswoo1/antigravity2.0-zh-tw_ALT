@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://charleswoo1.github.io/antigravity2.0-zh-tw_ALT/sitemap.xml
