@@ -84,7 +84,7 @@
 
 ## GitHub Actions 受控 CI 政策
 
-本專案允許使用 GitHub Actions，但用途限定為 **CI、測試與建置驗證**。所有貢獻者、自動化工具與 Agent 都必須遵守以下規則：
+本專案允許使用 GitHub Actions。一般 workflow 的用途限定為 **CI、測試與建置驗證**；唯一的 production write 例外是經使用者明確授權的 `.github/workflows/release.yml` 受控 Release bridge。所有貢獻者、自動化工具與 Agent 都必須遵守以下規則：
 
 ### 允許用途
 
@@ -92,14 +92,15 @@
 - 可使用 GitHub 提供的 standard GitHub-hosted runners，包括 Windows、Linux 與 macOS runner。
 - 可建置 Windows / macOS 驗證用 artifact，並使用 GitHub Actions artifact 暫存測試產物。
 - 可執行不改變 repository 狀態的安全檢查，例如版本、checksum、package、installer/app bundle 結構驗證。
-- 可在隔離測試目錄執行正式 release-preparation script，驗證固定 asset 命名與 checksum 邏輯，但不得把該 staging output 自動發布成 production Release asset。
+- 可在隔離測試目錄執行正式 release-preparation script，驗證固定 asset 命名與 checksum 邏輯。
+- 在 repository owner 已明確授權發布後，可由 `.github/workflows/release.yml` 透過精確命名的 `release/vX.Y.Z` branch 啟動受控 Release bridge；該 workflow 必須重新完成版本、main SHA、測試、build、固定 asset 與 checksum 驗證後，才可建立 tag、draft Release，並在 asset 完整性驗證成功後轉為正式 Release。
 - 可使用必要且可信任的 GitHub 官方 action；第三方 action 必須有明確必要性，且優先鎖定到可稽核的版本或 commit。
 
 ### 禁止用途（除非使用者明確授權）
 
 - 不得自動 merge Pull Request。
-- 不得自動建立或發布正式 GitHub Release。
-- 不得自動上傳 production release asset。
+- 除 `.github/workflows/release.yml` 的受控 Release bridge 外，不得由其他 workflow 自動建立或發布正式 GitHub Release。
+- 除該受控 Release bridge 外，不得由其他 workflow 自動上傳 production release asset。
 - 不得自動刪除 branch、tag、Release 或改寫 Git history。
 - 不得執行部署、發布、破壞性資料變更或其他不可逆操作。
 - 不得為 CI 提高不必要的 repository write 權限。
@@ -107,8 +108,9 @@
 
 ### Workflow 權限與安全
 
-- CI workflow 預設使用最小權限，優先設定 `permissions: contents: read`。
-- 若單一 job 確實需要額外權限，必須只在該 job/工作流程範圍內授予最低必要權限並在 PR 說明原因。
+- CI workflow 預設使用最小權限，優先設定 `permissions: contents: read`；`.github/workflows/ci.yml` 必須維持 `contents: read`。
+- `.github/workflows/release.yml` 的 workflow 預設也必須維持 `contents: read`；只有最終 `publish` job 可額外取得 `actions: read` 與 `contents: write`，用於下載同次 workflow 已驗證的 artifact、建立 tag 與 GitHub Release。
+- 若其他單一 job 確實需要額外權限，必須只在該 job/工作流程範圍內授予最低必要權限並在 PR 說明原因。
 - 一般 PR 驗證不得使用 production secrets。
 - 不得使用 `pull_request_target` 執行 PR 提供的未受信任程式碼，除非另有經 review 的安全設計。
 - CI 失敗不得觸發任何自動修復、merge、release 或 destructive fallback。
@@ -116,17 +118,19 @@
 ## 驗證與發布
 
 - 所有核心測試與 build 流程仍必須能在本機執行；GitHub Actions 是 CI / validation 層，不得成為唯一可用的建置方式。
-- 正式發布與版本建立維持人工控制；除非使用者另行明確授權，不得由 GitHub Actions 自動發布。
+- 正式發布仍維持**人工授權**：只有 repository owner 明確確認可發布後，才可建立 `release/vX.Y.Z` branch。建立該 branch 即是對對應版本的一次性發布授權；後續 tag、draft Release、asset 驗證與正式發布可由受控 Release bridge 自動完成。
 - GitHub 可用於 Git 版本管理、原始碼儲存、Issue、Pull Request、CI/build validation 與 Release 檔案托管。
-- Windows build / CI artifact 可保留 ALT 版本號；正式 GitHub Release 的 Windows 公開 asset 必須固定使用以下名稱：
+- Windows / macOS build 與 CI artifact 可保留 ALT 版本號；正式 GitHub Release 的公開 asset 必須固定使用以下名稱：
 
 ```text
 Antigravity-ZH-Hant-TW-ALT-Windows.exe
 Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
+Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip
+Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip
 SHA256SUMS.txt
 ```
 
-- 人工發布 Windows Release 前必須使用 `build/release/prepare-windows-release.ps1` 從版本化 build artifact 建立獨立 staging output，並只上傳該 staging output 中的三個固定名稱檔案。完整 procedure 參閱 `RELEASING.md`。
-- README 的 `releases/latest/download/...` 永久下載連結依賴上述固定 asset 名稱；不得將帶版本號的 `.exe` 原名當成 production Release asset 上傳。
+- 受控 Release bridge 必須重新組裝上述五個固定名稱 asset，並以四個 binary/archive 重新產生完整 `SHA256SUMS.txt`。若採人工 fallback，Windows 仍必須先使用 `build/release/prepare-windows-release.ps1` 建立固定名稱 staging output，再與 macOS 固定名稱資產一起產生完整 checksum。完整 procedure 參閱 `RELEASING.md`。
+- README 的 `releases/latest/download/...` 永久下載連結依賴上述固定 asset 名稱；不得將帶版本號的 build artifact 原名當成 production Release asset 上傳。
 - Release 不得包含 Antigravity 官方 `app.asar` 或其他官方 proprietary 檔案。
 - 第三方 runtime/dependency 若被打包進 Release，必須保留適用的授權與 notices。
