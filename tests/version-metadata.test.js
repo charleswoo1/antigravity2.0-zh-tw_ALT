@@ -29,6 +29,7 @@ assert.ok(syncVersion.includes("process.argv.includes('--check')"));
 
 const windowsBuild = read('build', 'windows', 'build.ps1');
 assert.ok(windowsBuild.includes("$packagePath = Join-Path $repoRoot 'package.json'"), 'Windows build 必須從 package.json 讀取版本');
+assert.ok(windowsBuild.includes('Get-Content -LiteralPath $packagePath -Raw -Encoding UTF8'), 'Windows PowerShell 5.1 build 必須以 UTF-8 讀取 package.json');
 assert.ok(windowsBuild.includes('"/DAppVersion=$version"'), 'Windows build 必須把 package version 注入 Inno Setup');
 assert.ok(windowsBuild.includes('Windows ALT ${version} artifacts created'), 'Windows build 訊息不得寫死當前 ALT 版本');
 assert.ok(!windowsBuild.includes(`Windows ALT ${version} artifacts created`), 'Windows build 不得把當前版本硬編碼進訊息');
@@ -51,6 +52,9 @@ assert.ok(windowsInstallerTest.includes("const packageJson = JSON.parse(fs.readF
 assert.ok(windowsInstallerTest.includes('`Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows.exe`'), 'Windows E2E install artifact lookup 必須使用 package version');
 assert.ok(windowsInstallerTest.includes('`Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows-Restore.exe`'), 'Windows E2E restore artifact lookup 必須使用 package version');
 assert.ok(!windowsInstallerTest.includes(`ALT-${version}-Windows.exe`), 'Windows E2E 不得硬編碼目前 package version');
+
+const windowsRelease = read('build', 'release', 'prepare-windows-release.ps1');
+assert.ok(windowsRelease.includes('Get-Content -LiteralPath $packageJsonPath -Raw -Encoding UTF8'), 'Windows PowerShell 5.1 release staging 必須以 UTF-8 讀取 package.json');
 
 const macBuild = read('build', 'macos', 'build.sh');
 assert.ok(macBuild.includes("node -p \"require('./package.json').version\""), 'macOS build 必須從 package.json 讀取版本');

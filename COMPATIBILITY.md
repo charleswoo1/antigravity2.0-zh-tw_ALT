@@ -2,6 +2,8 @@
 
 ALT 對 Antigravity 上游版本採用明確 allowlist。版本較新、符合某個 semver 範圍，或唯讀稽核得到 `PASS`，都不會自動成為「已驗證支援版本」。唯一的正式清單是 [`compatibility/manifest.json`](compatibility/manifest.json)。
 
+ALT 1.2.0 已完成 Antigravity `2.13.0`、`2.14.0` 與 `2.15.0` 的明確相容性驗證。
+
 ## 三種判定
 
 - **結構相容候選（candidate structurally compatible）**：唯讀稽核得到 `PASS`，目前檔案結構與 patch anchors 相符，但尚未完成真實安裝的 apply／verify／restore。

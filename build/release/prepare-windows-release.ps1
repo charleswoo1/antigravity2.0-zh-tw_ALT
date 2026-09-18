@@ -22,7 +22,7 @@ if ($DistDir.TrimEnd('\') -eq $OutputDir.TrimEnd('\')) {
 }
 
 $packageJsonPath = Join-Path $repoRoot 'package.json'
-$packageJson = Get-Content -LiteralPath $packageJsonPath -Raw | ConvertFrom-Json
+$packageJson = Get-Content -LiteralPath $packageJsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
 $version = [string]$packageJson.version
 if ($version -notmatch '^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') {
     throw "Invalid package.json version: $version"
