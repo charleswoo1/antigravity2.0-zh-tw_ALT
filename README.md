@@ -1,8 +1,10 @@
-# Antigravity 2.0 繁體中文 ALT 版
+# Google Antigravity 2.0 繁體中文（台灣）中文化工具｜ALT
 
-**Antigravity 2.0 Traditional Chinese ALT**（ALT = Alternative）是一套在使用者本機將 Antigravity 2.0 介面套用為繁體中文（台灣）的非官方社群工具。
+**Antigravity 2.0 Traditional Chinese ALT**（ALT = Alternative）是一套 **Google Antigravity 2.0 繁體中文（zh-TW）中文化工具**，可在使用者本機將 Antigravity 介面套用為台灣繁體中文。支援 Windows x64，並提供 macOS Apple Silicon（arm64）與 Intel（x64）版本。
 
-- ALT 目前版本：**1.1.1**
+本專案是**非官方社群工具**，與 Google / Antigravity 官方無關；目標是提供符合台灣使用習慣的 Antigravity 中文介面，同時保留程式碼、Terminal、Debug Console、輸入內容與自動完成等開發工作區域的原文。
+
+- ALT 目前版本：**1.1.2**
 - 明確支援的 Antigravity 版本：**2.13.0、2.14.0**
 - 正式驗證平台：**Windows x64**
 - 公開先行版本：**macOS Apple Silicon（arm64）、Intel（x64）**
@@ -12,6 +14,10 @@
 > macOS 版本已通過自動化 build、ad-hoc signing 與 ZIP 結構驗證，但完整人工實機驗證仍在進行中。如遇到平台問題，將於後續 ALT 版本修正。
 
 本專案不包含、不散布 Antigravity 官方 `app.asar` 或其他官方 proprietary 二進位檔案；所有修改都在使用者自己的電腦上完成。
+
+## Google Antigravity 繁體中文下載
+
+如果您要在 **Windows 或 macOS 將 Google Antigravity 2.0 改為繁體中文（台灣 / zh-TW）**，請依作業系統下載下列最新版 ALT 工具。
 
 ## 下載最新版
 
@@ -100,7 +106,7 @@ macOS 版本目前採 ad-hoc signing，未使用 Apple Developer ID notarization
 
 ALT 對 Antigravity 上游版本採明確 allowlist，不會因版本號較新就自動放行。
 
-- ALT 1.1.1 明確支援 Antigravity **2.13.0、2.14.0**。
+- ALT 1.1.2 明確支援 Antigravity **2.13.0、2.14.0**。
 - 其他版本會在唯讀 preflight 階段停止，不會寫入 Antigravity 安裝目錄。
 - 首次套用會建立同版本官方 `app.asar.bak`。
 - 備份版本與目前 Antigravity 不一致時，工具會拒絕不安全的還原。
@@ -114,6 +120,28 @@ ALT 對 Antigravity 上游版本採明確 allowlist，不會因版本號較新�
 ALT 會處理主介面、設定、選單、Tray、啟動畫面、Documents、Scratch Files、側邊提問、Git amend，以及 IDE 安裝精靈等介面。
 
 為避免影響工作內容，翻譯引擎會略過程式碼、Monaco 編輯器、終端機、輸入欄位、文字區域、Canvas、SVG 與可編輯內容。
+
+## 常見問題
+
+### Google Antigravity 2.0 有繁體中文版嗎？
+
+Antigravity ALT 是非官方社群中文化工具，可將支援版本的 Google Antigravity 2.0 介面套用為繁體中文（台灣 / zh-TW）。它不修改或散布官方 proprietary 二進位檔案，中文化在使用者自己的電腦上完成。
+
+### 如何將 Google Antigravity 改成繁體中文？
+
+Windows 使用者可下載本頁的 `Antigravity-ZH-Hant-TW-ALT-Windows.exe`，完全關閉 Antigravity 後執行安裝；macOS 使用者則依 Apple Silicon 或 Intel 架構下載對應 ZIP，解壓後執行 Antigravity ALT app 並選擇「套用繁體中文」。
+
+### Antigravity 中文化支援哪些版本？
+
+ALT 1.1.2 明確支援 Antigravity **2.13.0 與 2.14.0**。其他版本不會因版本號較新就自動放行，必須先完成相容性驗證。
+
+### Antigravity 中文化支援 Windows 與 macOS 嗎？
+
+支援。Windows x64 為正式驗證平台；macOS Apple Silicon（arm64）與 Intel（x64）已通過自動化 build、ad-hoc signing、ZIP 結構與 payload 驗證，目前仍屬公開先行版本。
+
+### 中文化會翻譯程式碼、Terminal 或錯誤訊息嗎？
+
+不會。ALT 的原則是翻譯「工具怎麼被操作」，不是翻譯「開發者正在輸入、執行或除錯的內容」。程式碼編輯器、Terminal 內容、Debug Console、輸入框與自動完成候選等區域會刻意保留原文。
 
 ## 問題回報
 
