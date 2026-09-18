@@ -11,7 +11,7 @@ $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $payloadDir = Join-Path $repoRoot ".build\windows-$Arch\payload"
 $distDir = Join-Path $repoRoot 'dist'
 $packagePath = Join-Path $repoRoot 'package.json'
-$packageJson = Get-Content -LiteralPath $packagePath -Raw | ConvertFrom-Json
+$packageJson = Get-Content -LiteralPath $packagePath -Raw -Encoding UTF8 | ConvertFrom-Json
 $version = [string]$packageJson.version
 if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
     throw "Invalid ALT version in package.json: $version"

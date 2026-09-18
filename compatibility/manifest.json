@@ -13,6 +13,11 @@
       "status": "verified",
       "profile": "v2-mainline",
       "fingerprint": "fingerprints/2.14.0.json"
+    },
+    "2.15.0": {
+      "status": "verified",
+      "profile": "v2-mainline",
+      "fingerprint": "fingerprints/2.15.0.json"
     }
   }
 }
