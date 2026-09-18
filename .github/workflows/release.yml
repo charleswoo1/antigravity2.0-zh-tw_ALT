@@ -295,11 +295,11 @@ jobs:
           本 Release 由受控發布流程建立：release branch 已確認指向當下 main commit，版本 metadata 一致，且 Windows x64、macOS Intel x64、macOS Apple Silicon arm64 的測試與建置均已通過。
 
           ### 下載平台
-          - `Antigravity-ZH-Hant-TW-ALT-Windows.exe`：Windows x64 繁體中文安裝程式
-          - `Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe`：Windows x64 官方英文還原工具
-          - `Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip`：macOS Apple Silicon（arm64）
-          - `Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip`：macOS Intel（x64）
-          - `SHA256SUMS.txt`：上述四個公開資產的 SHA-256 校驗值
+          - Antigravity-ZH-Hant-TW-ALT-Windows.exe：Windows x64 繁體中文安裝程式
+          - Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe：Windows x64 官方英文還原工具
+          - Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip：macOS Apple Silicon（arm64）
+          - Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip：macOS Intel（x64）
+          - SHA256SUMS.txt：上述四個公開資產的 SHA-256 校驗值
 
           ### macOS 驗證狀態
           macOS x64 / Apple Silicon 會在每次正式 Release 重新執行 payload、checksum、app build、ad-hoc signing 與 ZIP 結構驗證。完整實機使用情境仍以使用者回報與後續驗證為準。
