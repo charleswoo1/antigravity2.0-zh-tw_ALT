@@ -1,0 +1,103 @@
+name: Publish ALT 1.1.2
+
+on:
+  push:
+    branches:
+      - publish/alt-1.1.2
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    name: Publish ALT 1.1.2
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download verified main CI artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: "35316755685"
+          MAIN_SHA: "2c1a3966a35db299ed8787d9dc11050a4587fde4"
+        run: |
+          set -euo pipefail
+          mkdir -p input/windows input/macos-arm64 input/macos-x64
+          gh run download "$RUN_ID" -R "$REPO" -n "ci-windows-x64-$MAIN_SHA" -D input/windows
+          gh run download "$RUN_ID" -R "$REPO" -n "ci-macos-arm64-$MAIN_SHA" -D input/macos-arm64
+          gh run download "$RUN_ID" -R "$REPO" -n "ci-macos-x64-$MAIN_SHA" -D input/macos-x64
+
+      - name: Stage fixed public asset names and checksums
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          WIN_INSTALL="$(find input/windows -type f -name '*-Windows.exe' ! -name '*-Windows-Restore.exe' -print -quit)"
+          WIN_RESTORE="$(find input/windows -type f -name '*-Windows-Restore.exe' -print -quit)"
+          MAC_ARM64="$(find input/macos-arm64 -type f -name '*.zip' -print -quit)"
+          MAC_X64="$(find input/macos-x64 -type f -name '*.zip' -print -quit)"
+          test -n "$WIN_INSTALL" && test -f "$WIN_INSTALL"
+          test -n "$WIN_RESTORE" && test -f "$WIN_RESTORE"
+          test -n "$MAC_ARM64" && test -f "$MAC_ARM64"
+          test -n "$MAC_X64" && test -f "$MAC_X64"
+          cp "$WIN_INSTALL" release/Antigravity-ZH-Hant-TW-ALT-Windows.exe
+          cp "$WIN_RESTORE" release/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
+          cp "$MAC_ARM64" release/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip
+          cp "$MAC_X64" release/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip
+          (cd release && sha256sum \
+            Antigravity-ZH-Hant-TW-ALT-Windows.exe \
+            Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe \
+            Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip \
+            Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip > SHA256SUMS.txt)
+          test "$(find release -maxdepth 1 -type f | wc -l)" -eq 5
+          cat release/SHA256SUMS.txt
+
+      - name: Prepare release notes
+        run: |
+          cat > release-notes.md <<'EOF'
+          ## Antigravity 2.0 繁體中文 ALT 1.1.2
+
+          已驗證 Antigravity 版本：**2.13.0、2.14.0**。
+
+          ### 1.1.2 重點
+          - 整理台灣 zh-TW 介面術語與用字一致性。
+          - `Context` 採情境式翻譯：短 UI 使用「脈絡」，技術語境可依情境使用「上下文」。
+          - 修正 Skills、Customizations、Review、Terminal command、priority、details 等介面詞彙。
+          - Antigravity 品牌名稱維持英文，不再翻成「反重力」。
+          - 新增 protected-zone regression test，避免未來誤翻程式碼編輯器、Terminal、Debug Console、輸入框與自動完成內容。
+          - 將中文化邊界與 zh-TW 用詞基準正式寫入專案規範。
+          - 修正 payload 驗證工具的版本硬編碼，後續升版會自動依 `package.json.version` 驗證。
+
+          ### 下載平台
+          - `Antigravity-ZH-Hant-TW-ALT-Windows.exe`：Windows x64 繁體中文安裝程式
+          - `Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe`：Windows x64 官方英文還原工具
+          - `Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip`：macOS Apple Silicon（arm64）
+          - `Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip`：macOS Intel（x64）
+          - `SHA256SUMS.txt`：上述公開資產的 SHA-256 校驗值
+
+          ### macOS 驗證狀態
+          macOS x64 / Apple Silicon 已通過 GitHub Actions 的 payload、checksum、app build、ad-hoc signing 與 ZIP 結構驗證。
+
+          **目前仍未完成相符架構 Mac 的完整人工實機驗證**，包含下載後 quarantine、Gatekeeper、實際套用與還原流程。若發現平台問題，將以後續 ALT 版本修正。
+          EOF
+
+      - name: Create draft release, upload assets, then publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: v1.1.2
+          MAIN_SHA: "2c1a3966a35db299ed8787d9dc11050a4587fde4"
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" -R "$REPO" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; refusing to overwrite." >&2
+            exit 1
+          fi
+          gh release create "$TAG" -R "$REPO" --target "$MAIN_SHA" --title "ALT 1.1.2" --notes-file release-notes.md --draft
+          gh release upload "$TAG" -R "$REPO" \
+            release/Antigravity-ZH-Hant-TW-ALT-Windows.exe \
+            release/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe \
+            release/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip \
+            release/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip \
+            release/SHA256SUMS.txt
+          gh release edit "$TAG" -R "$REPO" --draft=false
+          gh release view "$TAG" -R "$REPO" --json tagName,name,isDraft,isPrerelease,url
