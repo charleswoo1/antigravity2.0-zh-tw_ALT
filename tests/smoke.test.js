@@ -13,7 +13,7 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json
 async function main() {
     assert.strictEqual(engine.EDITION, 'ALT');
     assert.strictEqual(engine.ENGINE_VERSION, packageJson.version);
-    assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0']);
+    assert.deepStrictEqual(engine.getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0', '2.15.1']);
 
     const dictDir = path.join(__dirname, '..', 'dicts');
     const dictionary = {};

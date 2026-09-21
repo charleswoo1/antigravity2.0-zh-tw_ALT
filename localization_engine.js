@@ -13,7 +13,7 @@ const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
 const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
 const EDITION = 'ALT';
-const ENGINE_VERSION = '1.2.0';
+const ENGINE_VERSION = '1.2.1';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
 
