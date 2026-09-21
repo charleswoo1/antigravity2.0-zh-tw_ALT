@@ -16,14 +16,11 @@ const releaseWorkflow = fs.readFileSync(releasePath, 'utf-8');
 assert.match(ciWorkflow, /permissions:\s*\n\s*contents:\s*read/, '一般 CI 必須維持 contents: read');
 assert.ok(!/contents:\s*write/.test(ciWorkflow), '一般 CI 不得取得 contents: write');
 
-assert.match(releaseWorkflow, /on:\s*\n\s*create:\s*\n\s*push:/, 'Release workflow 必須支援 Git ref create event，讓 API 建立 release branch 可觸發發布');
+assert.match(releaseWorkflow, /on:\s*\n\s*push:/, 'Release workflow 必須以 release branch push 作為唯一發布觸發');
+assert.ok(!/^\s*create:\s*$/m.test(releaseWorkflow), 'Release workflow 不得同時監聽 create event，避免建立 release branch 時重複觸發');
 assert.match(releaseWorkflow, /branches:\s*\n\s*- ['"]release\/v\*['"]/, 'Release workflow 的 push 觸發只能接受 release/v* branch');
-assert.ok(
-    releaseWorkflow.includes("github.event_name == 'create'") &&
-    releaseWorkflow.includes("github.ref_type == 'branch'") &&
-    releaseWorkflow.includes("startsWith(github.ref_name, 'release/v')"),
-    'create event 必須只讓 release/v* branch 進入 validate job，避免一般 branch 建立誤跑發布'
-);
+assert.ok(!releaseWorkflow.includes("github.event_name == 'create'"),
+    'Release workflow 移除 create trigger 後不應保留 create event guard');
 assert.match(releaseWorkflow, /^permissions:\s*\n\s*contents:\s*read/m, 'Release workflow 預設仍必須是 contents: read');
 assert.match(
     releaseWorkflow,
