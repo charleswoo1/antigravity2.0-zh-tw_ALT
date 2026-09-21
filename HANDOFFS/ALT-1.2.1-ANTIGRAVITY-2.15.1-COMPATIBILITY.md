@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — Antigravity 2.15.1 Compatibility
 
-**Status:** `IN_PROGRESS`  
+**Status:** `READY_FOR_REVIEW`  
 **Issue:** [Follow-up to #27 — 支援 Antigravity 2.15.1 並完成新版中文化相容性驗證](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/27)  
 **Target:** `main`  
 **Baseline commit:** `4347f80`  
@@ -54,7 +54,7 @@ Add explicit, evidence-backed support for upstream Antigravity `2.15.1`, preserv
 - [x] `compatibility/manifest.json` explicitly lists verified `2.15.1`.
 - [x] ALT version metadata is consistently updated to `1.2.1`.
 - [x] README, compatibility documentation, GitHub Pages metadata, payload assertions, and tests identify `2.15.1`.
-- [ ] Implementation is committed, pushed, and opened as a PR without automatic merge or release.
+- [x] Implementation is committed, pushed, and opened as a PR without automatic merge or release.
 
 ## 6. Tests
 
@@ -121,4 +121,7 @@ npm run verify:real-install -- --install-dir "$env:LOCALAPPDATA\Programs\antigra
 
 **GitHub handoff**
 
-- Pending commit, push, PR, and final contract status update.
+- Commit: `4158e6e` (`feat: support Antigravity 2.15.1`).
+- Branch: `feature/antigravity-2.15.1-compatibility`.
+- Pull request: [#35 — feat: support Antigravity 2.15.1](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/35).
+- No merge, tag, GitHub Release, production asset upload, or proprietary upstream payload was performed.
