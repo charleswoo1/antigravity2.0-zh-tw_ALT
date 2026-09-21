@@ -3,7 +3,6 @@ name: Controlled Release
 run-name: Controlled release ${{ github.ref_name }}
 
 on:
-  create:
   push:
     branches:
       - 'release/v*'
@@ -18,7 +17,6 @@ concurrency:
 jobs:
   validate:
     name: Validate release authorization
-    if: github.event_name == 'push' || (github.event_name == 'create' && github.ref_type == 'branch' && startsWith(github.ref_name, 'release/v'))
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.gate.outputs.version }}
