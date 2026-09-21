@@ -35,10 +35,11 @@ async function createFixture(root, options = {}) {
 }
 
 async function main() {
-    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0']);
+    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0', '2.15.1']);
     assert.strictEqual(isVerifiedVersion('2.13.0'), true);
     assert.strictEqual(isVerifiedVersion('2.14.0'), true);
     assert.strictEqual(isVerifiedVersion('2.15.0'), true);
+    assert.strictEqual(isVerifiedVersion('2.15.1'), true);
     assert.strictEqual(isVerifiedVersion('2.16.0'), false, '未列入 allowlist 的版本不得宣稱已支援');
 
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'antigravity-compat-test-'));
