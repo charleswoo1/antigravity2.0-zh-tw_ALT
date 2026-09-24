@@ -55,7 +55,7 @@ Add explicit, evidence-backed support for upstream Antigravity `2.17.0`, reuse t
 - [x] `compatibility/manifest.json` explicitly lists verified `2.17.0` after controlled verification succeeds.
 - [x] ALT version metadata is consistently updated to `1.4.0`.
 - [x] README, compatibility documentation, GitHub Pages metadata, payload assertions, and tests identify `2.17.0`.
-- [ ] Implementation is committed, pushed, and opened as a PR without automatic merge or release.
+- [x] Implementation is committed, pushed, and opened as a PR without automatic merge or release.
 
 ## 6. Tests
 
@@ -123,4 +123,7 @@ npm run verify:real-install -- --install-dir "$env:LOCALAPPDATA\Programs\antigra
 
 **GitHub handoff**
 
-- Pending commit, push, PR, and final contract update.
+- Implementation commit: `e2d0d28` (`feat: support Antigravity 2.17.0`).
+- Branch: `feature/antigravity-2.17.0-compatibility`.
+- Pull request: [#38 — feat: support Antigravity 2.17.0](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/38).
+- No merge, tag, GitHub Release, production asset upload, or proprietary upstream payload was performed.
