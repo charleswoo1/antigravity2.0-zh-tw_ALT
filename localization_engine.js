@@ -13,7 +13,7 @@ const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
 const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
 const EDITION = 'ALT';
-const ENGINE_VERSION = '1.2.1';
+const ENGINE_VERSION = '1.3.0';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
 
@@ -684,22 +684,22 @@ function cleanMenuJsContent(content) {
     let cleaned = content;
 
     for (const startMark of startMarks) {
-        const startIdx = cleaned.indexOf(startMark);
-        if (startIdx === -1) continue;
+        let startIdx = cleaned.indexOf(startMark);
+        while (startIdx !== -1) {
+            let endIdx = -1;
+            let endMarkUsed = '';
 
-        let endIdx = -1;
-        let endMarkUsed = '';
-
-        for (const endMark of endMarks) {
-            const idx = cleaned.indexOf(endMark, startIdx);
-            if (idx !== -1 && (endIdx === -1 || idx < endIdx)) {
-                endIdx = idx;
-                endMarkUsed = endMark;
+            for (const endMark of endMarks) {
+                const idx = cleaned.indexOf(endMark, startIdx);
+                if (idx !== -1 && (endIdx === -1 || idx < endIdx)) {
+                    endIdx = idx;
+                    endMarkUsed = endMark;
+                }
             }
-        }
 
-        if (endIdx !== -1 && startIdx < endIdx) {
+            if (endIdx === -1 || startIdx >= endIdx) break;
             cleaned = cleaned.substring(0, startIdx) + cleaned.substring(endIdx + endMarkUsed.length);
+            startIdx = cleaned.indexOf(startMark);
         }
     }
 
@@ -833,6 +833,7 @@ function runCommandSync(cmd) {
 function createMenuTranslationPatch() {
     return `
     /* --- MENU TRANSLATION START --- */
+    {
     const translations = {
         'File': '檔案',
         'Edit': '編輯',
@@ -844,6 +845,8 @@ function createMenuTranslationPatch() {
         'Command Palette': '命令選擇區',
         'Docs': '使用說明',
         'Check for Updates': '檢查更新',
+        'Connect to WSL': '連線至 WSL',
+        'Reopen Locally': '在本機重新開啟',
         'Toggle Developer Tools': '切換開發者工具',
         'Undo': '復原',
         'Redo': '重做',
@@ -901,6 +904,7 @@ function createMenuTranslationPatch() {
     }
 
     translateMenu(menu.items);
+    }
     /* --- MENU TRANSLATION END --- */
     `;
 }
@@ -996,12 +1000,12 @@ function install20MutationFlow(resourcesDir, options = {}) {
         const menuTranslationJs = createMenuTranslationPatch();
 
         const targetStr = 'electron_1.Menu.setApplicationMenu(menu);';
-        const idx = menuCleaned.indexOf(targetStr);
+        const targetCount = menuCleaned.split(targetStr).length - 1;
 
-        if (idx !== -1) {
-            const patchedMenuContent = menuCleaned.substring(0, idx) + menuTranslationJs + '\n    ' + menuCleaned.substring(idx);
+        if (targetCount > 0) {
+            const patchedMenuContent = menuCleaned.split(targetStr).join(menuTranslationJs + '\n    ' + targetStr);
             fs.writeFileSync(menuPath, patchedMenuContent, 'utf-8');
-            console.log('[修改] 系統選單文字注入完成。');
+            console.log(`[修改] 系統選單文字注入完成（${targetCount} 個套用點）。`);
         } else {
             console.error('[錯誤] 找不到 menu.js 插入點，官方結構可能已變更。');
             fs.rmSync(tempDir, { recursive: true, force: true });

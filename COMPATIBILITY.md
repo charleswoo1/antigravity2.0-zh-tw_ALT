@@ -2,7 +2,7 @@
 
 ALT 對 Antigravity 上游版本採用明確 allowlist。版本較新、符合某個 semver 範圍，或唯讀稽核得到 `PASS`，都不會自動成為「已驗證支援版本」。唯一的正式清單是 [`compatibility/manifest.json`](compatibility/manifest.json)。
 
-ALT 1.2.1 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0` 與 `2.15.1` 的明確相容性驗證。
+ALT 1.3.0 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0`、`2.15.1` 與 `2.16.0` 的明確相容性驗證。2.16.0 新增非同步 WSL 選單重新套用流程，因此使用獨立 profile 驗證兩個 `setApplicationMenu` 套用點。
 
 ## 三種判定
 

@@ -27,7 +27,7 @@ function main() {
     const manifest = JSON.parse(fs.readFileSync(path.join(payloadDir, 'payload-manifest.json'), 'utf-8'));
     assert.strictEqual(manifest.edition, 'ALT');
     assert.strictEqual(manifest.productVersion, packageVersion);
-    assert.deepStrictEqual(manifest.verifiedSupportedAntigravityVersions, ['2.13.0', '2.14.0', '2.15.0', '2.15.1']);
+    assert.deepStrictEqual(manifest.verifiedSupportedAntigravityVersions, ['2.13.0', '2.14.0', '2.15.0', '2.15.1', '2.16.0']);
     assert.ok(/^[a-f0-9]{64}$/.test(manifest.runtime.sha256));
 
     assert.ok(fs.existsSync(path.join(payloadDir, 'dicts', 'v2_13.json')), 'payload 缺少 v2_13.json');
