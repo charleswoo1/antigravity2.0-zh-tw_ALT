@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "defaultCandidateProfile": "v2-mainline",
   "profiles": {
-    "v2-mainline": "profiles/v2-mainline.json"
+    "v2-mainline": "profiles/v2-mainline.json",
+    "v2-mainline-menu-refresh": "profiles/v2-mainline-menu-refresh.json"
   },
   "versions": {
     "2.13.0": {
@@ -23,6 +24,11 @@
       "status": "verified",
       "profile": "v2-mainline",
       "fingerprint": "fingerprints/2.15.1.json"
+    },
+    "2.16.0": {
+      "status": "verified",
+      "profile": "v2-mainline-menu-refresh",
+      "fingerprint": "fingerprints/2.16.0.json"
     }
   }
 }

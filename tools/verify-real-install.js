@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const asar = require('@electron/asar');
 const engine = require('../localization_engine');
 
 function sha256File(filePath) {
@@ -98,13 +99,28 @@ function main() {
         if (applied.version !== audit.upstreamVersion || !applied.localized) throw new Error('套用後 archive 版本或主簽章驗證失敗。');
         if (before.wizardPresent && !applied.wizardLocalized) throw new Error('套用後 wizard 簽章驗證失敗。');
         if (JSON.stringify(unpackedApplied) !== JSON.stringify(unpackedBefore)) throw new Error('套用後官方 unpacked 結構指紋改變。');
+        const menuAnchor = audit.members?.['dist/menu.js']?.anchors?.find(anchor => anchor.id === 'menu-set-application-menu');
+        let menuApplicationPoints = null;
+        if (menuAnchor?.expectedCount) {
+            const appliedMenu = asar.extractFile(asarPath, path.join('dist', 'menu.js')).toString('utf-8');
+            menuApplicationPoints = appliedMenu.split('/* --- MENU TRANSLATION START --- */').length - 1;
+            if (menuApplicationPoints !== menuAnchor.expectedCount) {
+                throw new Error(`套用後選單注入區塊預期 ${menuAnchor.expectedCount}，實際 ${menuApplicationPoints}。`);
+            }
+            try {
+                new Function(appliedMenu);
+            } catch (error) {
+                throw new Error(`套用後 menu.js 語法驗證失敗：${error.message}`);
+            }
+        }
         report.apply = {
             status: 'PASS',
             version: applied.version,
             localized: applied.localized,
             wizardPresent: applied.wizardPresent,
             wizardLocalized: applied.wizardLocalized,
-            unpacked: unpackedApplied
+            unpacked: unpackedApplied,
+            menuApplicationPoints
         };
 
         if (!engine.restore20(resourcesDir, { skipProcessClose: true })) throw new Error('ALT real-install restore 失敗。');

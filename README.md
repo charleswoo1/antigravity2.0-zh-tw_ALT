@@ -4,8 +4,8 @@
 
 本專案是**非官方社群工具**，與 Google / Antigravity 官方無關；目標是提供符合台灣使用習慣的 Antigravity 中文介面，同時保留程式碼、Terminal、Debug Console、輸入內容與自動完成等開發工作區域的原文。
 
-- ALT 目前版本：**1.2.1**
-- 明確支援的 Antigravity 版本：**2.13.0、2.14.0、2.15.0、2.15.1**
+- ALT 目前版本：**1.3.0**
+- 明確支援的 Antigravity 版本：**2.13.0、2.14.0、2.15.0、2.15.1、2.16.0**
 - 正式驗證平台：**Windows x64**
 - 公開先行版本：**macOS Apple Silicon（arm64）、Intel（x64）**
 - 一般使用者不需要安裝 Node.js、npm 或其他開發工具
@@ -41,7 +41,7 @@
 
 ## Windows 使用方式
 
-1. 先安裝並更新官方 Antigravity 至明確支援的 **2.13.0、2.14.0、2.15.0 或 2.15.1**。
+1. 先安裝並更新官方 Antigravity 至明確支援的 **2.13.0、2.14.0、2.15.0、2.15.1 或 2.16.0**。
 2. 下載 `Antigravity-ZH-Hant-TW-ALT-Windows.exe`。
 3. 完全關閉 Antigravity。
 4. 執行 ALT 安裝程式，依提示完成相容性檢查與繁體中文套用。
@@ -104,7 +104,7 @@ macOS 版本目前採 ad-hoc signing，未使用 Apple Developer ID notarization
 
 ALT 對 Antigravity 上游版本採明確 allowlist，不會因版本號較新就自動放行。
 
-- ALT 1.2.1 明確支援 Antigravity **2.13.0、2.14.0、2.15.0、2.15.1**。
+- ALT 1.3.0 明確支援 Antigravity **2.13.0、2.14.0、2.15.0、2.15.1、2.16.0**。
 - 其他版本會在唯讀 preflight 階段停止，不會寫入 Antigravity 安裝目錄。
 - 首次套用會建立同版本官方 `app.asar.bak`。
 - 備份版本與目前 Antigravity 不一致時，工具會拒絕不安全的還原。
@@ -131,7 +131,7 @@ Windows 使用者可下載本頁的 `Antigravity-ZH-Hant-TW-ALT-Windows.exe`，�
 
 ### Antigravity 中文化支援哪些版本？
 
-ALT 1.2.1 明確支援 Antigravity **2.13.0、2.14.0、2.15.0 與 2.15.1**。其他版本不會因版本號較新就自動放行，必須先完成相容性驗證。
+ALT 1.3.0 明確支援 Antigravity **2.13.0、2.14.0、2.15.0、2.15.1 與 2.16.0**。其他版本不會因版本號較新就自動放行，必須先完成相容性驗證。
 
 ### Antigravity 中文化支援 Windows 與 macOS 嗎？
 
