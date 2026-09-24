@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "upstreamVersion": "2.17.0",
+  "profile": "v2-mainline-menu-refresh",
+  "auditStatus": "PASS",
+  "archive": {
+    "size": 4621906,
+    "sha256": "85c97057c762f01fe9fa8b0380f8055ff76344ceb47c840cd3d8d43aa035142b"
+  },
+  "localized": false,
+  "members": {
+    "package.json": {
+      "exists": true,
+      "required": true,
+      "size": 594,
+      "sha256": "21510818f7fde0af3d2c63be5e44b3583f3c36c9f85dbf1636b7b4fa2278d83c",
+      "anchors": []
+    },
+    "dist/preload.js": {
+      "exists": true,
+      "required": true,
+      "size": 5151,
+      "sha256": "3c26b88a493f2bc0f6a83379f0b02024ffdadc2b31424d56d2b7325732e59700",
+      "anchors": []
+    },
+    "dist/menu.js": {
+      "exists": true,
+      "required": false,
+      "size": 6502,
+      "sha256": "0bb689f3f77f5f30d9345302ff94ebabbe461c4b94de9ffdb711a19eeca0f04f",
+      "anchors": [
+        { "id": "menu-set-application-menu", "count": 2, "expectedCount": 2, "matched": true },
+        { "id": "menu-new-window-label", "count": 1, "expectedCount": 1, "matched": true },
+        { "id": "menu-docs-label", "count": 1, "expectedCount": 1, "matched": true },
+        { "id": "menu-connect-to-wsl-label", "count": 1, "expectedCount": 1, "matched": true },
+        { "id": "menu-reopen-locally-label", "count": 1, "expectedCount": 1, "matched": true }
+      ]
+    },
+    "dist/tray.js": {
+      "exists": true,
+      "required": false,
+      "size": 3669,
+      "sha256": "2cfdbaba31a9f75148f00ef3b6968d05c25572e07103439b66b1b84afe83268c",
+      "anchors": [
+        { "id": "tray-create-function", "count": 1, "expectedCount": 1, "matched": true },
+        { "id": "tray-agent-count", "count": 1, "expectedCount": 1, "matched": true }
+      ]
+    },
+    "dist/loadingOverlay.js": {
+      "exists": true,
+      "required": false,
+      "size": 2904,
+      "sha256": "b37ee86fd132a2a5f311aa360e1e3008b6207d90bd7d7df4ef12c2aed16da62f",
+      "anchors": [
+        { "id": "loading-overlay-text", "count": 1, "expectedCount": 1, "matched": true }
+      ]
+    },
+    "dist/ideInstall/wizardPreload.js": {
+      "exists": true,
+      "required": false,
+      "size": 879,
+      "sha256": "4d222bac7a93aafd5cb8cd59dfb1de35bafc35e267ba7b8ef24f74db151068d5",
+      "anchors": []
+    }
+  },
+  "unpacked": [
+    {
+      "path": "node_modules/chrome-devtools-mcp",
+      "required": true,
+      "exists": true
+    }
+  ]
+}

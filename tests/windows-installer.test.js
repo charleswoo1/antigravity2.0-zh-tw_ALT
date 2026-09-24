@@ -57,7 +57,7 @@ async function main() {
         fs.mkdirSync(resourcesDir, { recursive: true });
         fs.writeFileSync(path.join(sourceDir, 'package.json'), JSON.stringify({
             name: 'antigravity',
-            version: '2.16.0'
+            version: '2.17.0'
         }), 'utf-8');
         fs.writeFileSync(path.join(distDir, 'preload.js'), 'console.log("fixture");\n', 'utf-8');
         fs.writeFileSync(path.join(distDir, 'menu.js'), "const items = [{ label: 'New Window' }, { label: 'Docs' }, { label: 'Connect to WSL' }, { label: 'Reopen Locally' }];\nelectron_1.Menu.setApplicationMenu(menu);\nelectron_1.Menu.setApplicationMenu(menu);\n", 'utf-8');
@@ -78,7 +78,7 @@ async function main() {
         const installed = engine.inspectAsar(path.join(resourcesDir, 'app.asar'));
         assert.strictEqual(installed.localized, true, installed.error);
         const installedMenu = asar.extractFile(path.join(resourcesDir, 'app.asar'), path.join('dist', 'menu.js')).toString('utf-8');
-        assert.strictEqual(installedMenu.split('/* --- MENU TRANSLATION START --- */').length - 1, 2, '2.16.0 兩個選單套用點都必須注入翻譯');
+        assert.strictEqual(installedMenu.split('/* --- MENU TRANSLATION START --- */').length - 1, 2, '2.17.0 兩個選單套用點都必須注入翻譯');
         assert.ok(installedMenu.includes("'Connect to WSL': '連線至 WSL'"), '缺少 WSL 選單譯詞');
         assert.ok(installedMenu.includes("'Reopen Locally': '在本機重新開啟'"), '缺少本機重新開啟譯詞');
         assert.doesNotThrow(() => new Function(installedMenu), '兩個注入區塊不得造成重複識別字語法錯誤');
@@ -98,7 +98,7 @@ async function main() {
         childProcess.execFileSync(restoreExe, commonArgs, { stdio: 'inherit' });
         const restored = engine.inspectAsar(path.join(resourcesDir, 'app.asar'));
         assert.strictEqual(restored.localized, false, restored.error);
-        assert.strictEqual(restored.version, '2.16.0');
+        assert.strictEqual(restored.version, '2.17.0');
         assert.ok(!fs.existsSync(path.join(resourcesDir, 'app.asar.bak')), '還原後備份仍存在');
 
         const bypassBefore = snapshotTree(installDir);

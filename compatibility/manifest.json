@@ -29,6 +29,11 @@
       "status": "verified",
       "profile": "v2-mainline-menu-refresh",
       "fingerprint": "fingerprints/2.16.0.json"
+    },
+    "2.17.0": {
+      "status": "verified",
+      "profile": "v2-mainline-menu-refresh",
+      "fingerprint": "fingerprints/2.17.0.json"
     }
   }
 }
