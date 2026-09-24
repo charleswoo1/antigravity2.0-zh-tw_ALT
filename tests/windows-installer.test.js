@@ -64,8 +64,14 @@ async function main() {
         fs.writeFileSync(path.join(distDir, 'tray.js'), "function createTray(actions) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\n", 'utf-8');
         fs.writeFileSync(path.join(distDir, 'loadingOverlay.js'), '<div class="text">Loading Antigravity</div>\n', 'utf-8');
         fs.writeFileSync(path.join(wizardDir, 'wizardPreload.js'), 'console.log("wizard fixture");\n', 'utf-8');
-        await asar.createPackage(sourceDir, path.join(resourcesDir, 'app.asar'));
-        fs.mkdirSync(path.join(resourcesDir, 'app.asar.unpacked', 'node_modules', 'chrome-devtools-mcp'), { recursive: true });
+        const unpackedDir = path.join(sourceDir, 'node_modules', 'chrome-devtools-mcp');
+        fs.mkdirSync(unpackedDir, { recursive: true });
+        fs.writeFileSync(path.join(unpackedDir, 'LICENSE'), 'fixture license\n', 'utf-8');
+        await asar.createPackageWithOptions(sourceDir, path.join(resourcesDir, 'app.asar'), {
+            unpackDir: 'node_modules/chrome-devtools-mcp'
+        });
+        assert.ok(fs.existsSync(path.join(resourcesDir, 'app.asar.unpacked', 'node_modules', 'chrome-devtools-mcp', 'LICENSE')),
+            '測試 archive 必須實際包含 unpacked 成員');
 
         const commonArgs = [
             '/VERYSILENT',
@@ -90,10 +96,16 @@ async function main() {
         );
 
         childProcess.execFileSync(installExe, commonArgs, { stdio: 'inherit' });
+        asar.uncache(path.join(resourcesDir, 'app.asar'));
         const preload = asar.extractFile(path.join(resourcesDir, 'app.asar'), path.join('dist', 'preload.js')).toString('utf-8');
         assert.strictEqual(preload.split(engine.SIGNATURE_START).length - 1, 1, '重複安裝後出現多個中文化區塊');
         const reinjectedMenu = asar.extractFile(path.join(resourcesDir, 'app.asar'), path.join('dist', 'menu.js')).toString('utf-8');
         assert.strictEqual(reinjectedMenu.split('/* --- MENU TRANSLATION START --- */').length - 1, 2, '重複安裝後選單區塊數量必須保持穩定');
+        assert.strictEqual(reinjectedMenu.split('/* --- MENU TRANSLATION END --- */').length - 1, 2,
+            '重複安裝後選單結束標記不得殘留');
+        assert.doesNotThrow(() => new Function(reinjectedMenu), '重複安裝後 menu.js 必須保持有效語法');
+        assert.ok(fs.existsSync(path.join(resourcesDir, 'app.asar.unpacked', 'node_modules', 'chrome-devtools-mcp', 'LICENSE')),
+            '重複安裝後官方 unpacked 檔案必須保留');
 
         childProcess.execFileSync(restoreExe, commonArgs, { stdio: 'inherit' });
         const restored = engine.inspectAsar(path.join(resourcesDir, 'app.asar'));

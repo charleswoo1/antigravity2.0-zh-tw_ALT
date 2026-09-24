@@ -127,3 +127,13 @@ npm run verify:real-install -- --install-dir "$env:LOCALAPPDATA\Programs\antigra
 - Branch: `feature/antigravity-2.17.0-compatibility`.
 - Pull request: [#38 — feat: support Antigravity 2.17.0](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/38).
 - No merge, tag, GitHub Release, production asset upload, or proprietary upstream payload was performed.
+
+**Post-handoff launch regression and repair**
+
+- A user launch after the initial handoff exposed `SyntaxError: Unexpected token '}'` in localized `dist/menu.js`. The installed file had two translation start markers but four end markers. The first controlled apply passed; the later repeated apply exposed the cleanup defect.
+- Root cause: `cleanMenuJsContent` matched the new block's internal `translateMenu(menu.items);` as an end marker before the actual `MENU TRANSLATION END` marker, leaving an unmatched closing brace. The original installer test checked only the count of start markers after a repeat install.
+- Fixed cleanup to pair each new start marker with its matching end marker; legacy marker handling remains separate. The engine now parses the patched `menu.js` before writing it into the archive.
+- The real installation was restored to the exact official archive SHA-256 `85c97057c762f01fe9fa8b0380f8055ff76344ceb47c840cd3d8d43aa035142b`, then localized twice with the corrected engine. All five patched JavaScript members parsed successfully; `menu.js` had exactly two start and two end markers after the repeat apply.
+- The user confirmed that Antigravity opened successfully. A direct Windows window inspection also showed the running application with Chinese navigation and no main-process error dialog.
+- The Windows installer fixture now includes a real unpacked ASAR member, and its repeat-install check validates matching marker counts, syntax, and preservation of the unpacked member. Archive cache is invalidated before inspecting a replaced ASAR at the same path.
+- Rebuilt Windows x64 install and restore artifacts; `npm run check` and `npm run check:windows-installer` passed after the fix.

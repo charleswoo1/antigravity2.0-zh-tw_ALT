@@ -672,37 +672,26 @@ function cleanJsContent(content) {
 }
 
 function cleanMenuJsContent(content) {
-    const startMarks = [
-        '/* --- MENU TRANSLATION START --- */',
-        '// =========================================='
-    ];
-    const endMarks = [
-        '/* --- MENU TRANSLATION END --- */',
-        'translateMenu(menu.items);'
-    ];
-
+    const startMark = '/* --- MENU TRANSLATION START --- */';
+    const endMark = '/* --- MENU TRANSLATION END --- */';
     let cleaned = content;
-
-    for (const startMark of startMarks) {
-        let startIdx = cleaned.indexOf(startMark);
-        while (startIdx !== -1) {
-            let endIdx = -1;
-            let endMarkUsed = '';
-
-            for (const endMark of endMarks) {
-                const idx = cleaned.indexOf(endMark, startIdx);
-                if (idx !== -1 && (endIdx === -1 || idx < endIdx)) {
-                    endIdx = idx;
-                    endMarkUsed = endMark;
-                }
-            }
-
-            if (endIdx === -1 || startIdx >= endIdx) break;
-            cleaned = cleaned.substring(0, startIdx) + cleaned.substring(endIdx + endMarkUsed.length);
-            startIdx = cleaned.indexOf(startMark);
-        }
+    let startIdx = cleaned.indexOf(startMark);
+    while (startIdx !== -1) {
+        const endIdx = cleaned.indexOf(endMark, startIdx);
+        if (endIdx === -1) throw new Error('menu.js 翻譯區塊缺少結束標記');
+        cleaned = cleaned.substring(0, startIdx) + cleaned.substring(endIdx + endMark.length);
+        startIdx = cleaned.indexOf(startMark);
     }
 
+    const legacyStart = '// ==========================================';
+    const legacyEnd = 'translateMenu(menu.items);';
+    startIdx = cleaned.indexOf(legacyStart);
+    while (startIdx !== -1) {
+        const endIdx = cleaned.indexOf(legacyEnd, startIdx);
+        if (endIdx === -1) throw new Error('menu.js 舊版翻譯區塊缺少結束標記');
+        cleaned = cleaned.substring(0, startIdx) + cleaned.substring(endIdx + legacyEnd.length);
+        startIdx = cleaned.indexOf(legacyStart);
+    }
     return cleaned;
 }
 
@@ -1004,6 +993,11 @@ function install20MutationFlow(resourcesDir, options = {}) {
 
         if (targetCount > 0) {
             const patchedMenuContent = menuCleaned.split(targetStr).join(menuTranslationJs + '\n    ' + targetStr);
+            try {
+                new Function(patchedMenuContent);
+            } catch (error) {
+                throw new Error(`menu.js 中文化後語法驗證失敗：${error.message}`);
+            }
             fs.writeFileSync(menuPath, patchedMenuContent, 'utf-8');
             console.log(`[修改] 系統選單文字注入完成（${targetCount} 個套用點）。`);
         } else {
