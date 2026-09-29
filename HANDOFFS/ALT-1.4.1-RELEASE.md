@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — ALT 1.4.1 Release
 
-- **Status:** IN_PROGRESS
+- **Status:** READY_FOR_REVIEW
 - **Issue:** [#41 — Release ALT 1.4.1 with localization fixes](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/41)
 - **Baseline commit:** `84c38b79f163f58ea460c04aeda66f0870f90f69` (`origin/main` after PR #40)
 - **Implementation branch:** `codex/release-1.4.1`
@@ -58,4 +58,9 @@ Promote the reviewed localization fixes from PR #40 into ALT 1.4.1 and publish t
 
 ## Execution Result
 
-Pending version verification, PR, and controlled Release results.
+- PR #40 merged as `84c38b79f163f58ea460c04aeda66f0870f90f69`; the resulting `main` CI passed.
+- `npm version 1.4.1 --no-git-tag-version` synchronized package, lockfile, runtime `ENGINE_VERSION`, and website metadata.
+- `npm ci --ignore-scripts --no-fund`, `npm run check`, `npm run check:packaging`, Windows x64 install/restore builds, `npm run check:windows-installer`, and `git diff --check`: PASS.
+- Version preparation commit: `6b308f2` (`chore: prepare ALT 1.4.1 release`).
+- Version pull request: [#42 — chore: prepare ALT 1.4.1 release](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/42).
+- PR/main CI and controlled Release results: pending.
