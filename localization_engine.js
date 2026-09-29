@@ -266,6 +266,15 @@ function generateJs() {
     const lowerMap = new Map();
     for (const [k, v] of map.entries()) lowerMap.set(k.toLowerCase(), v);
 
+    const splitMap = new Map();
+    let maxSplitKeyLength = 0;
+    for (const [key, translated] of map.entries()) {
+        if (key.length >= 12 && key !== translated) {
+            splitMap.set(key.replace(/\\s+/g, '').toLowerCase(), translated);
+            maxSplitKeyLength = Math.max(maxSplitKeyLength, key.length);
+        }
+    }
+
     const longEntries = REPLACEMENT_ENTRIES_PLACEHOLDER;
     const done = new WeakSet();
 
@@ -288,13 +297,13 @@ function generateJs() {
 
     function isInBlockedZone(node) {
         let curr = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-        let depth = 0;
 
-        while (curr && depth < 12) {
+        while (curr) {
             if (curr.nodeType === Node.ELEMENT_NODE) {
                 const tag = curr.tagName.toUpperCase();
                 if (BLOCKED_TAGS.includes(tag)) return true;
-                if (curr.getAttribute('contenteditable') === 'true') return true;
+                const editable = curr.getAttribute('contenteditable');
+                if (editable !== null && editable.toLowerCase() !== 'false') return true;
 
                 const className = curr.className || '';
                 if (typeof className === 'string' && BLOCKED_CLASSES.some(cls => className.includes(cls))) {
@@ -303,10 +312,21 @@ function generateJs() {
             }
 
             curr = curr.parentElement || (curr.parentNode && curr.parentNode.host);
-            depth++;
         }
 
         return false;
+    }
+
+    function translateUsageDuration(value) {
+        const units = { day: '天', days: '天', hour: '小時', hours: '小時', minute: '分鐘', minutes: '分鐘', second: '秒', seconds: '秒' };
+        const parts = value.split(/,\\s*|\\s+and\\s+/i);
+        const translated = [];
+        for (const part of parts) {
+            const match = part.trim().match(/^(\\d+)\\s+(days?|hours?|minutes?|seconds?)$/i);
+            if (!match) return null;
+            translated.push(match[1] + ' ' + units[match[2].toLowerCase()]);
+        }
+        return translated.length ? translated.join('、') : null;
     }
 
     function translateString(originalVal) {
@@ -325,6 +345,16 @@ function generateJs() {
             for (const [key, translated] of longEntries) {
                 if (key.length > 20 && valNorm.includes(key)) {
                     newVal = newVal.split(key).join(translated);
+                }
+            }
+        }
+        if (newVal === originalVal) {
+            const usageMatch = valNorm.match(/^You have used some of your (weekly|5-hour) limit, it will fully refresh in (.+)\\.$/i);
+            if (usageMatch) {
+                const duration = translateUsageDuration(usageMatch[2]);
+                if (duration) {
+                    const limit = usageMatch[1].toLowerCase() === 'weekly' ? '每週' : '五小時';
+                    newVal = '您已使用部分' + limit + '用量，將於 ' + duration + '後完全重置。';
                 }
             }
         }
@@ -379,24 +409,15 @@ function generateJs() {
         }
     }
 
-    const splitTextTranslationKeys = new Set([
-        'No Projects found'
-    ]);
-
-    const splitTextTranslationKeysLower = new Set(
-        [...splitTextTranslationKeys].map(key => key.toLowerCase())
-    );
-
     function translateSplitTextElement(el) {
         if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
         if (isInBlockedZone(el)) return false;
         if (el.matches && el.matches('button, input, textarea, select, option, [role="button"], [contenteditable="true"]')) return false;
-        if (el.querySelector('button, input, textarea, select, option, svg, canvas, [contenteditable="true"]')) return false;
+        if (el.querySelector('button, input, textarea, select, option, a, svg, canvas, [contenteditable]')) return false;
 
         const normalized = norm(el.textContent || '');
-        if (!splitTextTranslationKeysLower.has(normalized.toLowerCase())) return false;
-
-        const translated = map.get(normalized) || lowerMap.get(normalized.toLowerCase());
+        if (normalized.length < 12 || normalized.length > maxSplitKeyLength) return false;
+        const translated = map.get(normalized) || lowerMap.get(normalized.toLowerCase()) || splitMap.get(normalized.replace(/\\s+/g, '').toLowerCase());
         if (!translated || translated === normalized) return false;
 
         const textNodes = [];

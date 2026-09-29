@@ -39,9 +39,11 @@ function main() {
     }
 
     assert.ok(
-        generated.includes("curr.getAttribute('contenteditable') === 'true'"),
+        generated.includes("const editable = curr.getAttribute('contenteditable');") &&
+        generated.includes("editable !== null && editable.toLowerCase() !== 'false'"),
         'contenteditable 區域必須維持不翻譯保護'
     );
+    assert.ok(!generated.includes('depth < 12'), '深層受保護區域不得失去保護');
 
     const translateAttributes = generated.match(
         /function translateAttributes\(el\) \{([\s\S]*?)\n    \}/
