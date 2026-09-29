@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — ALT 1.4.1 Release
 
-- **Status:** READY_FOR_REVIEW
+- **Status:** COMPLETE
 - **Issue:** [#41 — Release ALT 1.4.1 with localization fixes](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/41)
 - **Baseline commit:** `84c38b79f163f58ea460c04aeda66f0870f90f69` (`origin/main` after PR #40)
 - **Implementation branch:** `codex/release-1.4.1`
@@ -63,4 +63,7 @@ Promote the reviewed localization fixes from PR #40 into ALT 1.4.1 and publish t
 - `npm ci --ignore-scripts --no-fund`, `npm run check`, `npm run check:packaging`, Windows x64 install/restore builds, `npm run check:windows-installer`, and `git diff --check`: PASS.
 - Version preparation commit: `6b308f2` (`chore: prepare ALT 1.4.1 release`).
 - Version pull request: [#42 — chore: prepare ALT 1.4.1 release](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/42).
-- PR/main CI and controlled Release results: pending.
+- PR #42 merged as `6e0da07a3eb4f6f1c310195cce5ffb197a2ea275`; its [PR CI](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/36535347494) and resulting [main CI](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/36535595618) both passed across all jobs.
+- The owner-created `release/v1.4.1` branch pointed exactly to the above `main` SHA. The [Controlled Release run](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/36535992836) passed its authorization gate, Windows and macOS builds, asset validation, and publish job.
+- [ALT 1.4.1](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/tag/v1.4.1) is published, latest, non-draft, and non-prerelease. Annotated tag `v1.4.1` dereferences to `6e0da07a3eb4f6f1c310195cce5ffb197a2ea275`.
+- The Release contains exactly the two fixed-name Windows executables, two fixed-name macOS ZIP files, and `SHA256SUMS.txt`. All four checksum entries match GitHub's asset SHA-256 digests, and all five `releases/latest/download/...` URLs returned HTTP 200.
