@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — Localization Coverage Audit
 
-- **Status:** IN_PROGRESS
+- **Status:** READY_FOR_REVIEW
 - **Issue:** [#39 — Audit and fix UI localization gaps across Antigravity](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/39)
 - **Baseline commit:** `2d8f801f450f68b70be76cce33af067cfa37d149` (`origin/main`)
 - **Implementation branch:** `codex/fix-models-usage-localization`
@@ -64,4 +64,5 @@ Audit the existing application wide dictionary and translation path, fix the mis
 - Windows x64 installer build and `npm run check:windows-installer`: PASS in isolated test fixtures.
 - `git diff --check`: PASS.
 - Live visual verification of every application screen is unavailable from the current Electron accessibility tree; the audit covers the complete checked-in dictionary and generated translation path, plus the supplied screenshot and synthetic DOM cases.
-- Commit and pull request: pending.
+- Implementation commit: `ce557f3` (`fix: cover split and dynamic UI localization`).
+- Pull request: [#40 — fix: cover split and dynamic UI localization](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/40).
