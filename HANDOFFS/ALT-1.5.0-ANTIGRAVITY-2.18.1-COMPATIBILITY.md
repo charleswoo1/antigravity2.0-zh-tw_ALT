@@ -100,6 +100,7 @@ npm run verify:real-install -- --install-dir "$env:LOCALAPPDATA\Programs\antigra
 - Final user apply and repeat apply: PASS; all five patched JavaScript members parse, two matching menu blocks, overlay bytes unchanged; same-version official backup retained. Final audit PASS, verifiedSupported true, noMutation true, not-running.
 - npm ci: PASS, zero vulnerabilities. Core/protected-zone/runtime/compatibility/transactional/macOS safety checks: PASS. Packaging/version/release-policy tests: PASS.
 - Windows x64 Install/Restore build: PASS. Windows installer E2E: PASS, including repeat install, unchanged logo overlay, exact restore, and unsupported-version gates. git diff --check: PASS.
-- GitHub PR: pending link after push.
+- Implementation commit: eee40ae. Branch pushed to origin: codex/antigravity-2.18.1-compatibility.
+- GitHub PR: [#45 — feat: support Antigravity 2.18.1 (ALT 1.5.0)](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/45); targets main; READY_FOR_REVIEW.
 - No UI launch verification or real macOS installation verification performed in this Windows session.
 - No automatic merge, release branch, tag, Release, production upload, or proprietary upstream payload committed.
