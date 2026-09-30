@@ -84,21 +84,21 @@ macOS 最後一次執行記錄位於：
 
 macOS 版本目前採 ad-hoc signing，未使用 Apple Developer ID notarization。若首次開啟被 macOS 阻擋，可在 Finder 對 ALT app 按右鍵（或 Control + 點按）→ **「打開」**，再於系統提示中確認開啟。
 
-## Windows 11 25H2 / Build 26200.x 已知問題
+## Windows GPU 啟動疑難排解（歷史相容性）
 
-部分 Windows 11 25H2（Build 26200.x）系統可能在關閉 Antigravity 後無法再次啟動。此現象也能在未套用 ALT 的官方英文版重現，目前較支持 Antigravity / Electron / Chromium 的 GPU sandbox 啟動路徑相容性問題，並非 ALT 中文化內容本身造成。
+過去曾在部分 Windows 11 25H2 / Build 26200.x 環境觀察到：Antigravity 關閉後，重複啟動時可能卡在 GPU / renderer 啟動階段。此現象也曾在未套用 ALT 的官方英文版重現，因此不視為 ALT 中文化內容本身造成。
 
-若遇到此問題：
+**2026-09-30 實機回歸結果：**原本可重現問題的測試機在 Antigravity **2.18.1** 上，以正常啟動方式連續執行 10 次「啟動 → 完整載入 → Quit → 再啟動」，結果 **10/10 PASS**，未再重現。因此此項目已不再列為目前版本的主動 Known Issue，Windows 安裝完成後也不再顯示 GPU 相容性警告。
 
-1. **先重新啟動 Windows**；這可能只會暫時恢復。
-2. 若正常模式仍反覆無法啟動，可使用 ALT 安裝完成後提供的 **`Antigravity 相容模式`** 桌面捷徑。
-3. 相容模式會使用：
+這項結果代表目前已驗證環境中的問題**無法再重現**，但不等同於官方已宣告所有 Windows / GPU 組合的相關問題永久修正。正常啟動方式仍是建議用法。
+
+如果未來再次遇到相同的 GPU / renderer 啟動異常，可先更新 Antigravity 與 Windows、重新啟動系統；若仍需暫時診斷，可建立一個獨立的疑難排解捷徑，指向原本的官方 `Antigravity.exe`，並只加入：
 
 ```text
---disable-gpu-sandbox
+--disable-gpu
 ```
 
-此參數會降低 Chromium GPU process 的 sandbox 隔離，只建議在正常模式無法啟動時暫時使用。正常 Antigravity 捷徑不會被修改，本工具也**不提供 `--no-sandbox`**。
+可將該捷徑命名為 **`Antigravity 安全模式（停用 GPU）`**。這不會建立另一套 Antigravity，也不需要修改正常捷徑；排除問題後應回到正常啟動。ALT 不建議使用 `--disable-gpu-sandbox` 或 `--no-sandbox` 作為一般 workaround。
 
 ## 支援版本與安全邊界
 
