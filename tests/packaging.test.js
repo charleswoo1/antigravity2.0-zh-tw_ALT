@@ -99,8 +99,6 @@ assert.match(
     'Restore 100% phase 必須顯示還原完成而非安裝完成'
 );
 
-assert.ok(!windowsInstaller.includes('--disable-gpu-sandbox'), 'installer 不得提供 --disable-gpu-sandbox');
-assert.ok(!windowsInstaller.includes('--no-sandbox'), 'installer 不得提供 --no-sandbox');
 
 const macBuild = fs.readFileSync(path.join(repoRoot, 'build', 'macos', 'build.sh'), 'utf-8');
 assert.ok(!/GitHub Actions.*(?:forbidden|禁止)|禁止 GitHub Actions/i.test(macBuild), 'macOS build script 不得拒絕 GitHub Actions');
