@@ -58,12 +58,17 @@ assert.ok(!windowsInstaller.includes('LoadStringFromFile('), 'installer 不得�
 assert.ok(windowsInstaller.includes('TestModeActive and'), 'process-safety bypass 必須綁定已驗證的 test mode');
 assert.ok(windowsInstaller.includes('SaveStringsToUTF8File'), 'Windows E2E 必須能驗證 installer 解碼後的繁中 summary');
 
-const affectedBuildMatch = windowsInstaller.match(/function IsAffectedWindowsGpuBuildNumber[\s\S]*?Result := Build = (\d+);[\s\S]*?end;/);
-assert.ok(affectedBuildMatch, 'installer 必須保留可測試的 GPU affected-build predicate');
-const affectedBuild = Number(affectedBuildMatch[1]);
-assert.strictEqual(affectedBuild === 26200, true, 'build 26200 必須顯示 GPU advisory');
-assert.strictEqual(26100 === affectedBuild, false, 'build 26100 不得顯示 build-specific advisory');
-assert.strictEqual(26300 === affectedBuild, false, 'build 26300 不得顯示 build-specific advisory');
+assert.ok(!windowsInstaller.includes('IsAffectedWindowsGpuBuildNumber'),
+    'installer 不應再保留 Build 26200 專用 GPU advisory predicate');
+assert.ok(!windowsInstaller.includes('ShowGpuKnownIssueNotice'),
+    'installer 不應再主動顯示歷史 GPU known-issue 視窗');
+assert.ok(!windowsInstaller.includes('GpuNoticeForm') && !windowsInstaller.includes('GpuNoticeShown'),
+    'installer 不應保留歷史 GPU advisory UI 狀態');
+assert.ok(!windowsInstaller.includes('--disable-gpu-sandbox'),
+    'installer 不得建立或建議降低 GPU sandbox 隔離的 workaround');
+assert.ok(!windowsInstaller.includes('--no-sandbox'),
+    'installer 不得提供 --no-sandbox');
+
 
 const engineStepIndex = windowsInstaller.indexOf('if CurStep <> ssInstall then');
 const engineExecIndex = windowsInstaller.indexOf("Exec(ExpandConstant('{cmd}')", engineStepIndex);
@@ -94,25 +99,8 @@ assert.match(
     'Restore 100% phase 必須顯示還原完成而非安裝完成'
 );
 
-assert.ok(windowsInstaller.includes('GetWindowsVersionEx(Version);'), 'Windows build detection 必須使用 Inno 支援的版本 API');
-assert.ok(windowsInstaller.includes('(not GpuNoticeShown) and (not WizardSilent) and IsAffectedWindowsGpuBuild()'),
-    'GPU advisory 必須只在互動模式顯示一次');
-assert.ok(windowsInstaller.includes('InstallOperationSucceeded'), 'GPU advisory 必須受成功安裝旗標保護');
-assert.ok(windowsInstaller.includes('CreateCustomForm(ScaleX(360), ScaleY(210), True, True)'),
-    'GPU advisory 應保持緊湊，避免高 DPI 系統出現過大的提醒視窗');
-assert.ok(windowsInstaller.includes('MessageLabel.AdjustHeight();'),
-    'GPU advisory 說明文字必須依實際換行自動調整高度，避免文字被按鈕遮住');
-assert.ok(windowsInstaller.includes('NextTop := MessageLabel.Top + MessageLabel.Height + ScaleY(6);'),
-    'GPU advisory 後續控制項必須從實際量測後的文字底部開始排版，避免固定座標覆蓋文字');
-assert.ok(!windowsInstaller.includes('clip.exe'), '相容模式流程不再提供 --disable-gpu 複製按鈕');
-assert.ok(windowsInstaller.includes("'{userdesktop}\\Antigravity 相容模式.lnk'"),
-    '相容模式捷徑必須固定寫入目前使用者桌面的同一路徑');
-assert.ok(windowsInstaller.includes("FileExists(ExePath)"), '建立捷徑前必須驗證官方 Antigravity.exe 存在');
-assert.match(windowsInstaller, /CreateShellLink\([\s\S]*?ExePath,[\s\S]*?'--disable-gpu-sandbox',[\s\S]*?ExtractFileDir\(ExePath\),[\s\S]*?ExePath/,
-    '相容模式捷徑必須指向官方執行檔，僅帶 --disable-gpu-sandbox，並使用官方目錄與圖示');
-assert.ok(!windowsInstaller.includes('Antigravity 安全模式（停用 GPU）'), 'installer 不得再建立舊的 --disable-gpu 安全模式捷徑');
+assert.ok(!windowsInstaller.includes('--disable-gpu-sandbox'), 'installer 不得提供 --disable-gpu-sandbox');
 assert.ok(!windowsInstaller.includes('--no-sandbox'), 'installer 不得提供 --no-sandbox');
-assert.ok(!/\[Icons\][\s\S]*?Antigravity(?! 相容模式)/.test(windowsInstaller), 'installer 不得修改正常 Antigravity 捷徑');
 
 const macBuild = fs.readFileSync(path.join(repoRoot, 'build', 'macos', 'build.sh'), 'utf-8');
 assert.ok(!/GitHub Actions.*(?:forbidden|禁止)|禁止 GitHub Actions/i.test(macBuild), 'macOS build script 不得拒絕 GitHub Actions');
