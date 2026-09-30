@@ -29,7 +29,9 @@ async function createFixture(root, options = {}) {
                 : "const items = [{ label: 'New Window' }, { label: 'Docs' }];\nelectron_1.Menu.setApplicationMenu(menu);\n"));
     }
     fs.writeFileSync(path.join(distDir, 'tray.js'), "function createTray(actions) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\n");
-    fs.writeFileSync(path.join(distDir, 'loadingOverlay.js'), '<div class="text">Loading Antigravity</div>\n');
+    fs.writeFileSync(path.join(distDir, 'loadingOverlay.js'), options.logoOverlay
+        ? 'function getLoadingHtml(foregroundColor, backgroundColor) { const view = new electron_1.WebContentsView({}); return `<svg class="logo"></svg>`; }\n'
+        : '<div class="text">Loading Antigravity</div>\n');
     if (!options.missingWizard) fs.writeFileSync(path.join(wizardDir, 'wizardPreload.js'), 'console.log("wizard fixture");\n');
     await asar.createPackage(sourceDir, path.join(resourcesDir, 'app.asar'));
     fs.mkdirSync(path.join(resourcesDir, 'app.asar.unpacked', 'node_modules', 'chrome-devtools-mcp'), { recursive: true });
@@ -37,7 +39,7 @@ async function createFixture(root, options = {}) {
 }
 
 async function main() {
-    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0', '2.15.1', '2.16.0', '2.17.0']);
+    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0', '2.15.1', '2.16.0', '2.17.0', '2.18.1']);
     assert.strictEqual(isVerifiedVersion('2.13.0'), true);
     assert.strictEqual(isVerifiedVersion('2.14.0'), true);
     assert.strictEqual(isVerifiedVersion('2.15.0'), true);
@@ -99,6 +101,20 @@ async function main() {
         assert.strictEqual(menuRefresh.status, 'PASS');
         assert.strictEqual(menuRefresh.verifiedSupported, true);
         assert.strictEqual(menuRefresh.profile, 'v2-mainline-menu-refresh');
+
+        const logoFixture = await createFixture(path.join(tempRoot, 'logo-overlay'), {
+            version: '2.18.1', menuRefresh: true, logoOverlay: true
+        });
+        const logo = auditInstallation({ installDir: logoFixture.installDir });
+        assert.strictEqual(logo.status, 'PASS');
+        assert.strictEqual(logo.profile, 'v2-mainline-logo-overlay');
+        assert.strictEqual(logo.noMutation, true);
+        const oldOverlay = await createFixture(path.join(tempRoot, 'unexpected-text-overlay'), {
+            version: '2.18.1', menuRefresh: true
+        });
+        assert.strictEqual(auditInstallation({ installDir: oldOverlay.installDir }).status, 'REVIEW_REQUIRED');
+        assert.strictEqual(auditInstallation({ installDir: logoFixture.installDir,
+            profile: 'v2-mainline-menu-refresh' }).status, 'REVIEW_REQUIRED', '舊版 profile 不得放寬載入文字檢查');
 
         const missingPatchTargetFixture = await createFixture(path.join(tempRoot, 'missing-patch-target'), { missingMenu: true });
         const missingPatchTarget = auditInstallation({ installDir: missingPatchTargetFixture.installDir });

@@ -6,14 +6,15 @@ const asar = require('@electron/asar');
 const {
     getCompatibilityEntry,
     getVerifiedVersions,
-    isVerifiedVersion
+    isVerifiedVersion,
+    loadCompatibilityProfile
 } = require('./compatibility');
 
 const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
 const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
 const EDITION = 'ALT';
-const ENGINE_VERSION = '1.4.1';
+const ENGINE_VERSION = '1.5.0';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
 
@@ -1061,7 +1062,7 @@ function install20MutationFlow(resourcesDir, options = {}) {
     }
 
     const loadingPath = path.join(tempDir, 'dist', 'loadingOverlay.js');
-    if (fs.existsSync(loadingPath)) {
+    if (fs.existsSync(loadingPath) && loadCompatibilityProfile(profile).loadingOverlayMode !== 'logo-only') {
         console.log('[修改] 正在調整啟動畫面文字...');
         let loadingContent = fs.readFileSync(loadingPath, 'utf-8');
 
