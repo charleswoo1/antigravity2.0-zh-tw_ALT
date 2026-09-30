@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — Antigravity 2.18.1 Compatibility
 
-**Status:** `READY_FOR_REVIEW`
+**Status:** `COMPLETE`
 **Issue:** [#44](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/44)
 **Target:** `main`
 **Baseline commit:** `144b8ff`
@@ -104,3 +104,10 @@ npm run verify:real-install -- --install-dir "$env:LOCALAPPDATA\Programs\antigra
 - GitHub PR: [#45 — feat: support Antigravity 2.18.1 (ALT 1.5.0)](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/45); targets main; READY_FOR_REVIEW.
 - No UI launch verification or real macOS installation verification performed in this Windows session.
 - No automatic merge, release branch, tag, Release, production upload, or proprietary upstream payload committed.
+
+### Owner-authorized merge and publication
+
+- On 2026-09-30 the owner confirmed successful local use and requested merge/publication.
+- PR #45 merged at f6074fd14cbcf7f9dd1bdb3c2ea600f49a5f5231 after all PR CI checks passed; resulting main CI passed.
+- Controlled Release run 36665641551 succeeded; ALT 1.5.0 published/latest with verified fixed-name assets and hashes.
+- Full release evidence: [ALT-1.5.0-RELEASE.md](ALT-1.5.0-RELEASE.md).
