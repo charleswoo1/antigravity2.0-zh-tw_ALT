@@ -2,7 +2,7 @@
 
 ALT 對 Antigravity 上游版本採用明確 allowlist。版本較新、符合某個 semver 範圍，或唯讀稽核得到 `PASS`，都不會自動成為「已驗證支援版本」。唯一的正式清單是 [`compatibility/manifest.json`](compatibility/manifest.json)。
 
-ALT 1.4.0 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0`、`2.15.1`、`2.16.0` 與 `2.17.0` 的明確相容性驗證。2.16.0 起沿用非同步 WSL 選單重新套用流程，因此 2.16.0 與 2.17.0 使用獨立 profile 驗證兩個 `setApplicationMenu` 套用點。
+ALT 1.5.0 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0`、`2.15.1`、`2.16.0`、`2.17.0` 與 `2.18.1` 的明確相容性驗證。2.16.0 起沿用非同步 WSL 選單重新套用流程，因此 2.16.0、2.17.0 與 2.18.1 使用獨立 profile 驗證兩個 `setApplicationMenu` 套用點。
 
 ## 三種判定
 
@@ -49,3 +49,7 @@ archive 不會原地修改。替換期間保留原始 archive；替換或 post-r
 若遇到此問題，第一步建議重新啟動 Windows；這可能只會暫時恢復。若仍反覆發生，可由 ALT 1.1.1 安裝成功後的互動提醒建立 `Antigravity 相容模式` 桌面捷徑。相容模式指向同一個官方 `Antigravity.exe`，僅加入 `--disable-gpu-sandbox`；它會停用 Chromium GPU process sandbox、降低該程序的安全隔離，因此只建議在正常模式無法啟動時暫時使用，並在上游或 Windows 修正經實機驗證後停止使用。正常 Antigravity 捷徑不會被修改。
 
 Restore、silent install 與非 26200 build 不顯示此提醒，也不會自動建立相容模式捷徑。`--no-sandbox` 不屬於 ALT 提供的 workaround。
+
+## Antigravity 2.18.1
+
+2.18.1 的啟動 overlay 改為純圖示，不再含有載入文字。獨立的 `v2-mainline-logo-overlay` profile 驗證圖示與 WebContentsView 結構、舊載入文字及 div 均不存在；引擎保留此檔案原貌。2.16.0 與 2.17.0 仍沿用原有 profile，未放寬舊版本 anchor。
