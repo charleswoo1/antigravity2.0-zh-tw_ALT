@@ -1,6 +1,6 @@
 # Handoff / Implementation Contract — Windows GPU Advisory Retirement
 
-**Status:** `IN_PROGRESS`  
+**Status:** `READY_FOR_REVIEW`  
 **Issue:** [#47](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/47)  
 **Target:** `main`  
 **Baseline commit:** `ef5a6a7f5deee98c902de958c17585e0b225dd3a`  
@@ -71,4 +71,16 @@ Static packaging coverage must verify that the active installer no longer contai
 
 ## 7. Execution Result
 
-Pending implementation.
+- Implementation branch: `fix/retire-windows-gpu-known-issue`
+- PR: [#48 — fix: retire active Windows GPU compatibility advisory](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/48)
+- Base: `ef5a6a7f5deee98c902de958c17585e0b225dd3a`
+- Installer: removed Build 26200 detection, automatic post-install GPU advisory UI, and the `--disable-gpu-sandbox` compatibility-shortcut implementation.
+- Documentation: README and COMPATIBILITY now classify the issue as historical/troubleshooting, record the 2026-09-30 Antigravity 2.18.1 real-machine 10/10 normal relaunch PASS, and retain only `--disable-gpu` as a temporary diagnostic fallback.
+- Tests: packaging assertions now fail if the active installer reintroduces the legacy affected-build predicate, GPU notice UI, `--disable-gpu-sandbox`, or `--no-sandbox`. Windows E2E wording no longer depends on the retired shortcut behavior.
+- First PR CI run: [#122 / run 36666668854](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/36666668854) — PASS.
+  - Core / Ubuntu: PASS
+  - Windows x64 installer build + E2E + fixed-name Release staging: PASS
+  - macOS x64 app build + extracted ZIP validation: PASS
+  - macOS arm64 app build + extracted ZIP validation: PASS
+- Direct local checkout was not available in the ChatGPT execution environment because outbound DNS/network access from the container was unavailable; validation therefore used the repository's controlled GitHub Actions workflow.
+- No ALT version bump, tag, Release, production asset publication, or merge was performed.
