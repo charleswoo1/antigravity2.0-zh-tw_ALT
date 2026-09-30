@@ -95,7 +95,7 @@ async function main() {
         assert.strictEqual(
             fs.readFileSync(path.join(testLogDir, 'last-Preflight.install-dir.txt'), 'utf-8').trim(),
             installDir,
-            'installer 必須沿用 preflight 已解析的安裝目錄供安全模式捷徑驗證'
+            'installer 必須保留 preflight 已解析安裝目錄的測試證據'
         );
 
         childProcess.execFileSync(installExe, commonArgs, { stdio: 'inherit' });
