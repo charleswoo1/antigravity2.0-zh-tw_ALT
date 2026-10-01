@@ -14,7 +14,7 @@ const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
 const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
 const EDITION = 'ALT';
-const ENGINE_VERSION = '1.5.0';
+const ENGINE_VERSION = '1.6.0';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
 
@@ -920,8 +920,8 @@ function createMenuTranslationPatch() {
     `;
 }
 
-function createTrayCreatePatch() {
-    return `function createTray(actions) {
+function createTrayCreatePatch(declaration = 'function createTray(actions) {') {
+    return `${declaration}
     /* --- TRAY TRANSLATION START --- */
     const translations = {
         'No agents running': '目前沒有執行中的 Agent',
@@ -1035,15 +1035,15 @@ function install20MutationFlow(resourcesDir, options = {}) {
         const trayContent = fs.readFileSync(trayPath, 'utf-8');
         const trayCleaned = cleanTrayJsContent(trayContent);
 
-        const targetCreate = 'function createTray(actions) {';
-        const replacementCreate = createTrayCreatePatch();
-
-        if (!trayCleaned.includes(targetCreate)) {
+        const trayCreateMatch = trayCleaned.match(/function\s+createTray\s*\([^)]*\)\s*\{/);
+        if (!trayCreateMatch) {
             console.error('[錯誤] 找不到 tray.js createTray 插入點，官方結構可能已變更。');
             fs.rmSync(tempDir, { recursive: true, force: true });
             return false;
         }
 
+        const targetCreate = trayCreateMatch[0];
+        const replacementCreate = createTrayCreatePatch(targetCreate);
         let trayPatched = trayCleaned.replace(targetCreate, replacementCreate);
 
         const countRegex = /countItem\.label\s*=\s*\([\s\S]*?' running';/g;

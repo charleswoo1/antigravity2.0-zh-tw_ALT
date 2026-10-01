@@ -4,7 +4,8 @@
   "profiles": {
     "v2-mainline": "profiles/v2-mainline.json",
     "v2-mainline-menu-refresh": "profiles/v2-mainline-menu-refresh.json",
-    "v2-mainline-logo-overlay": "profiles/v2-mainline-logo-overlay.json"
+    "v2-mainline-logo-overlay": "profiles/v2-mainline-logo-overlay.json",
+    "v2-mainline-tray-onclick": "profiles/v2-mainline-tray-onclick.json"
   },
   "versions": {
     "2.13.0": {
@@ -40,6 +41,11 @@
       "status": "verified",
       "profile": "v2-mainline-logo-overlay",
       "fingerprint": "fingerprints/2.18.1.json"
+    },
+    "2.19.1": {
+      "status": "verified",
+      "profile": "v2-mainline-tray-onclick",
+      "fingerprint": "fingerprints/2.19.1.json"
     }
   }
 }
