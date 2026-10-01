@@ -62,6 +62,40 @@ assert.strictEqual(
     translateString('You have used some of your weekly limit, it will fully refresh in unknown units.'),
     'You have used some of your weekly limit, it will fully refresh in unknown units.'
 );
+assert.strictEqual(
+    translateString('The breakdown below shows token usage from customizations like rules, skills, and MCP. If a budget is exceeded, large rules are demoted to path pointers and large customizations are excluded automatically.'),
+    '下方明細顯示規則、技能和 MCP 等自訂項目的 Token 使用量。若超出預算，大型規則將降級為路徑指標，大型自訂項目將自動排除。'
+);
+assert.strictEqual(translateString('Show 2 breakdowns'), '顯示 2 個明細');
+assert.strictEqual(translateString('Show 1 breakdown'), '顯示 1 個明細');
+assert.strictEqual(translateString('5 tools'), '5 個工具');
+assert.strictEqual(translateString('1 demoted'), '1 個已降級');
+assert.strictEqual(translateString('2 excluded'), '2 個已排除');
+assert.strictEqual(translateString('3 tools excluded'), '3 個工具已排除');
+assert.strictEqual(
+    translateString('Exceeded the rules token budget. Full rule content (1,234 tokens) was replaced with a lightweight file-path pointer in context.'),
+    '超出規則 Token 預算。完整規則內容 (1,234 個 Token) 已在上下文中替換為輕量級檔案路徑指標。'
+);
+assert.strictEqual(
+    translateString('All tools in this MCP server (5,678 tokens) exceeded the customization budget and were excluded from context.'),
+    '此 MCP 伺服器中的所有工具 (5,678 個 Token) 超出自訂項目預算，已自上下文排除。'
+);
+assert.strictEqual(
+    translateString('2 tools in this MCP server (890 tokens) exceeded the customization budget and were excluded from context.'),
+    '此 MCP 伺服器中的 2 個工具 (890 個 Token) 超出自訂項目預算，已自上下文排除。'
+);
+assert.strictEqual(
+    translateString('Exceeded the customization token budget (3,456 tokens) and was excluded from context.'),
+    '超出自訂項目 Token 預算 (3,456 個 Token)，已自上下文排除。'
+);
+assert.strictEqual(
+    translateString('1 rule exceeded the rules budget and was demoted from full inline content to a file-path pointer.'),
+    '1 個規則超出規則預算，已由完整內嵌內容降級為檔案路徑指標。'
+);
+assert.strictEqual(
+    translateString('2 items in Skills exceeded the customization budget and were excluded from context.'),
+    '技能 中的 2 個項目超出自訂項目預算，已自上下文排除。'
+);
 
 function element(parentElement = null, editable = null, className = '') {
     return {

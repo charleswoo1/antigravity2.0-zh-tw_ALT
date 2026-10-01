@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "id": "v2-mainline-tray-onclick",
+  "description": "Antigravity 2.19.1 asynchronous menu refresh, logo-only loading overlay, and onClick tray parameter",
+  "members": {
+    "package.json": {
+      "required": true,
+      "anchors": []
+    },
+    "dist/preload.js": {
+      "required": true,
+      "anchors": []
+    },
+    "dist/menu.js": {
+      "required": false,
+      "missingSeverity": "review",
+      "anchors": [
+        {
+          "id": "menu-set-application-menu",
+          "type": "literal",
+          "value": "electron_1.Menu.setApplicationMenu(menu);",
+          "expectedCount": 2
+        },
+        {
+          "id": "menu-new-window-label",
+          "type": "regex",
+          "value": "label:\\s*'New Window'",
+          "flags": "g",
+          "expectedCount": 1
+        },
+        {
+          "id": "menu-docs-label",
+          "type": "regex",
+          "value": "label:\\s*'Docs'",
+          "flags": "g",
+          "expectedCount": 1
+        },
+        {
+          "id": "menu-connect-to-wsl-label",
+          "type": "regex",
+          "value": "label:\\s*'Connect to WSL'",
+          "flags": "g",
+          "expectedCount": 1
+        },
+        {
+          "id": "menu-reopen-locally-label",
+          "type": "regex",
+          "value": "label:\\s*'Reopen Locally'",
+          "flags": "g",
+          "expectedCount": 1
+        }
+      ]
+    },
+    "dist/tray.js": {
+      "required": false,
+      "missingSeverity": "review",
+      "anchors": [
+        {
+          "id": "tray-create-function",
+          "type": "literal",
+          "value": "function createTray(actions, onClick) {",
+          "expectedCount": 1
+        },
+        {
+          "id": "tray-insert-menu-item",
+          "type": "literal",
+          "value": "function insertTrayMenuItem(position, options) {",
+          "expectedCount": 1
+        },
+        {
+          "id": "tray-agent-count",
+          "type": "regex",
+          "value": "countItem\\.label\\s*=\\s*\\([\\s\\S]*?' running';",
+          "flags": "g",
+          "expectedCount": 1
+        }
+      ]
+    },
+    "dist/loadingOverlay.js": {
+      "required": true,
+      "missingSeverity": "review",
+      "anchors": [
+        {
+          "id": "loading-overlay-text",
+          "type": "literal",
+          "value": "<div class=\"text\">Loading Antigravity</div>",
+          "expectedCount": 0
+        },
+        {
+          "id": "loading-overlay-html",
+          "type": "literal",
+          "value": "function getLoadingHtml(foregroundColor, backgroundColor) {",
+          "expectedCount": 1
+        },
+        {
+          "id": "loading-overlay-logo",
+          "type": "literal",
+          "value": "class=\"logo\"",
+          "expectedCount": 1
+        },
+        {
+          "id": "loading-overlay-view",
+          "type": "literal",
+          "value": "const view = new electron_1.WebContentsView({",
+          "expectedCount": 1
+        },
+        {
+          "id": "loading-overlay-no-text-div",
+          "type": "regex",
+          "value": "<div\\b",
+          "flags": "g",
+          "expectedCount": 0
+        }
+      ]
+    },
+    "dist/ideInstall/wizardPreload.js": {
+      "required": false,
+      "missingSeverity": "review",
+      "anchors": []
+    }
+  },
+  "unpackedPaths": [
+    {
+      "path": "node_modules/chrome-devtools-mcp",
+      "required": true
+    }
+  ],
+  "loadingOverlayMode": "logo-only"
+}

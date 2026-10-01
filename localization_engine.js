@@ -14,7 +14,7 @@ const PROJECT_ID = 'antigravity2-zh-hant-tw';
 const PROJECT_NAME = 'Antigravity 2.0 繁體中文 ALT 版';
 const PRODUCT_NAME_EN = 'Antigravity 2.0 Traditional Chinese ALT';
 const EDITION = 'ALT';
-const ENGINE_VERSION = '1.5.0';
+const ENGINE_VERSION = '1.6.0';
 const OFFICIAL_UNPACK_DIR = 'node_modules/chrome-devtools-mcp';
 const SIGNATURE = 'ZH-HANT-TW';
 
@@ -381,6 +381,44 @@ function generateJs() {
                 }
             }
         }
+        if (newVal === originalVal) {
+            const breakdownMatch = valNorm.match(/^Show (\\d+) breakdowns?$/i);
+            const toolsCountMatch = valNorm.match(/^(\\d+) tools?$/i);
+            const demotedMatch = valNorm.match(/^(\\d+) demoted$/i);
+            const excludedMatch = valNorm.match(/^(\\d+) excluded$/i);
+            const toolsExcludedMatch = valNorm.match(/^(\\d+) tools? excluded$/i);
+            const ruleDemoteTooltipMatch = valNorm.match(/^Exceeded the rules token budget\\. Full rule content \\(([\\d,]+) tokens\\) was replaced with a lightweight file-path pointer in context\\.$/i);
+            const mcpAllExcludedTooltipMatch = valNorm.match(/^All tools in this MCP server \\(([\\d,]+) tokens\\) exceeded the customization budget and were excluded from context\\.$/i);
+            const mcpSomeExcludedTooltipMatch = valNorm.match(/^(\\d+) tools? in this MCP server \\(([\\d,]+) tokens\\) exceeded the customization budget and were excluded from context\\.$/i);
+            const customExcludedTooltipMatch = valNorm.match(/^Exceeded the customization token budget \\(([\\d,]+) tokens\\) and was excluded from context\\.$/i);
+            const rulesBudgetExceededMatch = valNorm.match(/^(\\d+) rules? exceeded the rules budget and (?:was|were) demoted from full inline content to a file-path pointer\\.$/i);
+            const itemsBudgetExceededMatch = valNorm.match(/^(\\d+) items? in (.+?) exceeded the customization budget and (?:was|were) excluded from context\\.$/i);
+
+            if (breakdownMatch) {
+                newVal = '顯示 ' + breakdownMatch[1] + ' 個明細';
+            } else if (toolsCountMatch) {
+                newVal = toolsCountMatch[1] + ' 個工具';
+            } else if (demotedMatch) {
+                newVal = demotedMatch[1] + ' 個已降級';
+            } else if (excludedMatch) {
+                newVal = excludedMatch[1] + ' 個已排除';
+            } else if (toolsExcludedMatch) {
+                newVal = toolsExcludedMatch[1] + ' 個工具已排除';
+            } else if (ruleDemoteTooltipMatch) {
+                newVal = '超出規則 Token 預算。完整規則內容 (' + ruleDemoteTooltipMatch[1] + ' 個 Token) 已在上下文中替換為輕量級檔案路徑指標。';
+            } else if (mcpAllExcludedTooltipMatch) {
+                newVal = '此 MCP 伺服器中的所有工具 (' + mcpAllExcludedTooltipMatch[1] + ' 個 Token) 超出自訂項目預算，已自上下文排除。';
+            } else if (mcpSomeExcludedTooltipMatch) {
+                newVal = '此 MCP 伺服器中的 ' + mcpSomeExcludedTooltipMatch[1] + ' 個工具 (' + mcpSomeExcludedTooltipMatch[2] + ' 個 Token) 超出自訂項目預算，已自上下文排除。';
+            } else if (customExcludedTooltipMatch) {
+                newVal = '超出自訂項目 Token 預算 (' + customExcludedTooltipMatch[1] + ' 個 Token)，已自上下文排除。';
+            } else if (rulesBudgetExceededMatch) {
+                newVal = rulesBudgetExceededMatch[1] + ' 個規則超出規則預算，已由完整內嵌內容降級為檔案路徑指標。';
+            } else if (itemsBudgetExceededMatch) {
+                const label = translateString(itemsBudgetExceededMatch[2]);
+                newVal = label + ' 中的 ' + itemsBudgetExceededMatch[1] + ' 個項目超出自訂項目預算，已自上下文排除。';
+            }
+        }
         return newVal;
     }
 
@@ -720,11 +758,20 @@ function cleanMenuJsContent(content) {
 function cleanTrayJsContent(content) {
     const startMark = '/* --- TRAY TRANSLATION START --- */';
     const endMark = '/* --- TRAY TRANSLATION END --- */';
-    const startIdx = content.indexOf(startMark);
-    const endIdx = content.indexOf(endMark);
+    let startIdx = content.indexOf(startMark);
+    let endIdx = content.indexOf(endMark);
 
     if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
-        return content.substring(0, startIdx) + content.substring(endIdx + endMark.length);
+        content = content.substring(0, startIdx) + content.substring(endIdx + endMark.length);
+    }
+
+    const insertStartMark = '/* --- TRAY INSERT TRANSLATION START --- */';
+    const insertEndMark = '/* --- TRAY INSERT TRANSLATION END --- */';
+    startIdx = content.indexOf(insertStartMark);
+    endIdx = content.indexOf(insertEndMark);
+
+    if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
+        content = content.substring(0, startIdx) + content.substring(endIdx + insertEndMark.length);
     }
 
     return content;
@@ -920,13 +967,15 @@ function createMenuTranslationPatch() {
     `;
 }
 
-function createTrayCreatePatch() {
-    return `function createTray(actions) {
+function createTrayCreatePatch(declaration = 'function createTray(actions) {') {
+    return `${declaration}
     /* --- TRAY TRANSLATION START --- */
     const translations = {
         'No agents running': '目前沒有執行中的 Agent',
         'Open Antigravity': '開啟 Antigravity',
-        'Quit': '結束'
+        'Quit': '結束',
+        'Connect to WSL': '連線至 WSL',
+        'Reopen Locally': '在本機重新開啟'
     };
 
     for (const item of actions) {
@@ -935,6 +984,19 @@ function createTrayCreatePatch() {
         }
     }
     /* --- TRAY TRANSLATION END --- */`;
+}
+
+function createTrayInsertPatch(declaration = 'function insertTrayMenuItem(position, options) {') {
+    return `${declaration}
+    /* --- TRAY INSERT TRANSLATION START --- */
+    const insertTranslations = {
+        'Connect to WSL': '連線至 WSL',
+        'Reopen Locally': '在本機重新開啟'
+    };
+    if (options && insertTranslations[options.label]) {
+        options.label = insertTranslations[options.label];
+    }
+    /* --- TRAY INSERT TRANSLATION END --- */`;
 }
 
 function install20MutationFlow(resourcesDir, options = {}) {
@@ -1035,16 +1097,23 @@ function install20MutationFlow(resourcesDir, options = {}) {
         const trayContent = fs.readFileSync(trayPath, 'utf-8');
         const trayCleaned = cleanTrayJsContent(trayContent);
 
-        const targetCreate = 'function createTray(actions) {';
-        const replacementCreate = createTrayCreatePatch();
-
-        if (!trayCleaned.includes(targetCreate)) {
+        const trayCreateMatch = trayCleaned.match(/function\s+createTray\s*\([^)]*\)\s*\{/);
+        if (!trayCreateMatch) {
             console.error('[錯誤] 找不到 tray.js createTray 插入點，官方結構可能已變更。');
             fs.rmSync(tempDir, { recursive: true, force: true });
             return false;
         }
 
+        const targetCreate = trayCreateMatch[0];
+        const replacementCreate = createTrayCreatePatch(targetCreate);
         let trayPatched = trayCleaned.replace(targetCreate, replacementCreate);
+
+        const trayInsertMatch = trayPatched.match(/function\s+insertTrayMenuItem\s*\([^)]*\)\s*\{/);
+        if (trayInsertMatch) {
+            const targetInsert = trayInsertMatch[0];
+            const replacementInsert = createTrayInsertPatch(targetInsert);
+            trayPatched = trayPatched.replace(targetInsert, replacementInsert);
+        }
 
         const countRegex = /countItem\.label\s*=\s*\([\s\S]*?' running';/g;
         const replacementCount = "countItem.label = count > 0 ? `${count} 個 Agent 執行中` : '目前沒有執行中的 Agent';";
@@ -1055,6 +1124,12 @@ function install20MutationFlow(resourcesDir, options = {}) {
             console.error('[錯誤] 找不到 tray.js Agent 數量文字插入點，官方結構可能已變更。');
             fs.rmSync(tempDir, { recursive: true, force: true });
             return false;
+        }
+
+        try {
+            new Function(trayPatched);
+        } catch (error) {
+            throw new Error(`tray.js 中文化後語法驗證失敗：${error.message}`);
         }
 
         fs.writeFileSync(trayPath, trayPatched, 'utf-8');

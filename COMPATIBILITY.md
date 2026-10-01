@@ -2,7 +2,7 @@
 
 ALT 對 Antigravity 上游版本採用明確 allowlist。版本較新、符合某個 semver 範圍，或唯讀稽核得到 `PASS`，都不會自動成為「已驗證支援版本」。唯一的正式清單是 [`compatibility/manifest.json`](compatibility/manifest.json)。
 
-ALT 1.5.0 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0`、`2.15.1`、`2.16.0`、`2.17.0` 與 `2.18.1` 的明確相容性驗證。2.16.0 起沿用非同步 WSL 選單重新套用流程，因此 2.16.0、2.17.0 與 2.18.1 使用獨立 profile 驗證兩個 `setApplicationMenu` 套用點。
+ALT 1.6.0 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0`、`2.15.1`、`2.16.0`、`2.17.0`、`2.18.1` 與 `2.19.1` 的明確相容性驗證。2.16.0 起沿用非同步 WSL 選單重新套用流程，因此 2.16.0、2.17.0、2.18.1 與 2.19.1 使用獨立 profile 驗證兩個 `setApplicationMenu` 套用點。
 
 ## 三種判定
 
@@ -55,3 +55,7 @@ archive 不會原地修改。替換期間保留原始 archive；替換或 post-r
 ## Antigravity 2.18.1
 
 2.18.1 的啟動 overlay 改為純圖示，不再含有載入文字。獨立的 `v2-mainline-logo-overlay` profile 驗證圖示與 WebContentsView 結構、舊載入文字及 div 均不存在；引擎保留此檔案原貌。2.16.0 與 2.17.0 仍沿用原有 profile，未放寬舊版本 anchor。
+
+## Antigravity 2.19.1
+
+2.19.1 在 `tray.js` 中新增了 `onClick` 參數（`createTray(actions, onClick)`）與動態 WSL distro 選單插入，並延續 2.18.1 的純圖示載入畫面及 2.16.0 起的非同步 WSL 選單雙套用點。獨立的 `v2-mainline-tray-onclick` profile 驗證 tray 雙參數簽名、Agent 數量標籤與各項 anchors；中文化引擎支援動態函式宣告注入，完整相容 2.19.1。
