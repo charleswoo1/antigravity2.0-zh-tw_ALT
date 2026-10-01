@@ -381,6 +381,44 @@ function generateJs() {
                 }
             }
         }
+        if (newVal === originalVal) {
+            const breakdownMatch = valNorm.match(/^Show (\\d+) breakdowns?$/i);
+            const toolsCountMatch = valNorm.match(/^(\\d+) tools?$/i);
+            const demotedMatch = valNorm.match(/^(\\d+) demoted$/i);
+            const excludedMatch = valNorm.match(/^(\\d+) excluded$/i);
+            const toolsExcludedMatch = valNorm.match(/^(\\d+) tools? excluded$/i);
+            const ruleDemoteTooltipMatch = valNorm.match(/^Exceeded the rules token budget\\. Full rule content \\(([\\d,]+) tokens\\) was replaced with a lightweight file-path pointer in context\\.$/i);
+            const mcpAllExcludedTooltipMatch = valNorm.match(/^All tools in this MCP server \\(([\\d,]+) tokens\\) exceeded the customization budget and were excluded from context\\.$/i);
+            const mcpSomeExcludedTooltipMatch = valNorm.match(/^(\\d+) tools? in this MCP server \\(([\\d,]+) tokens\\) exceeded the customization budget and were excluded from context\\.$/i);
+            const customExcludedTooltipMatch = valNorm.match(/^Exceeded the customization token budget \\(([\\d,]+) tokens\\) and was excluded from context\\.$/i);
+            const rulesBudgetExceededMatch = valNorm.match(/^(\\d+) rules? exceeded the rules budget and (?:was|were) demoted from full inline content to a file-path pointer\\.$/i);
+            const itemsBudgetExceededMatch = valNorm.match(/^(\\d+) items? in (.+?) exceeded the customization budget and (?:was|were) excluded from context\\.$/i);
+
+            if (breakdownMatch) {
+                newVal = '顯示 ' + breakdownMatch[1] + ' 個明細';
+            } else if (toolsCountMatch) {
+                newVal = toolsCountMatch[1] + ' 個工具';
+            } else if (demotedMatch) {
+                newVal = demotedMatch[1] + ' 個已降級';
+            } else if (excludedMatch) {
+                newVal = excludedMatch[1] + ' 個已排除';
+            } else if (toolsExcludedMatch) {
+                newVal = toolsExcludedMatch[1] + ' 個工具已排除';
+            } else if (ruleDemoteTooltipMatch) {
+                newVal = '超出規則 Token 預算。完整規則內容 (' + ruleDemoteTooltipMatch[1] + ' 個 Token) 已在上下文中替換為輕量級檔案路徑指標。';
+            } else if (mcpAllExcludedTooltipMatch) {
+                newVal = '此 MCP 伺服器中的所有工具 (' + mcpAllExcludedTooltipMatch[1] + ' 個 Token) 超出自訂項目預算，已自上下文排除。';
+            } else if (mcpSomeExcludedTooltipMatch) {
+                newVal = '此 MCP 伺服器中的 ' + mcpSomeExcludedTooltipMatch[1] + ' 個工具 (' + mcpSomeExcludedTooltipMatch[2] + ' 個 Token) 超出自訂項目預算，已自上下文排除。';
+            } else if (customExcludedTooltipMatch) {
+                newVal = '超出自訂項目 Token 預算 (' + customExcludedTooltipMatch[1] + ' 個 Token)，已自上下文排除。';
+            } else if (rulesBudgetExceededMatch) {
+                newVal = rulesBudgetExceededMatch[1] + ' 個規則超出規則預算，已由完整內嵌內容降級為檔案路徑指標。';
+            } else if (itemsBudgetExceededMatch) {
+                const label = translateString(itemsBudgetExceededMatch[2]);
+                newVal = label + ' 中的 ' + itemsBudgetExceededMatch[1] + ' 個項目超出自訂項目預算，已自上下文排除。';
+            }
+        }
         return newVal;
     }
 
