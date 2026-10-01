@@ -74,6 +74,12 @@
           "matched": true
         },
         {
+          "id": "tray-insert-menu-item",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
           "id": "tray-agent-count",
           "count": 1,
           "expectedCount": 1,

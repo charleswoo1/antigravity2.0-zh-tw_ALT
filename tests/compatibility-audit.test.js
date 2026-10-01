@@ -29,7 +29,7 @@ async function createFixture(root, options = {}) {
                 : "const items = [{ label: 'New Window' }, { label: 'Docs' }];\nelectron_1.Menu.setApplicationMenu(menu);\n"));
     }
     fs.writeFileSync(path.join(distDir, 'tray.js'), options.trayOnClick
-        ? "function createTray(actions, onClick) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\n"
+        ? "function createTray(actions, onClick) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\nfunction insertTrayMenuItem(position, options) {\n}\n"
         : "function createTray(actions) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\n");
     fs.writeFileSync(path.join(distDir, 'loadingOverlay.js'), options.logoOverlay
         ? 'function getLoadingHtml(foregroundColor, backgroundColor) { const view = new electron_1.WebContentsView({}); return `<svg class="logo"></svg>`; }\n'

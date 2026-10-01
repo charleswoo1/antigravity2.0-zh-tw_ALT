@@ -62,6 +62,12 @@
           "expectedCount": 1
         },
         {
+          "id": "tray-insert-menu-item",
+          "type": "literal",
+          "value": "function insertTrayMenuItem(position, options) {",
+          "expectedCount": 1
+        },
+        {
           "id": "tray-agent-count",
           "type": "regex",
           "value": "countItem\\.label\\s*=\\s*\\([\\s\\S]*?' running';",

@@ -720,11 +720,20 @@ function cleanMenuJsContent(content) {
 function cleanTrayJsContent(content) {
     const startMark = '/* --- TRAY TRANSLATION START --- */';
     const endMark = '/* --- TRAY TRANSLATION END --- */';
-    const startIdx = content.indexOf(startMark);
-    const endIdx = content.indexOf(endMark);
+    let startIdx = content.indexOf(startMark);
+    let endIdx = content.indexOf(endMark);
 
     if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
-        return content.substring(0, startIdx) + content.substring(endIdx + endMark.length);
+        content = content.substring(0, startIdx) + content.substring(endIdx + endMark.length);
+    }
+
+    const insertStartMark = '/* --- TRAY INSERT TRANSLATION START --- */';
+    const insertEndMark = '/* --- TRAY INSERT TRANSLATION END --- */';
+    startIdx = content.indexOf(insertStartMark);
+    endIdx = content.indexOf(insertEndMark);
+
+    if (startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
+        content = content.substring(0, startIdx) + content.substring(endIdx + insertEndMark.length);
     }
 
     return content;
@@ -926,7 +935,9 @@ function createTrayCreatePatch(declaration = 'function createTray(actions) {') {
     const translations = {
         'No agents running': '目前沒有執行中的 Agent',
         'Open Antigravity': '開啟 Antigravity',
-        'Quit': '結束'
+        'Quit': '結束',
+        'Connect to WSL': '連線至 WSL',
+        'Reopen Locally': '在本機重新開啟'
     };
 
     for (const item of actions) {
@@ -935,6 +946,19 @@ function createTrayCreatePatch(declaration = 'function createTray(actions) {') {
         }
     }
     /* --- TRAY TRANSLATION END --- */`;
+}
+
+function createTrayInsertPatch(declaration = 'function insertTrayMenuItem(position, options) {') {
+    return `${declaration}
+    /* --- TRAY INSERT TRANSLATION START --- */
+    const insertTranslations = {
+        'Connect to WSL': '連線至 WSL',
+        'Reopen Locally': '在本機重新開啟'
+    };
+    if (options && insertTranslations[options.label]) {
+        options.label = insertTranslations[options.label];
+    }
+    /* --- TRAY INSERT TRANSLATION END --- */`;
 }
 
 function install20MutationFlow(resourcesDir, options = {}) {
@@ -1046,6 +1070,13 @@ function install20MutationFlow(resourcesDir, options = {}) {
         const replacementCreate = createTrayCreatePatch(targetCreate);
         let trayPatched = trayCleaned.replace(targetCreate, replacementCreate);
 
+        const trayInsertMatch = trayPatched.match(/function\s+insertTrayMenuItem\s*\([^)]*\)\s*\{/);
+        if (trayInsertMatch) {
+            const targetInsert = trayInsertMatch[0];
+            const replacementInsert = createTrayInsertPatch(targetInsert);
+            trayPatched = trayPatched.replace(targetInsert, replacementInsert);
+        }
+
         const countRegex = /countItem\.label\s*=\s*\([\s\S]*?' running';/g;
         const replacementCount = "countItem.label = count > 0 ? `${count} 個 Agent 執行中` : '目前沒有執行中的 Agent';";
         const countMatches = trayPatched.match(countRegex);
@@ -1055,6 +1086,12 @@ function install20MutationFlow(resourcesDir, options = {}) {
             console.error('[錯誤] 找不到 tray.js Agent 數量文字插入點，官方結構可能已變更。');
             fs.rmSync(tempDir, { recursive: true, force: true });
             return false;
+        }
+
+        try {
+            new Function(trayPatched);
+        } catch (error) {
+            throw new Error(`tray.js 中文化後語法驗證失敗：${error.message}`);
         }
 
         fs.writeFileSync(trayPath, trayPatched, 'utf-8');
