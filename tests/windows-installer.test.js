@@ -57,11 +57,11 @@ async function main() {
         fs.mkdirSync(resourcesDir, { recursive: true });
         fs.writeFileSync(path.join(sourceDir, 'package.json'), JSON.stringify({
             name: 'antigravity',
-            version: '2.18.1'
+            version: '2.21.0'
         }), 'utf-8');
         fs.writeFileSync(path.join(distDir, 'preload.js'), 'console.log("fixture");\n', 'utf-8');
         fs.writeFileSync(path.join(distDir, 'menu.js'), "const items = [{ label: 'New Window' }, { label: 'Docs' }, { label: 'Connect to WSL' }, { label: 'Reopen Locally' }];\nelectron_1.Menu.setApplicationMenu(menu);\nelectron_1.Menu.setApplicationMenu(menu);\n", 'utf-8');
-        fs.writeFileSync(path.join(distDir, 'tray.js'), "function createTray(actions) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\n", 'utf-8');
+        fs.writeFileSync(path.join(distDir, 'tray.js'), "function createTray(actions, onClick) {\ncountItem.label = (count > 0 ? count : 'No agents') + ' running';\n}\nfunction insertTrayMenuItem(position, options) {\n}\n", 'utf-8');
         const logoOverlay = 'function getLoadingHtml(foregroundColor, backgroundColor) { const view = new electron_1.WebContentsView({}); return `<svg class="logo"></svg>`; }\n';
         fs.writeFileSync(path.join(distDir, 'loadingOverlay.js'), logoOverlay, 'utf-8');
         fs.writeFileSync(path.join(wizardDir, 'wizardPreload.js'), 'console.log("wizard fixture");\n', 'utf-8');
@@ -87,10 +87,14 @@ async function main() {
         assert.strictEqual(asar.extractFile(path.join(resourcesDir, 'app.asar'), 'dist/loadingOverlay.js').toString(), logoOverlay,
             '純圖示啟動畫面必須保留原貌');
         const installedMenu = asar.extractFile(path.join(resourcesDir, 'app.asar'), path.join('dist', 'menu.js')).toString('utf-8');
-        assert.strictEqual(installedMenu.split('/* --- MENU TRANSLATION START --- */').length - 1, 2, '2.18.1 兩個選單套用點都必須注入翻譯');
+        assert.strictEqual(installedMenu.split('/* --- MENU TRANSLATION START --- */').length - 1, 2, '2.21.0 兩個選單套用點都必須注入翻譯');
         assert.ok(installedMenu.includes("'Connect to WSL': '連線至 WSL'"), '缺少 WSL 選單譯詞');
         assert.ok(installedMenu.includes("'Reopen Locally': '在本機重新開啟'"), '缺少本機重新開啟譯詞');
         assert.doesNotThrow(() => new Function(installedMenu), '兩個注入區塊不得造成重複識別字語法錯誤');
+        const installedTray = asar.extractFile(path.join(resourcesDir, 'app.asar'), 'dist/tray.js').toString('utf-8');
+        assert.ok(installedTray.includes('function createTray(actions, onClick) {'), '必須保留新版 tray onClick 參數');
+        assert.ok(installedTray.includes('個 Agent 執行中'), '新版 tray 必須注入代理程式數量翻譯');
+        assert.doesNotThrow(() => new Function(installedTray), '新版 tray 注入後必須保持有效語法');
         assert.ok(fs.existsSync(path.join(resourcesDir, 'app.asar.bak')), '安裝後未建立官方備份');
         assert.strictEqual(
             fs.readFileSync(path.join(testLogDir, 'last-Preflight.install-dir.txt'), 'utf-8').trim(),
@@ -113,7 +117,7 @@ async function main() {
         childProcess.execFileSync(restoreExe, commonArgs, { stdio: 'inherit' });
         const restored = engine.inspectAsar(path.join(resourcesDir, 'app.asar'));
         assert.strictEqual(restored.localized, false, restored.error);
-        assert.strictEqual(restored.version, '2.18.1');
+        assert.strictEqual(restored.version, '2.21.0');
         assert.ok(!fs.existsSync(path.join(resourcesDir, 'app.asar.bak')), '還原後備份仍存在');
 
         const bypassBefore = snapshotTree(installDir);
