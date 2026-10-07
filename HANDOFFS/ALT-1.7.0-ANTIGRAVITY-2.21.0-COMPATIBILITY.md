@@ -64,4 +64,5 @@ Push this branch to origin, PR targets main, update contract results. Do not mer
 - Engine change limited to ENGINE_VERSION; all blocked zones/tags and editable protections retained. No actual remote UI DOM/visual launch inspection or real macOS installation validation performed.
 - git diff --check PASS. User-owned .codex-local/ untouched. No official proprietary payload committed; no automatic merge/publication.
 - GitHub Issue #51 tracks this contract. An Issue mistakenly created in the CLI-default upstream repository was closed; all implementation GitHub operations explicitly target the ALT repository.
-- PR URL and final CI status recorded below after creation.
+- Implementation commit: 53ae56f; pushed to origin/codex/antigravity-2.21.0-compatibility.
+- PR: [#52](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/52), targeting main. GitHub CI runs validation only; status available on PR. No automatic merge or release authorized.
