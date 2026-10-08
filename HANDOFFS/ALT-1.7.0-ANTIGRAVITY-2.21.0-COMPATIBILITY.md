@@ -1,6 +1,6 @@
 # Handoff — Antigravity 2.21.0 / 2.21.1 / ALT 1.7.0
 
-**Status:** `READY_FOR_REVIEW`
+**Status:** `COMPLETE`
 **Issue:** [#51](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/51)
 **Baseline commit:** `bdec683a1dac5ebd912d883aec9b17c63d99ddc9`
 **Target:** `main`
@@ -82,3 +82,10 @@ Use the same Issue #51, branch and PR #52. Keep ALT 1.7.0 because it has not bee
 - Core, dictionary, protected-zone/runtime, compatibility (both 2.21.0/2.21.1 success and changed-tray rejection; unknown 2.21.2 rejected), transactional replacement, macOS process-safety, packaging, version and release-policy checks PASS.
 - Rebuilt Windows x64 Install/Restore payload with 2.21.1 support: PASS. Updated 2.21.1 Windows installer E2E PASS, including install/repeat/restore, tray signature/translation/syntax, unchanged overlay and unsupported-version gates. git diff --check PASS.
 - Updated existing Issue #51 and PR #52 title/body to cover both upstream versions in ALT 1.7.0. No new PR, merge or publication. User-owned .codex-local/ untouched; no proprietary payload committed. Remote UI DOM/visual launch and macOS real-install limitations remain.
+
+### Owner-authorized merge and publication
+
+- On 2026-10-08 the owner confirmed successful local use and requested completion of publication.
+- PR #52 head 953dab7 passed all four CI jobs and merged at 9fa52a7ac6edd22f0da0453d589ae36acec187f7. Main CI 37716777258 passed.
+- Controlled Release run 37716990142 succeeded. ALT 1.7.0 is published/latest, with exact fixed-name assets, matching SHA-256 digests and working permanent download URLs.
+- Full release evidence: [ALT-1.7.0-RELEASE.md](ALT-1.7.0-RELEASE.md).
