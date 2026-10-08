@@ -1,4 +1,4 @@
-# Handoff — Antigravity 2.21.0 / ALT 1.7.0
+# Handoff — Antigravity 2.21.0 / 2.21.1 / ALT 1.7.0
 
 **Status:** `READY_FOR_REVIEW`
 **Issue:** [#51](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/51)
@@ -9,7 +9,7 @@
 
 ## Goal
 
-Validate installed Antigravity 2.21.0, explicitly support it in ALT 1.7.0, and leave the user's installation localized.
+Validate installed Antigravity 2.21.0 and 2.21.1, explicitly support both in the unreleased ALT 1.7.0, and leave the user's installation localized. On 2026-10-08 the owner requested 2.21.1 localization and continuation in the same PR #52; the trailing 2.221.1 in the request is resolved against the actual installed 2.21.1 version.
 
 ## Non-goals
 
@@ -31,7 +31,7 @@ AGENTS.md is authoritative. Preserve all blocked zones/tags and user-owned .code
 
 ## Acceptance criteria
 
-- Official installed version 2.21.0; candidate audit PASS/noMutation.
+- Official installed versions 2.21.0 and 2.21.1; candidate audit PASS/noMutation.
 - Controlled apply/restore PASS, exact SHA-256 restoration, no transaction artifacts.
 - Explicit verified support, safe fingerprint, consistent ALT 1.7.0 metadata.
 - Protected zones retained and verified; local tests and Windows build/installer pass.
@@ -50,6 +50,10 @@ AGENTS.md is authoritative. Preserve all blocked zones/tags and user-owned .code
 
 Push this branch to origin, PR targets main, update contract results. Do not merge or publish. Do not touch historical branches/tags or user-owned local state.
 
+## 2.21.1 continuation
+
+Use the same Issue #51, branch and PR #52. Keep ALT 1.7.0 because it has not been merged or released. Fetch origin/main and inspect current PR before continuation. Audit 2.21.1 using the existing profile, require stopped processes, run controlled real apply/verify/restore with `.build/audit-2.21.1.json` and `.build/real-install-2.21.1.json`, then register the explicit version/fingerprint. Update support documentation, version metadata and compatibility/installer cases; rerun core, packaging, Windows build and installer validation. Finally leave real 2.21.1 localized with an exact same-version official backup and update the existing PR title/body and Issue scope.
+
 ## Execution Result
 
 - Detected official 2.21.0 from installed app.asar/package.json. Candidate audit PASS, noMutation true, not-running after user confirmed closure.
@@ -66,3 +70,15 @@ Push this branch to origin, PR targets main, update contract results. Do not mer
 - GitHub Issue #51 tracks this contract. An Issue mistakenly created in the CLI-default upstream repository was closed; all implementation GitHub operations explicitly target the ALT repository.
 - Implementation commit: 53ae56f; pushed to origin/codex/antigravity-2.21.0-compatibility.
 - PR: [#52](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/52), targeting main. GitHub CI runs validation only; status available on PR. No automatic merge or release authorized.
+
+### 2.21.1 execution result (2026-10-08)
+
+- Continued from commit 3c6544e on the same branch/PR, per owner request. Fetched origin/main (still bdec683); prior PR head had all four CI jobs PASS (Ubuntu core, Windows installer, macOS x64/arm64 build).
+- Detected official installed 2.21.1, unlocalized with no backup. Process not-running. Candidate audit PASS/noMutation true. All five patch-target hashes identical to 2.21.0; only package.json hash changed among audited members. No profile, injection logic, dictionary, selector or blocked-zone/tag changes needed.
+- Controlled real apply/verify/restore PASS. Main/wizard signatures and both menu application points verified; exact official archive SHA-256 restored: d075e5d9ff01f8806016aa88c39bf1429f068a941fdbe46147d8409843e62113. Backup removed by controlled restore.
+- Official unpacked tree unchanged: 293 files, SHA-256 489a950428406ef0fce5b06219aa35ba2918fffdfbf1ec0b8f28eefea23dcadd.
+- Added explicit verified 2.21.1 manifest entry and metadata-only fingerprint after controlled verification. ALT remains unreleased 1.7.0; sync:version updated Pages support summary. README/COMPATIBILITY and payload allowlist assertions updated.
+- Final real 2.21.1 install and repeat install PASS. Final audit PASS/verifiedSupported/noMutation/not-running. All five JS members parse; preload single signature; menu two translation blocks; native closeContextMenu and tray onClick retained; Agent count translation present; logo overlay bytes unchanged. Exact same-version official backup retained, no transaction artifacts.
+- Core, dictionary, protected-zone/runtime, compatibility (both 2.21.0/2.21.1 success and changed-tray rejection; unknown 2.21.2 rejected), transactional replacement, macOS process-safety, packaging, version and release-policy checks PASS.
+- Rebuilt Windows x64 Install/Restore payload with 2.21.1 support: PASS. Updated 2.21.1 Windows installer E2E PASS, including install/repeat/restore, tray signature/translation/syntax, unchanged overlay and unsupported-version gates. git diff --check PASS.
+- Updated existing Issue #51 and PR #52 title/body to cover both upstream versions in ALT 1.7.0. No new PR, merge or publication. User-owned .codex-local/ untouched; no proprietary payload committed. Remote UI DOM/visual launch and macOS real-install limitations remain.

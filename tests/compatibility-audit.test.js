@@ -41,7 +41,7 @@ async function createFixture(root, options = {}) {
 }
 
 async function main() {
-    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0', '2.15.1', '2.16.0', '2.17.0', '2.18.1', '2.19.1', '2.21.0']);
+    assert.deepStrictEqual(getVerifiedVersions(), ['2.13.0', '2.14.0', '2.15.0', '2.15.1', '2.16.0', '2.17.0', '2.18.1', '2.19.1', '2.21.0', '2.21.1']);
     assert.strictEqual(isVerifiedVersion('2.13.0'), true);
     assert.strictEqual(isVerifiedVersion('2.14.0'), true);
     assert.strictEqual(isVerifiedVersion('2.15.0'), true);
@@ -51,7 +51,8 @@ async function main() {
     assert.strictEqual(isVerifiedVersion('2.18.0'), false, '未列入 allowlist 的版本不得宣稱已支援');
     assert.strictEqual(isVerifiedVersion('2.19.1'), true);
     assert.strictEqual(isVerifiedVersion('2.21.0'), true);
-    assert.strictEqual(isVerifiedVersion('2.21.1'), false, '未稽核的後續版本不得自動放行');
+    assert.strictEqual(isVerifiedVersion('2.21.1'), true);
+    assert.strictEqual(isVerifiedVersion('2.21.2'), false, '未稽核的後續版本不得自動放行');
 
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'antigravity-compat-test-'));
     try {
@@ -134,19 +135,21 @@ async function main() {
             profile: 'v2-mainline-logo-overlay'
         }).status, 'REVIEW_REQUIRED', '舊版 profile 不得放寬 tray onClick 簽名檢查');
 
-        const currentFixture = await createFixture(path.join(tempRoot, 'current-2.21.0'), {
-            version: '2.21.0', menuRefresh: true, logoOverlay: true, trayOnClick: true
-        });
-        const current = auditInstallation({ installDir: currentFixture.installDir, requireVerified: true });
-        assert.strictEqual(current.status, 'PASS');
-        assert.strictEqual(current.profile, 'v2-mainline-tray-onclick');
-        assert.strictEqual(current.verifiedSupported, true);
-        assert.strictEqual(current.noMutation, true);
-        const changedTray = await createFixture(path.join(tempRoot, 'current-changed-tray'), {
-            version: '2.21.0', menuRefresh: true, logoOverlay: true
-        });
-        assert.strictEqual(auditInstallation({ installDir: changedTray.installDir }).status,
-            'REVIEW_REQUIRED', '2.21.0 tray 簽名不相符時不得放行');
+        for (const version of ['2.21.0', '2.21.1']) {
+            const currentFixture = await createFixture(path.join(tempRoot, `current-${version}`), {
+                version, menuRefresh: true, logoOverlay: true, trayOnClick: true
+            });
+            const current = auditInstallation({ installDir: currentFixture.installDir, requireVerified: true });
+            assert.strictEqual(current.status, 'PASS');
+            assert.strictEqual(current.profile, 'v2-mainline-tray-onclick');
+            assert.strictEqual(current.verifiedSupported, true);
+            assert.strictEqual(current.noMutation, true);
+            const changedTray = await createFixture(path.join(tempRoot, `changed-tray-${version}`), {
+                version, menuRefresh: true, logoOverlay: true
+            });
+            assert.strictEqual(auditInstallation({ installDir: changedTray.installDir }).status,
+                'REVIEW_REQUIRED', `${version} tray 簽名不相符時不得放行`);
+        }
 
         const missingPatchTargetFixture = await createFixture(path.join(tempRoot, 'missing-patch-target'), { missingMenu: true });
         const missingPatchTarget = auditInstallation({ installDir: missingPatchTargetFixture.installDir });
