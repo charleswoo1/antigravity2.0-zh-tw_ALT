@@ -2,7 +2,7 @@
 
 ALT 對 Antigravity 上游版本採用明確 allowlist。版本較新、符合某個 semver 範圍，或唯讀稽核得到 `PASS`，都不會自動成為「已驗證支援版本」。唯一的正式清單是 [`compatibility/manifest.json`](compatibility/manifest.json)。
 
-ALT 1.6.0 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0`、`2.15.1`、`2.16.0`、`2.17.0`、`2.18.1` 與 `2.19.1` 的明確相容性驗證。2.16.0 起沿用非同步 WSL 選單重新套用流程，因此 2.16.0、2.17.0、2.18.1 與 2.19.1 使用獨立 profile 驗證兩個 `setApplicationMenu` 套用點。
+ALT 1.7.0 已完成 Antigravity `2.13.0`、`2.14.0`、`2.15.0`、`2.15.1`、`2.16.0`、`2.17.0`、`2.18.1`、`2.19.1`、`2.21.0` 與 `2.21.1` 的明確相容性驗證。2.16.0 起沿用非同步 WSL 選單重新套用流程，因此 2.16.0、2.17.0、2.18.1、2.19.1、2.21.0 與 2.21.1 使用獨立 profile 驗證兩個 `setApplicationMenu` 套用點。
 
 ## 三種判定
 
@@ -59,3 +59,13 @@ archive 不會原地修改。替換期間保留原始 archive；替換或 post-r
 ## Antigravity 2.19.1
 
 2.19.1 在 `tray.js` 中新增了 `onClick` 參數（`createTray(actions, onClick)`）與動態 WSL distro 選單插入，並延續 2.18.1 的純圖示載入畫面及 2.16.0 起的非同步 WSL 選單雙套用點。獨立的 `v2-mainline-tray-onclick` profile 驗證 tray 雙參數簽名、Agent 數量標籤與各項 anchors；中文化引擎支援動態函式宣告注入，完整相容 2.19.1。
+
+## Antigravity 2.21.0
+
+2026-10-08 完成本機 Windows 2.21.0 的唯讀稽核與受控套用／還原驗證。選單、系統匣、純圖示載入畫面與 IDE 安裝精靈的成員指紋均與 2.19.1 相同，沿用 `v2-mainline-tray-onclick`。新版 preload 的原生 API 仍保留，中文化採附加注入；還原後官方 archive SHA-256 完全相符，官方 unpacked 檔案未變動。
+
+編輯器、終端機、除錯輸出、候選選單、輸入區與可編輯區域的保護規則維持原有邊界，並以核心保護區域／runtime 測試驗證。此 Windows 驗證不包含新版遠端 UI 的實際 DOM 檢閱、啟動視覺驗收或 macOS 實機測試；若上游 UI 改變 class naming，仍須重新檢查受保護區域。
+
+## Antigravity 2.21.1
+
+2026-10-08 完成本機 Windows 2.21.1 的唯讀稽核及受控套用／還原驗證。所有中文化注入目標的成員指紋與 2.21.0 相同，沿用原有 `v2-mainline-tray-onclick`，未放寬 anchors 或變更受保護區域規則。還原後官方 archive SHA-256 完全相符，293 個官方 unpacked 檔案未變動。2.21.1 接續納入尚未發布的 ALT 1.7.0；視覺、遠端 UI DOM 與 macOS 實機驗證限制同上。
