@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "upstreamVersion": "2.22.0",
+  "profile": "v2-mainline-tray-onclick",
+  "auditStatus": "PASS",
+  "archive": {
+    "size": 4486221,
+    "sha256": "259c83ffa266088dda6ede520a601bbf06cc5c34985cdf56c5d68549c98dbb0e"
+  },
+  "localized": false,
+  "members": {
+    "package.json": {
+      "exists": true,
+      "required": true,
+      "size": 594,
+      "sha256": "3ba7efbbcb50b09cc7dcd72b3afa0e9e072368850d477563a1392f81e5243881",
+      "anchors": []
+    },
+    "dist/preload.js": {
+      "exists": true,
+      "required": true,
+      "size": 5409,
+      "sha256": "81d220de63447d27db95adf67d9711b59ee317b2338ba538f419b354a54b1f60",
+      "anchors": []
+    },
+    "dist/menu.js": {
+      "exists": true,
+      "required": false,
+      "size": 6502,
+      "sha256": "0bb689f3f77f5f30d9345302ff94ebabbe461c4b94de9ffdb711a19eeca0f04f",
+      "anchors": [
+        {
+          "id": "menu-set-application-menu",
+          "count": 2,
+          "expectedCount": 2,
+          "matched": true
+        },
+        {
+          "id": "menu-new-window-label",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "menu-docs-label",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "menu-connect-to-wsl-label",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "menu-reopen-locally-label",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        }
+      ]
+    },
+    "dist/tray.js": {
+      "exists": true,
+      "required": false,
+      "size": 3765,
+      "sha256": "6c6b0968b45a1c7088e459657d57a9efd72d3733614349095f17b6ee94b47135",
+      "anchors": [
+        {
+          "id": "tray-create-function",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "tray-insert-menu-item",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "tray-agent-count",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        }
+      ]
+    },
+    "dist/loadingOverlay.js": {
+      "exists": true,
+      "required": true,
+      "size": 2820,
+      "sha256": "77458cfeceb36c47d181a5e468aa2d70f6b94f0a9d920d3051d43349aea85314",
+      "anchors": [
+        {
+          "id": "loading-overlay-text",
+          "count": 0,
+          "expectedCount": 0,
+          "matched": true
+        },
+        {
+          "id": "loading-overlay-html",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "loading-overlay-logo",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "loading-overlay-view",
+          "count": 1,
+          "expectedCount": 1,
+          "matched": true
+        },
+        {
+          "id": "loading-overlay-no-text-div",
+          "count": 0,
+          "expectedCount": 0,
+          "matched": true
+        }
+      ]
+    },
+    "dist/ideInstall/wizardPreload.js": {
+      "exists": true,
+      "required": false,
+      "size": 879,
+      "sha256": "4d222bac7a93aafd5cb8cd59dfb1de35bafc35e267ba7b8ef24f74db151068d5",
+      "anchors": []
+    }
+  },
+  "unpacked": [
+    {
+      "path": "node_modules/chrome-devtools-mcp",
+      "required": true,
+      "exists": true
+    }
+  ]
+}
