@@ -1,6 +1,6 @@
 # Handoff — Antigravity 2.23.0 / ALT 1.9.0
 
-**Status:** `READY_FOR_REVIEW`
+**Status:** `COMPLETE`
 **Issue:** [#56](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/56)
 **Baseline commit:** `b23d8ebe84374a826a28f8cb23d22b1e16125794`
 **Target:** `main`
@@ -61,3 +61,9 @@ Commit/push this branch, target main, update results. Do not merge/publish or al
 - Engine change limited to ENGINE_VERSION; no dictionary/selector/blocked-zone/tag changes. No remote UI DOM or launch visual inspection, no macOS real-install verification. User-owned .codex-local/ untouched; no proprietary payload committed.
 - Windows x64 Install/Restore build PASS (Inno Setup 6.7.3), installer E2E PASS: 2.23.0 install/repeat/restore, menu/tray translation/syntax, unchanged overlay/unpacked, process-bypass/missing-installation/unsupported-version rejection. git diff --check PASS. No merge or publication authorized.
 - Implementation commit `61fbf9c` pushed to origin. PR [#57](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/57) targets main; CI validation status is available on PR. No automatic merge or Release.
+
+### Owner-authorized merge and publication
+
+- On 2026-10-13 the owner explicitly requested merge and publication. PR #57 exact head 02a3beb passed four CI jobs; merged at 970fe199d2be9eec0078d68fe71b8d1d33ecdd8a. Main CI 38394658637 passed.
+- Controlled Release 38394956070 succeeded; ALT 1.9.0 is published/latest with five exact fixed-name assets, matching SHA-256 digests and five working permanent downloads.
+- Full release evidence: [ALT-1.9.0-RELEASE.md](ALT-1.9.0-RELEASE.md).
