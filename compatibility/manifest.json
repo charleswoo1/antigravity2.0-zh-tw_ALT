@@ -61,6 +61,11 @@
       "status": "verified",
       "profile": "v2-mainline-tray-onclick",
       "fingerprint": "fingerprints/2.22.0.json"
+    },
+    "2.23.0": {
+      "status": "verified",
+      "profile": "v2-mainline-tray-onclick",
+      "fingerprint": "fingerprints/2.23.0.json"
     }
   }
 }
