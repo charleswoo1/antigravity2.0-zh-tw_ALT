@@ -30,8 +30,11 @@ assert.match(
 assert.ok(!/pull_request_target\s*:/.test(releaseWorkflow), 'Release workflow 不得使用 pull_request_target');
 assert.ok(releaseWorkflow.includes('$GITHUB_ACTOR') && releaseWorkflow.includes('$GITHUB_REPOSITORY_OWNER'),
     'Release gate 必須限制 repository owner 觸發');
-assert.ok(releaseWorkflow.includes('^release/v([0-9]+\\.[0-9]+\\.[0-9]+)$'),
-    'Release branch 必須精確符合 release/vX.Y.Z');
+assert.ok(releaseWorkflow.includes('^release/v([0-9]+\\.[0-9]+\\.[0-9]+(-alt\\.[1-9][0-9]*)?)$'),
+    'Release branch 必須精確符合 release/vX.Y.Z 或 release/vX.Y.Z-alt.N');
+assert.ok(releaseWorkflow.includes('node tools/version-policy.js --after "$latest_tag"'),
+    '發布必須依 ALT 修訂排序拒絕倒退或重複版本');
+assert.ok(releaseWorkflow.includes('--prerelease=false'), 'ALT 修訂版必須明確作為正式 Release');
 assert.ok(releaseWorkflow.includes("require('./package.json').version"),
     'Release gate 必須由 package.json 驗證 ALT version');
 assert.ok(releaseWorkflow.includes('git rev-parse origin/main') && releaseWorkflow.includes('git rev-parse HEAD'),

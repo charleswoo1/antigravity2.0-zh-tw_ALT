@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { validateAlignedVersion } = require('./version-policy');
 
 const repoRoot = path.resolve(__dirname, '..');
 const packagePath = path.join(repoRoot, 'package.json');
@@ -12,11 +13,7 @@ const pagesIndexPath = path.join(repoRoot, 'docs', 'index.html');
 const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const compatibilityManifest = JSON.parse(fs.readFileSync(compatibilityManifestPath, 'utf8'));
 const version = String(packageJson.version || '');
-const semverPattern = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-
-if (!semverPattern.test(version)) {
-    throw new Error(`Invalid ALT version in package.json: ${version}`);
-}
+validateAlignedVersion(version, compatibilityManifest);
 
 const verifiedVersions = Object.entries(compatibilityManifest.versions || {})
     .filter(([, entry]) => entry && entry.status === 'verified')

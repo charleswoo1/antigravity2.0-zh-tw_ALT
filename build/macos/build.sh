@@ -11,6 +11,8 @@ esac
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 VERSION="$(cd "$REPO_ROOT" && node -p "require('./package.json').version")"
+BUNDLE_VERSION="$(node "$REPO_ROOT/tools/version-policy.js" --field upstreamVersion)"
+BUILD_VERSION="$(node "$REPO_ROOT/tools/version-policy.js" --field macosBuildVersion)"
 if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
   echo "Invalid ALT version in package.json: $VERSION" >&2
   exit 1
@@ -34,7 +36,9 @@ cp "$SCRIPT_DIR/app/launcher.sh" "$APP_DIR/Contents/MacOS/launcher"
 chmod 755 "$APP_DIR/Contents/MacOS/launcher"
 cp "$SCRIPT_DIR/app/Info.plist" "$APP_DIR/Contents/Info.plist"
 sed -i '' "s/__ALT_ARCH__/$ARCH/g" "$APP_DIR/Contents/Info.plist"
-sed -i '' "s/__ALT_VERSION__/$VERSION/g" "$APP_DIR/Contents/Info.plist"
+sed -i '' "s/__ALT_VERSION__/$BUNDLE_VERSION/g" "$APP_DIR/Contents/Info.plist"
+sed -i '' "s/__ALT_BUILD_VERSION__/$BUILD_VERSION/g" "$APP_DIR/Contents/Info.plist"
+sed -i '' "s/__ALT_RELEASE_VERSION__/$VERSION/g" "$APP_DIR/Contents/Info.plist"
 cp -R "$PAYLOAD_DIR" "$APP_DIR/Contents/Resources/payload"
 
 # Sign nested Mach-O runtime before signing the outer app bundle.

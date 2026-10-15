@@ -19,7 +19,9 @@
   <key>CFBundleShortVersionString</key>
   <string>__ALT_VERSION__</string>
   <key>CFBundleVersion</key>
-  <string>1</string>
+  <string>__ALT_BUILD_VERSION__</string>
+  <key>ALTReleaseVersion</key>
+  <string>__ALT_RELEASE_VERSION__</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.5</string>
   <key>NSHighResolutionCapable</key>

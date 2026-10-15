@@ -8,6 +8,7 @@ const os = require('os');
 const path = require('path');
 const asar = require('@electron/asar');
 const engine = require('../localization_engine');
+const { parseAltVersion } = require('../tools/version-policy');
 
 const repoRoot = path.resolve(__dirname, '..');
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
@@ -38,6 +39,17 @@ async function main() {
     const restoreExe = path.join(repoRoot, 'dist', `Antigravity-ZH-Hant-TW-ALT-${packageJson.version}-Windows-Restore.exe`);
     assert.ok(fs.existsSync(installExe), `缺少安裝檔：${installExe}`);
     assert.ok(fs.existsSync(restoreExe), `缺少還原檔：${restoreExe}`);
+
+    const metadata = parseAltVersion(packageJson.version);
+    for (const artifact of [installExe, restoreExe]) {
+        const output = childProcess.execFileSync('powershell.exe', ['-NoProfile', '-Command',
+            "$v = (Get-Item -LiteralPath $env:ALT_REVISION_ARTIFACT).VersionInfo; @{numeric=('{0}.{1}.{2}.{3}' -f $v.FileMajorPart,$v.FileMinorPart,$v.FileBuildPart,$v.FilePrivatePart); text=$v.FileVersion; product=$v.ProductVersion} | ConvertTo-Json -Compress"
+        ], { encoding: 'utf8', windowsHide: true, env: { ...process.env, ALT_REVISION_ARTIFACT: artifact } });
+        const info = JSON.parse(output);
+        assert.strictEqual(info.numeric, metadata.windowsVersion);
+        assert.strictEqual(info.text.trim(), metadata.version);
+        assert.strictEqual(info.product.trim(), metadata.version);
+    }
 
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'antigravity-alt-installer-'));
     const persistentLogDir = path.join(process.env.LOCALAPPDATA, 'Antigravity-ZH-Hant-TW-ALT');

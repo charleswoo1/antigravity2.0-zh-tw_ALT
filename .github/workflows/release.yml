@@ -46,8 +46,8 @@ jobs:
           fi
 
           branch="$GITHUB_REF_NAME"
-          if [[ ! "$branch" =~ ^release/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            echo "Release branch must match release/vX.Y.Z exactly." >&2
+          if [[ ! "$branch" =~ ^release/v([0-9]+\.[0-9]+\.[0-9]+(-alt\.[1-9][0-9]*)?)$ ]]; then
+            echo "Release branch must match release/vX.Y.Z or release/vX.Y.Z-alt.N exactly." >&2
             exit 1
           fi
 
@@ -78,6 +78,10 @@ jobs:
             echo "Release $tag already exists; refusing to overwrite or reuse it." >&2
             exit 1
           fi
+
+          node tools/version-policy.js
+          latest_tag="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)"
+          node tools/version-policy.js --after "$latest_tag"
 
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
@@ -179,7 +183,11 @@ jobs:
 
           app_path="$extract_dir/$app_name"
           codesign --verify --deep --strict "$app_path"
-          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Contents/Info.plist" | grep -Fx "$version"
+          bundle_version="$(node tools/version-policy.js --field upstreamVersion)"
+          build_version="$(node tools/version-policy.js --field macosBuildVersion)"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app_path/Contents/Info.plist" | grep -Fx "$bundle_version"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_path/Contents/Info.plist" | grep -Fx "$build_version"
+          /usr/libexec/PlistBuddy -c 'Print :ALTReleaseVersion' "$app_path/Contents/Info.plist" | grep -Fx "$version"
           "$app_path/Contents/Resources/payload/runtime/node" --version | grep -Fx 'v24.21.0'
 
           cp "$zip_path" "$output_dir/$fixed_name"
@@ -307,7 +315,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh release create "$TAG"             release-assets/Antigravity-ZH-Hant-TW-ALT-Windows.exe             release-assets/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe             release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip             release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip             release-assets/SHA256SUMS.txt             --verify-tag             --draft             --title "ALT $VERSION"             --notes-file release-notes.md
+          gh release create "$TAG"             release-assets/Antigravity-ZH-Hant-TW-ALT-Windows.exe             release-assets/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe             release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip             release-assets/Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip             release-assets/SHA256SUMS.txt             --verify-tag             --prerelease=false             --draft             --title "ALT $VERSION"             --notes-file release-notes.md
 
       - name: Verify draft asset set and publish
         shell: bash

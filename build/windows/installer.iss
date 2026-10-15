@@ -1,6 +1,9 @@
 #ifndef AppVersion
   #define AppVersion "0.0.0-dev"
 #endif
+#ifndef NativeVersion
+  #define NativeVersion "0.0.0.0"
+#endif
 #ifndef SourceRoot
   #define SourceRoot "..\..\.build\windows-x64\payload"
 #endif
@@ -28,6 +31,10 @@
 AppId={{D9E56802-AE4A-4F2B-BB92-8F42F6A6B5AA}-{#Mode}
 AppName={#DisplayName}
 AppVersion={#AppVersion}
+VersionInfoVersion={#NativeVersion}
+VersionInfoProductVersion={#NativeVersion}
+VersionInfoTextVersion={#AppVersion}
+VersionInfoProductTextVersion={#AppVersion}
 AppPublisher=Antigravity Traditional Chinese ALT
 DefaultDirName={tmp}\Antigravity-ZH-Hant-TW-ALT
 DisableProgramGroupPage=yes

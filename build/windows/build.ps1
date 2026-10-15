@@ -18,6 +18,8 @@ if ($version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$
 }
 
 $nodeCommand = (Get-Command node.exe -ErrorAction Stop).Source
+$nativeVersion = & $nodeCommand (Join-Path $repoRoot 'tools\version-policy.js') --field windowsVersion
+if ($LASTEXITCODE -ne 0) { throw 'ALT version policy validation failed.' }
 $prepareArgs = @(
     (Join-Path $repoRoot 'build\common\prepare-payload.js'),
     '--platform', 'windows',
@@ -48,7 +50,7 @@ $issPath = Join-Path $repoRoot 'build\windows\installer.iss'
 $archDirective = if ($Arch -eq 'arm64') { 'arm64' } else { 'x64compatible' }
 
 foreach ($mode in @('Install', 'Restore')) {
-    & $IsccPath "/DAppVersion=$version" "/DSourceRoot=$payloadDir" "/DOutputDir=$distDir" "/DMode=$mode" "/DTargetArch=$archDirective" $issPath
+    & $IsccPath "/DAppVersion=$version" "/DNativeVersion=$nativeVersion" "/DSourceRoot=$payloadDir" "/DOutputDir=$distDir" "/DMode=$mode" "/DTargetArch=$archDirective" $issPath
     if ($LASTEXITCODE -ne 0) { throw "Inno Setup $mode build failed with exit code $LASTEXITCODE" }
 }
 
