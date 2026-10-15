@@ -84,6 +84,9 @@ jobs:
           if-no-files-found: error
           retention-days: 3
 
+      - name: Build and verify isolated ALT revision
+        run: node tools/verify-revision-packaging.js windows x64
+
   macos:
     name: macOS ${{ matrix.arch }} app build
     strategy:
@@ -126,7 +129,11 @@ jobs:
           ditto -x -k "$ZIP_PATH" "$EXTRACT_DIR"
           APP_PATH="$EXTRACT_DIR/$APP_NAME"
           codesign --verify --deep --strict "$APP_PATH"
-          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Contents/Info.plist" | grep -Fx "$VERSION"
+          BUNDLE_VERSION="$(node tools/version-policy.js --field upstreamVersion)"
+          BUILD_VERSION="$(node tools/version-policy.js --field macosBuildVersion)"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP_PATH/Contents/Info.plist" | grep -Fx "$BUNDLE_VERSION"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$APP_PATH/Contents/Info.plist" | grep -Fx "$BUILD_VERSION"
+          /usr/libexec/PlistBuddy -c 'Print :ALTReleaseVersion' "$APP_PATH/Contents/Info.plist" | grep -Fx "$VERSION"
           "$APP_PATH/Contents/Resources/payload/runtime/node" --version | grep -Fx 'v24.21.0'
 
       - name: Upload macOS CI artifact
@@ -136,3 +143,5 @@ jobs:
           path: dist/*.zip
           if-no-files-found: error
           retention-days: 3
+      - name: Build and verify isolated ALT revision
+        run: node tools/verify-revision-packaging.js macos ${{ matrix.arch }}

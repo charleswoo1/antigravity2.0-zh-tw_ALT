@@ -83,7 +83,9 @@ assert.ok(windowsRelease.includes('Get-Content -LiteralPath $packageJsonPath -Ra
 const macBuild = read('build', 'macos', 'build.sh');
 assert.ok(macBuild.includes("node -p \"require('./package.json').version\""), 'macOS build 必須從 package.json 讀取版本');
 assert.ok(macBuild.includes('APP_NAME="Antigravity-ZH-Hant-TW-ALT-$VERSION-macOS-$ARCH.app"'), 'macOS artifact name 必須使用動態 VERSION');
-assert.ok(macBuild.includes('s/__ALT_VERSION__/$VERSION/g'), 'macOS build 必須注入 Info.plist 版本');
+assert.ok(macBuild.includes('s/__ALT_VERSION__/$BUNDLE_VERSION/g'), 'macOS short version 必須使用上游數字版本');
+assert.ok(macBuild.includes('s/__ALT_BUILD_VERSION__/$BUILD_VERSION/g'), 'macOS build version 必須反映 ALT 修訂序號');
+assert.ok(macBuild.includes('s/__ALT_RELEASE_VERSION__/$VERSION/g'), 'macOS 必須保留完整 ALT 發行版號');
 assert.ok(!macBuild.includes(`ALT-${version}-macOS`), 'macOS build 不得硬編碼目前 package version');
 
 const infoPlist = read('build', 'macos', 'app', 'Info.plist');

@@ -3,8 +3,11 @@
 ## 產品主線
 
 - 本專案的產品名稱為 **Antigravity 2.0 繁體中文 ALT 版**（ALT = Alternative）。
-- ALT 自 **1.0.0** 起使用自己的 Semantic Versioning；ALT 版本不得與 Antigravity 官方版本混為同一版本號。
+- ALT 自版本對齊政策生效起，以目前最高的已驗證 Antigravity 版本作為發行基底：例如支援至 Antigravity `2.23.1` 時，首次 ALT 發行使用 `2.23.1`。同一上游版本的後續修正使用 `2.23.1-alt.1`、`2.23.1-alt.2`；上游更新後重設修訂序號。歷史 ALT 1.x tag / Release 保留原貌。
+- ALT 版本只允許 `X.Y.Z` 或 `X.Y.Z-alt.N`（N 為不含前導零的正整數），基底必須等於 `compatibility/manifest.json` 中數值最高的 verified 版本。對齊版號不代表未稽核版本自動取得支援；完整相容性 SOP 與 allowlist 維持有效。
+- `-alt.N` 代表正式 ALT 修訂發行，不作為 prerelease。發行順序為 `X.Y.Z` → `X.Y.Z-alt.1` → `X.Y.Z-alt.2` → 下一個上游版本；不得以 npm 的 prerelease 排序判斷此順序，也不得重用或覆寫既有 tag / Release。
 - `package.json.version` 是目前 ALT build / release version 的權威來源。Windows / macOS artifact naming、bundle metadata 與 CI 驗證不得另外硬編碼目前版本號。
+- 原生版本欄位由同一來源推導：Windows 數字版本為 `X.Y.Z.N`（首次 N=0）；macOS `CFBundleShortVersionString` 為 `X.Y.Z`、`CFBundleVersion` 為 N+1，完整 ALT 版號保留於 `ALTReleaseVersion`、runtime 與 artifact 名稱。映射由 `tools/version-policy.js` 統一驗證。
 - 版本升級優先使用 `npm version <new-version> --no-git-tag-version`，讓 npm version lifecycle 同步 runtime `ENGINE_VERSION`；若直接修改 `package.json.version`，必須執行 `npm run sync:version`，且 `npm run check:packaging` 必須能驗證版本一致性。
 - `main` 是唯一長期維護的產品主線。功能開發使用短期 feature/fix branch，完成 review 後回到 `main`。
 - `release/v2` 僅是歷史遷移參考，不是未來產品主線；在 ALT 1.0.0 跨平台驗證完成前不得刪除。
@@ -93,7 +96,7 @@
 - 可建置 Windows / macOS 驗證用 artifact，並使用 GitHub Actions artifact 暫存測試產物。
 - 可執行不改變 repository 狀態的安全檢查，例如版本、checksum、package、installer/app bundle 結構驗證。
 - 可在隔離測試目錄執行正式 release-preparation script，驗證固定 asset 命名與 checksum 邏輯。
-- 在 repository owner 已明確授權發布後，可由 `.github/workflows/release.yml` 透過精確命名的 `release/vX.Y.Z` branch 啟動受控 Release bridge；該 workflow 必須重新完成版本、main SHA、測試、build、固定 asset 與 checksum 驗證後，才可建立 tag、draft Release，並在 asset 完整性驗證成功後轉為正式 Release。
+- 在 repository owner 已明確授權發布後，可由 `.github/workflows/release.yml` 透過精確命名的 `release/vX.Y.Z` 或 `release/vX.Y.Z-alt.N` branch 啟動受控 Release bridge；該 workflow 必須重新完成版本、main SHA、測試、build、固定 asset 與 checksum 驗證後，才可建立 tag、draft Release，並在 asset 完整性驗證成功後轉為正式 Release。
 - 可使用必要且可信任的 GitHub 官方 action；第三方 action 必須有明確必要性，且優先鎖定到可稽核的版本或 commit。
 
 ### 禁止用途（除非使用者明確授權）
@@ -118,7 +121,7 @@
 ## 驗證與發布
 
 - 所有核心測試與 build 流程仍必須能在本機執行；GitHub Actions 是 CI / validation 層，不得成為唯一可用的建置方式。
-- 正式發布仍維持**人工授權**：只有 repository owner 明確確認可發布後，才可建立 `release/vX.Y.Z` branch。建立該 branch 即是對對應版本的一次性發布授權；後續 tag、draft Release、asset 驗證與正式發布可由受控 Release bridge 自動完成。
+- 正式發布仍維持**人工授權**：只有 repository owner 明確確認可發布後，才可建立 `release/vX.Y.Z` 或 `release/vX.Y.Z-alt.N` branch。建立該 branch 即是對對應版本的一次性發布授權；後續 tag、draft Release、asset 驗證與正式發布可由受控 Release bridge 自動完成。
 - GitHub 可用於 Git 版本管理、原始碼儲存、Issue、Pull Request、CI/build validation 與 Release 檔案托管。
 - Windows / macOS build 與 CI artifact 可保留 ALT 版本號；正式 GitHub Release 的公開 asset 必須固定使用以下名稱：
 

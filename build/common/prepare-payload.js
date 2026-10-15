@@ -5,6 +5,7 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const { spawnSync } = require('child_process');
+const { validateAlignedVersion } = require('../../tools/version-policy');
 
 const repoRoot = path.resolve(__dirname, '..', '..');
 const buildRoot = path.join(repoRoot, '.build');
@@ -12,6 +13,7 @@ const runtimeCache = path.join(repoRoot, 'vendor', 'runtime');
 const manifestPath = path.join(repoRoot, 'build', 'runtime-manifest.json');
 const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8'));
 const compatibilityManifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'compatibility', 'manifest.json'), 'utf-8'));
+validateAlignedVersion(packageJson.version, compatibilityManifest);
 
 function parseArgs(argv) {
     const result = { platform: '', arch: '', output: '', offline: false };

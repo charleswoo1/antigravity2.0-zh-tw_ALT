@@ -2,11 +2,30 @@
 
 本專案的正式 GitHub Release 維持**人工授權、受控自動執行**。
 
-一般 CI 只負責測試與建置驗證，維持 `permissions: contents: read`。只有 repository owner 明確確認某版本可以發布後，才可建立精確命名的 `release/vX.Y.Z` branch；該 branch 是一次性的正式發布授權訊號。專用 `.github/workflows/release.yml` 會重新驗證版本與 main commit、重新 build 全平台資產，最後只有 `publish` job 取得最低必要的 `actions: read` 與 `contents: write`。
+一般 CI 只負責測試與建置驗證，維持 `permissions: contents: read`。只有 repository owner 明確確認某版本可以發布後，才可建立精確命名的 `release/vX.Y.Z` 或 `release/vX.Y.Z-alt.N` branch；該 branch 是一次性的正式發布授權訊號。專用 `.github/workflows/release.yml` 會重新驗證版本與 main commit、重新 build 全平台資產，最後只有 `publish` job 取得最低必要的 `actions: read` 與 `contents: write`。
 
 ## 版本來源
 
 `package.json.version` 是 ALT build / release version 的權威來源。Windows installer、macOS artifact / bundle metadata、GitHub Pages、Release branch、Git tag 與 Release title 都必須由它衍生，不應另外硬編碼目前版本字串。GitHub Pages 顯示的已驗證 Antigravity 版本則必須由 `compatibility/manifest.json` 的 `verified` entries 衍生。
+
+ALT 發行基底對齊目前數值最高的已驗證 Antigravity 版本。例如支援至 `2.23.1` 時，首次使用 `2.23.1`；同版本的後續翻譯或工具修正使用 `2.23.1-alt.1`、`2.23.1-alt.2`。新上游版本首次發行重新使用無後綴版號。歷史 ALT 1.x 發行保留原貌，不改名、不重建。
+
+`tools/version-policy.js` 驗證基底必須等於最高 verified 版本，只接受 `X.Y.Z` 或 `X.Y.Z-alt.N`（N >= 1，不含前導零）。先完成新版相容性驗證並更新 manifest，再執行 `npm version <new-version> --no-git-tag-version`。版號對齊不會放寬 allowlist 或免除相容性 SOP。
+
+修訂後綴在本專案表示正式發行；雖然 npm SemVer 會把它視為 prerelease 格式，GitHub Release 仍明確設定為非 prerelease 並標為 latest。發布順序使用本專案數字排序：`2.23.1` < `2.23.1-alt.1` < `2.23.1-alt.2` < `2.23.2`。Release gate 會拒絕不高於目前 latest 的版號，並繼續拒絕已存在的 tag / Release。
+
+原生欄位由完整版號推導，避免將後綴放入只接受數字的欄位：
+
+| 欄位 | 首次 `2.23.1` | 修訂 `2.23.1-alt.1` |
+| --- | --- | --- |
+| package / runtime / artifact / tag | `2.23.1` | `2.23.1-alt.1` |
+| Windows 數字版本 | `2.23.1.0` | `2.23.1.1` |
+| Windows 文字版本 | `2.23.1` | `2.23.1-alt.1` |
+| macOS CFBundleShortVersionString | `2.23.1` | `2.23.1` |
+| macOS CFBundleVersion | `1` | `2` |
+| macOS ALTReleaseVersion | `2.23.1` | `2.23.1-alt.1` |
+
+Windows 四段數字各不超過 65535；修訂序號最多 9998，讓 macOS build 欄位 N+1 維持四位數以內。超出範圍會中止建置。所有數字欄位都由 `tools/version-policy.js` 產生。
 
 升版建議使用：
 
@@ -38,20 +57,22 @@ npm run check:packaging
 
 ### 2. 建立唯一的發布觸發 branch
 
-確認 `package.json.version` 為欲發布版本，例如 `1.2.1` 後，從**當下最新 `main` commit** 建立：
+確認 `package.json.version` 為欲發布版本，例如 `2.23.1` 後，從**當下最新 `main` commit** 建立：
 
 ```text
-release/v1.2.1
+release/v2.23.1
 ```
 
-Release branch 必須精確符合 `release/vX.Y.Z`。建立這個 branch 即代表 repository owner 已對該版本完成最後發布授權。
+同版本修訂則使用例如 `release/v2.23.1-alt.1`；對應 tag 為 `v2.23.1-alt.1`、Release title 為 `ALT 2.23.1-alt.1`。
+
+Release branch 必須精確符合 `release/vX.Y.Z` 或 `release/vX.Y.Z-alt.N`。建立這個 branch 即代表 repository owner 已對該版本完成最後發布授權。
 
 ### 3. Release gate
 
 `.github/workflows/release.yml` 會在任何 production mutation 前確認：
 
 - 觸發 actor 是 repository owner。
-- branch 精確符合 `release/vX.Y.Z`。
+- branch 精確符合 `release/vX.Y.Z` 或 `release/vX.Y.Z-alt.N`。
 - branch 中的 `package.json.version` 等於 `X.Y.Z`。
 - release branch 的 commit SHA 精確等於當下 `origin/main`。
 - 對應 `vX.Y.Z` tag 尚不存在。
