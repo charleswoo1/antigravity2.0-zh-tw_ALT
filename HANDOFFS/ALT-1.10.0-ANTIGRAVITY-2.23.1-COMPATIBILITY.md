@@ -56,3 +56,10 @@ Commit/push this branch, target main, update Execution Result. No merge/publicat
 - No remote UI DOM or launch visual inspection, no macOS real-install verification. User-owned .codex-local/ untouched; no official payload committed. Initial GitHub CLI upstream-default issue misrouting was corrected: upstream #6 closed with explanation; ALT #59 is authoritative.
 - Windows x64 Install/Restore build PASS (Inno Setup 6.7.3). Installer E2E PASS: 2.23.1 apply/repeat/restore, menu/tray translation and syntax, unchanged overlay/unpacked, process-bypass/missing-installation/unsupported-version rejection. git diff --check PASS.
 - Implementation commit `8421bcf` pushed to origin. PR [#60](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/60) targets main; CI status is available on the PR. No merge or publication authorized.
+
+### Owner-authorized merge and publication
+
+- On 2026-10-15 the owner confirmed CI/build and requested publication, superseding the original no-merge/no-publication scope for this release.
+- PR #60 exact head `304e59f` passed four CI jobs and merged at `4399c437414e76a8df10c7d091bf407b1d5cdcc3`. Main CI 38671739800 passed.
+- Controlled Release 38671936319 succeeded. ALT 1.10.0 is published/latest with five fixed-name assets, matching checksums and five working permanent downloads.
+- Full evidence: [ALT-1.10.0-RELEASE.md](ALT-1.10.0-RELEASE.md).
