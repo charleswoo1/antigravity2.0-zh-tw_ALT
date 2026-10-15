@@ -50,3 +50,10 @@ Commit/push and PR to main; no merge/release without a new owner request. Retain
 - Isolated Windows 2.23.1-alt.1 build, apply/repeat/restore E2E, fixed-name staging and native numeric/text metadata PASS. Tests trim Inno Setup's trailing text-field padding; helper isolates Windows PowerShell 5.1 modules from inherited PowerShell 7 paths.
 - CI includes isolated revision packaging on Windows x64 and macOS x64/arm64, with extracted macOS signature, short/build/full version and payload runtime checks. Cloud results are available on the PR; no macOS local real-machine install validation claimed.
 - Engine modification is limited to ENGINE_VERSION. No allowlist, dictionary, selector, blocked-zone/tag, installed Antigravity or .codex-local/ changes. git diff --check PASS. Commit/push and PR reference recorded on GitHub; no merge/publication authorized.
+
+### Owner-authorized merge and publication
+
+- On 2026-10-15 the owner explicitly requested publication, superseding the initial no-merge/no-publication scope for this release.
+- PR [#63](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/63) exact head `a4b4aa74a10bd82ed055e715377476c16d624390` passed all four CI jobs, including Windows/macOS base and revision packaging, in run 38673920709. Merged at `2c96377256b32bda9d9d7054d6218ea914fbd552`; main CI 38674433550 passed.
+- Controlled Release 38674747319 succeeded. ALT 2.23.1 is published/latest with five fixed-name assets, matching checksums and working permanent downloads.
+- Full evidence: [ALT-2.23.1-RELEASE.md](ALT-2.23.1-RELEASE.md).
