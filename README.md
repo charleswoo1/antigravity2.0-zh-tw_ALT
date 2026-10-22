@@ -2,6 +2,8 @@
 
 **Antigravity 2.0 Traditional Chinese ALT**（ALT = Alternative）是一套 **Google Antigravity 2.0 繁體中文（zh-TW）中文化工具**，可在使用者本機將 Antigravity 介面套用為台灣繁體中文。支援 Windows x64，並提供 macOS Apple Silicon（arm64）與 Intel（x64）版本。
 
+🌐 **[Antigravity 2.0 繁體中文 ALT 官方下載與介紹頁](https://charleswoo1.github.io/antigravity2.0-zh-tw_ALT/)**
+
 本專案是**非官方社群工具**，與 Google / Antigravity 官方無關；目標是提供符合台灣使用習慣的 Antigravity 中文介面，同時保留程式碼、Terminal、Debug Console、輸入內容與自動完成等開發工作區域的原文。
 
 - ALT 目前版本：**2.25.0**
