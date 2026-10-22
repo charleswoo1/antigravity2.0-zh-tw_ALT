@@ -48,3 +48,10 @@ Owner authorizes merge/publication. Use release.yml only. Do not merge release b
 - Publication BLOCKED: main CI success is mandatory under RELEASING.md. No release/v2.25.0 branch, tag or Release created; latest remains v2.24.0. No audit bypass, code changes, historical deletion or installed-app mutation.
 - Resume by rerunning failed main CI after npm advisory service connectivity recovers; require SUCCESS at the exact current main SHA, recheck unused branch/tag/Release and current version, then continue the controlled Release bridge and post-publication validation. Owner publication authorization persists.
 - Evidence submitted through a documentation PR; do not merge it on failed checks.
+
+### Recheck requested by owner
+
+- Reconfirmed latest remains v2.24.0 and no release/v2.25.0 branch or v2.25.0 tag exists. Main remains 2c375e4bd1c79b5f4b76bd33520164799cffc841.
+- Started main CI attempt 3, rerunning only the failed job without code or policy changes. At the recheck snapshot it is still in Install dependencies; all prior platform jobs remain successful.
+- Independent local npm audit with a bounded fetch timeout also failed: audit endpoint network timeout. Publication blocker is still reproducible; no release mutation performed.
+- PR #72 CI also remains in dependency installation across runners. Pending CI is not treated as success. Continue from the existing main CI attempt after service recovery; do not start another duplicate attempt while it is running.
