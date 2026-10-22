@@ -52,3 +52,7 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - No launch visual/remote UI DOM or macOS real-install verification. User-owned .codex-local/ untouched; no official payload committed.
 - Windows x64 Install/Restore build PASS (Inno Setup 6.7.3). Installer E2E PASS: 2.25.0 apply/repeat/restore, menu/tray translation and syntax, unchanged overlay/unpacked, process-bypass/missing-installation/unsupported-version rejection. git diff --check PASS.
 - Implementation commit 2f85055 pushed to origin. PR [#70](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/70) targets main; CI results are available on the PR. No merge or publication authorized.
+
+## Owner-authorized publication attempt
+
+On 2026-10-22 the owner confirmed local operation and requested publication, superseding the initial no-merge/no-publication scope. PR #70 merged after four successful CI jobs at 2c375e4bd1c79b5f4b76bd33520164799cffc841. Main CI 39710859378 passed all platform builds and core/packaging tests, but npm security audit timed out twice at the bulk advisory endpoint. Publication is blocked pending successful main CI; no release branch/tag/Release created. Full evidence: [ALT-2.25.0-RELEASE.md](ALT-2.25.0-RELEASE.md).
