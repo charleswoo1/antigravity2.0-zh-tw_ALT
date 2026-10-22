@@ -1,6 +1,6 @@
 # Handoff — ALT 2.25.0 Release
 
-**Status:** BLOCKED
+**Status:** COMPLETE
 **Issue:** [#71](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/71)
 **Baseline commit:** 2c375e4bd1c79b5f4b76bd33520164799cffc841 (main after PR #70)
 **Authorization:** On 2026-10-22 the owner confirmed local operation and explicitly requested publication.
@@ -40,18 +40,16 @@ Owner authorizes merge/publication. Use release.yml only. Do not merge release b
 
 ## Execution Result
 
-- PR #70 exact head d25423cb652166ffd6ee96ba92e36b2b3716acb3 passed four jobs in CI 39708613081; merged at baseline above.
-- Actor charleswoo1 matches repository owner. Version 2.25.0 branch/tag unused; prior latest v2.24.0.
-- Main CI [39710859378](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/39710859378) failed only at Production dependency audit; all platform build jobs passed.
-- Main CI attempt 1: Windows/macOS builds passed; core tests and packaging passed, but npm audit endpoint timed out after 300 seconds. Re-running failed job at the unchanged main SHA; no code/policy bypass or publication on failed CI.
-- Main CI attempt 2 repeated the same npm bulk advisory endpoint timeout after 300 seconds (2026-10-22 02:32:14–02:37:14 UTC). Core/packaging tests passed again. This is an audit-service connectivity failure, not a reported vulnerability finding.
-- Publication BLOCKED: main CI success is mandatory under RELEASING.md. No release/v2.25.0 branch, tag or Release created; latest remains v2.24.0. No audit bypass, code changes, historical deletion or installed-app mutation.
-- Resume by rerunning failed main CI after npm advisory service connectivity recovers; require SUCCESS at the exact current main SHA, recheck unused branch/tag/Release and current version, then continue the controlled Release bridge and post-publication validation. Owner publication authorization persists.
-- Evidence submitted through a documentation PR; do not merge it on failed checks.
-
-### Recheck requested by owner
-
-- Reconfirmed latest remains v2.24.0 and no release/v2.25.0 branch or v2.25.0 tag exists. Main remains 2c375e4bd1c79b5f4b76bd33520164799cffc841.
-- Started main CI attempt 3, rerunning only the failed job without code or policy changes. At the recheck snapshot it is still in Install dependencies; all prior platform jobs remain successful.
-- Independent local npm audit with a bounded fetch timeout also failed: audit endpoint network timeout. Publication blocker is still reproducible; no release mutation performed.
-- PR #72 CI also remains in dependency installation across runners. Pending CI is not treated as success. Continue from the existing main CI attempt after service recovery; do not start another duplicate attempt while it is running.
+- PR #70 exact head d25423cb652166ffd6ee96ba92e36b2b3716acb3 passed four jobs in CI 39708613081 and merged at baseline 2c375e4bd1c79b5f4b76bd33520164799cffc841.
+- Main CI [39710859378](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/39710859378): attempts 1/2 timed out after 300 seconds at the npm bulk advisory endpoint; attempt 3 returned HTTP 503 Service Unavailable. All platform jobs and core/packaging tests passed. No policy bypass or code change was made in response.
+- On the owner's subsequent recheck, attempt 4 SUCCESS, including Production dependency audit. All four main CI jobs passed at the unchanged baseline SHA. The external audit-service blocker is resolved.
+- Actor charleswoo1 matches repository owner. Confirmed package version 2.25.0 and unused release branch/tag; release/v2.25.0 pushed from exact current validated main SHA above.
+- Controlled Release [39717799544](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/39717799544) SUCCESS: authorization/version/main/order gates, production audit, three platform builds, installer E2E and publication passed.
+- [ALT 2.25.0](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/releases/tag/v2.25.0) is published/latest, non-draft and non-prerelease. Annotated v2.25.0 dereferences to baseline release SHA.
+- Exact five fixed-name assets verified. All four checksum entries match GitHub API SHA-256 digests. All five permanent downloads redirect to v2.25.0 and return HTTP 200.
+- Public SHA-256 values:
+  - d1ae9d7d5445ac1d0f2916ceacf59fbf6e343236a17813d39f0896df027061e0 — Antigravity-ZH-Hant-TW-ALT-macOS-arm64.zip
+  - 598e9060143dcc263a5d2d61adcabe73edea33fb665485102feefd0c6a88b60d — Antigravity-ZH-Hant-TW-ALT-macOS-x64.zip
+  - 04f9669ccba2197b3fbb396690343260d0d202aae0ab328059b409d2b5cd8b36 — Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
+  - 3444fa2f5a366ba45e7e2b1dd4275963deb2b157e198c55867fb86811fb4953c — Antigravity-ZH-Hant-TW-ALT-Windows.exe
+- Historical branches/tags/releases, local installation and user-owned .codex-local/ preserved. No proprietary payload, history rewrite or audit bypass. Final evidence submitted by updating PR #72; merge only after its current-head CI passes under owner publication authorization.
