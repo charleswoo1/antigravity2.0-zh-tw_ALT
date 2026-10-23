@@ -54,3 +54,7 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - GitHub CLI initially selected upstream for issue creation; closed the mistaken upstream issue #7 and recreated tracking as ALT issue #73. All subsequent GitHub commands explicitly select the ALT repository.
 - Windows x64 Install/Restore build PASS (Inno Setup 6.7.3). Installer E2E PASS: 2.26.0 apply/repeat/restore, menu/tray translation and syntax, unchanged overlay/unpacked, process-bypass/missing-installation/unsupported-version rejection. git diff --check PASS.
 - Implementation commit 6a2345f pushed to origin. PR [#74](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/74) targets main; CI results are available on the PR. No merge or publication authorized.
+
+## Owner-authorized publication
+
+On 2026-10-24 the owner explicitly requested publication, superseding the initial no-merge/no-publication scope. PR #74 merged after four successful CI jobs at 626060a96cf88051ac12476e59a66e05f2337500. Main CI 40016367108 and Controlled Release 40016901498 succeeded. ALT 2.26.0 is published as latest; tag target, five fixed-name assets, four checksum digests and permanent downloads all verified. Full evidence: [ALT-2.26.0-RELEASE.md](ALT-2.26.0-RELEASE.md).
