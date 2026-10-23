@@ -53,4 +53,4 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - No launch visual/remote UI DOM or macOS real-install verification. User-owned .codex-local/ untouched; no official payload committed.
 - GitHub CLI initially selected upstream for issue creation; closed the mistaken upstream issue #7 and recreated tracking as ALT issue #73. All subsequent GitHub commands explicitly select the ALT repository.
 - Windows x64 Install/Restore build PASS (Inno Setup 6.7.3). Installer E2E PASS: 2.26.0 apply/repeat/restore, menu/tray translation and syntax, unchanged overlay/unpacked, process-bypass/missing-installation/unsupported-version rejection. git diff --check PASS.
-- Implementation will be pushed to origin on codex/antigravity-2.26.0-compatibility with a PR targeting main. No merge or publication authorized.
+- Implementation commit 6a2345f pushed to origin. PR [#74](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/74) targets main; CI results are available on the PR. No merge or publication authorized.
