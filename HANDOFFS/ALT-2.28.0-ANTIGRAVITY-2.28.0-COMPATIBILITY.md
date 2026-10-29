@@ -52,3 +52,7 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - No launch visual/remote UI DOM or macOS real-install verification. User-owned .codex-local/ untouched; no official payload committed.
 - Windows x64 Install/Restore build PASS. Installer E2E PASS: 2.28.0 apply/repeat/restore, menu/tray translation and syntax, unchanged overlay/unpacked, process-bypass/missing-installation/unsupported-version rejection. git diff --check PASS.
 - Implementation commit c977bba pushed to origin. PR [#82](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/82) targets main; CI results are available on the PR. No merge or publication authorized.
+
+## Owner-authorized publication
+
+On 2026-10-29 the owner explicitly requested publication, superseding the initial no-merge/no-publication scope. PR #82 merged after four successful CI jobs at a314af3f594a61668b8fa0e4ea88645f3ef6eb11. Main CI 40807788496 and Controlled Release 40808165704 succeeded. ALT 2.28.0 is published as latest; tag target, five fixed-name assets, four checksum digests and permanent downloads all verified. Full evidence: [ALT-2.28.0-RELEASE.md](ALT-2.28.0-RELEASE.md).
