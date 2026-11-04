@@ -49,3 +49,4 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - Launch visuals, remote UI DOM and macOS real-install validation were outside this verification.
 - Windows x64 install and restore tools built successfully. Windows installer end-to-end tests passed.
 - Pushed implementation commit 1139696 and opened PR [#86](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/86) for review.
+- Owner authorized publication on 2026-11-04. The PR security gate found GHSA-3g3m-2fjr-6pw4 and GHSA-g3hv-75wg-m249. Pinned glob 14.0.3 and minimatch 11.0.4 through npm overrides, refreshed the lockfile and notices. npm audit reports zero vulnerabilities. Core and packaging checks pass.

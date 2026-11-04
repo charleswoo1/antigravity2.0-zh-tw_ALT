@@ -21,5 +21,9 @@
   },
   "dependencies": {
     "@electron/asar": "4.3.0"
+  },
+  "overrides": {
+    "glob": "14.0.3",
+    "minimatch": "11.0.4"
   }
 }
