@@ -50,3 +50,7 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - Windows x64 install and restore tools built successfully. Windows installer end-to-end tests passed.
 - Pushed implementation commit 1139696 and opened PR [#86](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/86) for review.
 - Owner authorized publication on 2026-11-04. The PR security gate found GHSA-3g3m-2fjr-6pw4 and GHSA-g3hv-75wg-m249. Pinned glob 14.0.3 and minimatch 11.0.4 through npm overrides, refreshed the lockfile and notices. npm audit reports zero vulnerabilities. Core and packaging checks pass.
+
+## Owner-authorized publication
+
+On 2026-11-04 the owner explicitly authorized publication. After fixing the security gate and passing local rebuild/E2E plus PR CI, PR #86 merged at 2a2a0ba184faa5314b3acb1a811b9489897a97d7. Main CI 41768870609 and Controlled Release 41769219703 passed. ALT 2.29.0 is published as latest. Tag, fixed assets, digests and downloads verified. See [release evidence](ALT-2.29.0-RELEASE.md).
