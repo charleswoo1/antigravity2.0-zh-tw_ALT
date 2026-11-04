@@ -47,3 +47,5 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - Registered explicit support and synchronized ALT 2.29.0 through the npm lifecycle. Core and packaging checks passed.
 - The first final apply overlapped the synthetic tests and failed while repacking. The engine verified the live archive was intact. Retried after the synthetic tests finished. Apply, repeat apply and final audit passed, with both preload sources preserved, both menu injection points present, overlay bytes intact and the same-version official backup retained. Localized SHA-256: f5e3b15b69a2994d4edb5dedebe869a19c84ded24162d22403fc4b58c1c93f5e.
 - Launch visuals, remote UI DOM and macOS real-install validation were outside this verification.
+- Windows x64 install and restore tools built successfully. Windows installer end-to-end tests passed.
+- Pushed implementation commit 1139696 and opened PR [#86](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/86) for review.
