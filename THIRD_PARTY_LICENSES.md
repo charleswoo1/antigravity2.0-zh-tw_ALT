@@ -8,13 +8,14 @@ Every release payload also contains `runtime/NODE-LICENSE.txt`, copied verbatim 
 | Package | Version | Relationship | License |
 | --- | --- | --- | --- |
 | `@electron/asar` | 4.3.0 | Direct | MIT |
+| `@isaacs/nonrecursive-glob-match` | 1.0.3 | Transitive | BlueOak-1.0.0 |
 | `balanced-match` | 4.0.4 | Transitive | MIT |
 | `brace-expansion` | 5.0.12 | Transitive | MIT |
-| `glob` | 13.0.6 | Transitive | BlueOak-1.0.0 |
-| `lru-cache` | 11.5.2 | Transitive | BlueOak-1.0.0 |
-| `minimatch` | 10.2.6 | Transitive | BlueOak-1.0.0 |
+| `glob` | 14.0.3 | Transitive | BlueOak-1.0.0 |
+| `lru-cache` | 11.5.3 | Transitive | BlueOak-1.0.0 |
+| `minimatch` | 11.0.4 | Transitive | BlueOak-1.0.0 |
 | `minipass` | 7.1.3 | Transitive | BlueOak-1.0.0 |
-| `path-scurry` | 2.0.2 | Transitive | BlueOak-1.0.0 |
+| `path-scurry` | 3.0.0 | Transitive | BlueOak-1.0.0 |
 
 ## License Notices
 
@@ -45,6 +46,70 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+```
+
+### @isaacs/nonrecursive-glob-match
+
+Version: 1.0.3
+
+License: BlueOak-1.0.0
+
+```text
+# Blue Oak Model License
+
+Version 1.0.0
+
+## Purpose
+
+This license gives everyone as much permission to work with
+this software as possible, while protecting contributors
+from liability.
+
+## Acceptance
+
+In order to receive this license, you must agree to its
+rules.  The rules of this license are both obligations
+under that agreement and conditions to your license.
+You must not do anything with this software that triggers
+a rule that you cannot or will not follow.
+
+## Copyright
+
+Each contributor licenses you to do everything with this
+software that would otherwise infringe that contributor's
+copyright in it.
+
+## Notices
+
+You must ensure that everyone who gets a copy of
+any part of this software from you, with or without
+changes, also gets the text of this license or a link to
+<https://blueoakcouncil.org/license/1.0.0>.
+
+## Excuse
+
+If anyone notifies you in writing that you have not
+complied with [Notices](#notices), you can keep your
+license by taking all practical steps to comply within 30
+days after the notice.  If you do not do so, your license
+ends immediately.
+
+## Patent
+
+Each contributor licenses you to do everything with this
+software that would otherwise infringe any patent claims
+they can license or become able to license.
+
+## Reliability
+
+No contributor can revoke this license.
+
+## No Liability
+
+***As far as the law allows, this software comes as is,
+without any warranty or condition, and no contributor
+will be liable to anyone for any damages related to this
+software or this license, under any kind of legal claim.***
 ```
 
 ### balanced-match
@@ -113,7 +178,7 @@ SOFTWARE.
 
 ### glob
 
-Version: 13.0.6
+Version: 14.0.3
 
 License: BlueOak-1.0.0
 
@@ -185,7 +250,7 @@ software or this license, under any kind of legal claim.***
 
 ### lru-cache
 
-Version: 11.5.2
+Version: 11.5.3
 
 License: BlueOak-1.0.0
 
@@ -249,7 +314,7 @@ software or this license, under any kind of legal claim.***
 
 ### minimatch
 
-Version: 10.2.6
+Version: 11.0.4
 
 License: BlueOak-1.0.0
 
@@ -377,7 +442,7 @@ software or this license, under any kind of legal claim.***
 
 ### path-scurry
 
-Version: 2.0.2
+Version: 3.0.0
 
 License: BlueOak-1.0.0
 
