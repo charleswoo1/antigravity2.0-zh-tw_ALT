@@ -101,6 +101,11 @@
       "status": "verified",
       "profile": "v2-mainline-tray-onclick",
       "fingerprint": "fingerprints/2.29.0.json"
+    },
+    "2.29.1": {
+      "status": "verified",
+      "profile": "v2-mainline-tray-onclick",
+      "fingerprint": "fingerprints/2.29.1.json"
     }
   }
 }
