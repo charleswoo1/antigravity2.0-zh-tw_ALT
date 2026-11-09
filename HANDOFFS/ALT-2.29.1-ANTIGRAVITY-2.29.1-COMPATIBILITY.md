@@ -1,6 +1,6 @@
 # Handoff — Antigravity 2.29.1 / ALT 2.29.1
 
-**Status:** IN PROGRESS
+**Status:** COMPLETE
 **Issue:** [#89](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/89)
 **Baseline commit:** 4d5b7442acce2cb773c885286ac7c4656f3ffbbd
 **Target:** main
@@ -45,4 +45,5 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - Synced main. Closed two background sidecars. Candidate audit passed with no mutation. All five injection target fingerprints match 2.29.0.
 - Controlled real apply and exact restore passed. Official archive SHA-256 a6bfd4567c2560495860e895c8894106ed40782e4a31e459713fec1cc2a0d02b. All 347 unpacked files preserved their fingerprint.
 - Core and packaging checks passed. Final apply/repeat/integrity audit passed. Original preload sources and overlay bytes preserved, two menu injection blocks present, same-version official backup retained. Localized SHA-256 d3a53425a9026cd0306a351e4f9801ac11c65ef4915eacd6c261750f825eae28.
-- Launch visual, remote UI DOM and macOS real-install verification remain outside this validation. Windows installer build/E2E pending.
+- Launch visual, remote UI DOM and macOS real-install verification remain outside this validation. Windows installer build and end-to-end tests passed.
+- Pushed implementation commit 19615e8 and opened PR [#90](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/90).
