@@ -47,3 +47,7 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - Core and packaging checks passed. Final apply/repeat/integrity audit passed. Original preload sources and overlay bytes preserved, two menu injection blocks present, same-version official backup retained. Localized SHA-256 d3a53425a9026cd0306a351e4f9801ac11c65ef4915eacd6c261750f825eae28.
 - Launch visual, remote UI DOM and macOS real-install verification remain outside this validation. Windows installer build and end-to-end tests passed.
 - Pushed implementation commit 19615e8 and opened PR [#90](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/90).
+
+## Owner-authorized publication
+
+On 2026-11-10 the owner explicitly authorized publication. Complete CI 42744636341 passed at 44eb086621561d82de2c4f51e75711212f02bc85 before PR #90 merged at e34d6042d88275d4f20e325b852825ab984cdb00. Main CI 42745099003 and Controlled Release 42745470404 passed. ALT 2.29.1 is latest. Tag, fixed assets, digests and downloads verified. See [release evidence](ALT-2.29.1-RELEASE.md).
