@@ -1,6 +1,6 @@
 # Handoff — Antigravity 2.32.2 / ALT 2.32.2
 
-**Status:** READY_FOR_REVIEW
+**Status:** COMPLETE
 **Issue:** [#103](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/103)
 **Baseline commit:** 404895ad9be47b82099dfd9785e3fcf195cd99e7
 **Target:** main
@@ -50,3 +50,7 @@ Commit/push branch, target main, update Execution Result. No merge or publicatio
 - Launch visuals, remote UI DOM and macOS real-install verification remain outside validation.
 - GitHub CLI initially selected upstream; misfiled upstream issue #8 was closed and corrected to ALT issue #103. No source or release changes were made upstream.
 - Implementation 5347f0a pushed; PR [#104](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/104) targets main. No merge or publication performed.
+
+## Owner-authorized publication
+
+On 2026-11-18 the owner authorized publication, superseding the initial no-merge/no-publication scope. PR #104 passed all checks at 933efdfb21d91ad965f2fc11aa1687d8b3fb27f9 and merged at 3df32e6061d6ecedfc9ec463507b0ce19c8e4986. Main CI 44226887606 and Controlled Release 44227341687 passed. ALT 2.32.2 is latest. Tag, fixed assets, checksums and permanent downloads verified. See [release evidence](ALT-2.32.2-RELEASE.md).
