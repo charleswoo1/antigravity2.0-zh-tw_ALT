@@ -42,4 +42,6 @@ PR/main push 與預設手動 CI 不上傳 Artifact；明確勾選的手動 CI �
 - `npm run check`：PASS。
 - `npm run check:packaging`：PASS，包含上傳條件、預設值與保存期限政策檢查。
 - `git diff --check`：PASS。
-- GitHub PR CI：待建立 PR 後確認。
+- PR：https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/pull/102（待人工檢閱與合併）。
+- GitHub PR CI：https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/actions/runs/44222710104；已確認 Windows 與兩種 macOS 的 Artifact 上傳步驟皆為 skipped，Core 與兩種 macOS 已通過。Windows 最後建置驗證及最新 commit 結果以 PR checks 為準。
+- 未啟動正式發布或額外付費的 Artifact 上傳測試。
