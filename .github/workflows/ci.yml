@@ -6,6 +6,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      upload_artifacts:
+        description: '保存安裝檔供下載（保留 1 天，使用 Actions 儲存額度）'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -77,12 +83,13 @@ jobs:
           Get-Content -LiteralPath .build\release-assets-ci\SHA256SUMS.txt
 
       - name: Upload Windows CI artifacts
+        if: github.event_name == 'workflow_dispatch' && inputs.upload_artifacts
         uses: actions/upload-artifact@v7
         with:
           name: ci-windows-x64-${{ github.sha }}
           path: dist/*.exe
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
 
       - name: Build and verify isolated ALT revision
         run: node tools/verify-revision-packaging.js windows x64
@@ -137,11 +144,12 @@ jobs:
           "$APP_PATH/Contents/Resources/payload/runtime/node" --version | grep -Fx 'v24.21.0'
 
       - name: Upload macOS CI artifact
+        if: github.event_name == 'workflow_dispatch' && inputs.upload_artifacts
         uses: actions/upload-artifact@v7
         with:
           name: ci-macos-${{ matrix.arch }}-${{ github.sha }}
           path: dist/*.zip
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
       - name: Build and verify isolated ALT revision
         run: node tools/verify-revision-packaging.js macos ${{ matrix.arch }}
