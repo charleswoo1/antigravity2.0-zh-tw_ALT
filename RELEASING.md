@@ -87,6 +87,10 @@ Release branch 必須精確符合 `release/vX.Y.Z` 或 `release/vX.Y.Z-alt.N`。
 
 正式 Release 不直接沿用 PR CI artifact 作為 production asset；Release workflow 會在受控發布 run 中重新 build。
 
+一般 CI 在 PR、push 至 `main` 與預設手動執行時，只執行完整測試與跨平台建置，不上傳安裝檔。需要下載驗證用安裝檔時，可在 Actions → CI → Run workflow 勾選 `upload_artifacts`，產物保存 1 天並使用 Actions 儲存額度。歷史執行紀錄與 logs 仍保留。
+
+正式 Release 的 staging Artifacts 供同次 workflow 的 `publish` job 下載，保存期限為 1 天；若超過期限才重跑發布 job，可能需要重新建置。此期限不影響已發布的 GitHub Release 資產。縮短保存期限只減少後續用量，不會清除本期已累計的儲存用量；額度已耗盡時，手動 CI 上傳與正式發布仍可能受限。
+
 ### 5. 固定公開檔名與 checksum
 
 正式 GitHub Release 只允許以下五個公開 asset：

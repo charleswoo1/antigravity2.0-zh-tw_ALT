@@ -133,7 +133,7 @@ jobs:
             .build/release-assets-production/windows/Antigravity-ZH-Hant-TW-ALT-Windows.exe
             .build/release-assets-production/windows/Antigravity-ZH-Hant-TW-ALT-Windows-Restore.exe
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
 
   macos:
     name: Build macOS ${{ matrix.arch }} release asset
@@ -199,7 +199,7 @@ jobs:
           name: release-macos-${{ matrix.arch }}-${{ github.sha }}
           path: .build/release-assets-production/${{ matrix.arch }}/Antigravity-ZH-Hant-TW-ALT-macOS-${{ matrix.arch }}.zip
           if-no-files-found: error
-          retention-days: 3
+          retention-days: 1
 
   publish:
     name: Create tag and publish GitHub Release

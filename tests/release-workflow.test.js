@@ -16,6 +16,26 @@ const releaseWorkflow = fs.readFileSync(releasePath, 'utf-8');
 assert.match(ciWorkflow, /permissions:\s*\n\s*contents:\s*read/, '一般 CI 必須維持 contents: read');
 assert.ok(!/contents:\s*write/.test(ciWorkflow), '一般 CI 不得取得 contents: write');
 
+assert.match(ciWorkflow,
+    /workflow_dispatch:\s*\n\s+inputs:\s*\n\s+upload_artifacts:\s*\n\s+description:[^\n]*\n\s+type: boolean\s*\n\s+required: false\s*\n\s+default: false/,
+    '手動 CI 保存安裝檔必須為預設關閉的 boolean 選項');
+const ciUploads = ciWorkflow.split(/(?=^      - name:)/m)
+    .filter(step => step.includes('uses: actions/upload-artifact@'));
+assert.strictEqual(ciUploads.length, 2, '保留 Windows 與 macOS 手動下載選項');
+for (const step of ciUploads) {
+    assert.match(step, /^        if: github\.event_name == 'workflow_dispatch' && inputs\.upload_artifacts\s*$/m,
+        '每個 CI 上傳步驟都必須限定手動執行並明確選擇保存');
+}
+for (const workflow of [ciWorkflow, releaseWorkflow]) {
+    const uploads = workflow.split(/(?=^      - name:)/m)
+        .filter(step => step.includes('uses: actions/upload-artifact@'));
+    assert.strictEqual(uploads.length, 2, 'CI 與 Release 均保留 Windows/macOS 上傳步驟');
+    for (const step of uploads) {
+        assert.match(step, /^          retention-days: 1\s*$/m, '所有安裝檔 Artifact 僅保存 1 天');
+        assert.ok(!step.includes('continue-on-error:'), '上傳失敗不得偽裝為成功');
+    }
+}
+
 assert.match(releaseWorkflow, /on:\s*\n\s*push:/, 'Release workflow 必須以 release branch push 作為唯一發布觸發');
 assert.ok(!/^\s*create:\s*$/m.test(releaseWorkflow), 'Release workflow 不得同時監聽 create event，避免建立 release branch 時重複觸發');
 assert.match(releaseWorkflow, /branches:\s*\n\s*- ['"]release\/v\*['"]/, 'Release workflow 的 push 觸發只能接受 release/v* branch');
