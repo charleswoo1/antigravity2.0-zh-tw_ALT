@@ -1,6 +1,6 @@
 # Handoff — Antigravity 2.33.0 / ALT 2.33.0
 
-**Status:** READY_FOR_REVIEW
+**Status:** COMPLETE
 **Issue:** [#107](https://github.com/charleswoo1/antigravity2.0-zh-tw_ALT/issues/107)
 **Baseline commit:** 654fe67712763ce2dfaef030d6c88cc0a7e42455
 **Target:** main
@@ -47,3 +47,7 @@ Use a short branch and target main with a PR. Owner authorization governs merge 
 - Final local apply, repeat apply and integrity audit passed. Five JS members passed syntax checks, both original preloads were preserved, both menu injection points were present and the logo overlay was unchanged. Same-version backup retained. Localized archive SHA-256 ef97b53b2024c236463880d93c0933ebcbb3292a515893fc94f8d9dbde6554d9.
 - Windows x64 offline build and installer end-to-end tests passed for the install and restore tools.
 - Launch visuals, live remote UI DOM and macOS real-install verification were outside validation.
+
+## Owner-authorized publication
+
+The owner authorized publication on 2026-11-19. PR #108 passed CI and merged at f0c2bae2bbd22127a042c858b5487582c5e164f3. ALT 2.33.0 is the latest formal Release. See the [release evidence](ALT-2.33.0-RELEASE.md).
